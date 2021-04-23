@@ -24,7 +24,7 @@ server.get("/", (req, res) => {
 });
 
 // Import Routes
-const userRoute = require("./routes/users/users-routes");
+const userRoute = require("./routes/users/users-routes.js");
 
 // Using Routes
 server.use("/api/user", userRoute);
