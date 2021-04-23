@@ -5,7 +5,7 @@ const router = require("express").Router();
 const { check } = require("express-validator");
 
 // Import User Controller
-const userController = require("../../controllers/users-controller.js");
+const userController = require("../../controllers/users-controller");
 
 router.post(
   "/signup",
