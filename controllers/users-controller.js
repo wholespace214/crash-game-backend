@@ -2,6 +2,9 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Imports from express validator to validate user input
+const { validationResult } = require("express-validator");
+
 // Import User model
 const User = require("../models/user");
 
@@ -13,6 +16,13 @@ const bcrypt = require("bcryptjs");
 
 // Controller to sign up a new user
 const signup = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new Error("Invalid input passed, please check it", 422));
+  }
+
+  // Defining User Inputs
   const { email, password } = req.body;
 
   // Check if user with email address already exists
@@ -30,7 +40,6 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  
   let hashedPassword;
   try {
     hashedPassword = await bcrypt.hash(password, 12);
