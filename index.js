@@ -5,6 +5,9 @@ dotenv.config();
 // Import express
 const express = require("express");
 
+// Import mongoose to connect to Database
+const mongoose = require("mongoose");
+
 // Initialise server using express
 const server = express();
 
@@ -17,6 +20,17 @@ server.get("/", (req, res) => {
     .status(200)
     .send({ message: "Blockchain meets Betting made Simple. - Wallfair." });
 });
+
+// Connection to Database
+mongoose
+  .connect(process.env.DB_CONNECTION, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
+  .then(() => console.log("Connection to DB successfull"))
+  .catch((err) => {
+    console.log(err.message);
+  });
 
 // Let server run and listen
 var app = server.listen(process.env.PORT || 8000, function () {
