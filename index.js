@@ -21,6 +21,12 @@ server.get("/", (req, res) => {
     .send({ message: "Blockchain meets Betting made Simple. - Wallfair." });
 });
 
+// Import Routes
+const userRoute = require("./routes/users/users-routes");
+
+// Using Routes
+server.use("/api/user", userRoute);
+
 // Connection to Database
 mongoose
   .connect(process.env.DB_CONNECTION, {
