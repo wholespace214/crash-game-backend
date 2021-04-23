@@ -1,7 +1,10 @@
 {
   "name": "wallfair-playmoney-backend",
+  "description": "Blockchain meets Prediction Markets made Simple.",
   "version": "1.0.0",
-  "description": "",
+  "engines": {
+    "node": "14.15.0"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

@@ -18,7 +18,9 @@ server.use(express.json());
 server.get("/", (req, res) => {
   res
     .status(200)
-    .send({ message: "Blockchain meets Betting made Simple. - Wallfair." });
+    .send({
+      message: "Blockchain meets Prediction Markets made Simple. - Wallfair.",
+    });
 });
 
 // Import Routes
