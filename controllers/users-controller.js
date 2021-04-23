@@ -6,7 +6,7 @@ dotenv.config();
 const { validationResult } = require("express-validator");
 
 // Import User model
-const User = require("../models/user.js");
+const User = require("../models/User.js");
 
 // Import JWT for authentication process
 const jwt = require("jsonwebtoken");
