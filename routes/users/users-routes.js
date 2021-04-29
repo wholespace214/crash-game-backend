@@ -7,13 +7,22 @@ const { check } = require("express-validator");
 // Import User Controller
 const userController = require("../../controllers/users-controller");
 
+//Login does register & login
 router.post(
-  "/signup",
+  "/login",
   [
-    check("email").normalizeEmail().isEmail(),
-    check("password").isLength({ min: 8, max: 1024 }),
+    check("phone").isMobilePhone(),
   ],
-  userController.signup
+  userController.login
+);
+
+router.post(
+    "/verifyLogin",
+    [
+        check("phone").isMobilePhone(),
+        check("smsToken").isNumeric().isLength({ min: 6, max: 6 }),
+    ],
+    userController.verfiySms
 );
 
 module.exports = router;

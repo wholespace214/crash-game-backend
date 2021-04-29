@@ -35,10 +35,8 @@ mongoose
     useUnifiedTopology: true,
     useNewUrlParser: true,
   })
-  .then(() => console.log("Connection to DB successfull"))
-  .catch((err) => {
-    console.log(err.message);
-  });
+  .then(async () => console.log("Connection to DB successfull"))
+  .catch((err) => console.log(err.message));
 
 // Let server run and listen
 var app = server.listen(process.env.PORT || 8000, function () {
