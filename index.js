@@ -8,14 +8,20 @@ const express = require("express");
 // Import mongoose to connect to Database
 const mongoose = require("mongoose");
 
+// Import middleware for jwt verification
+const passport = require('passport');
+require('./util/auth');
+
 // Initialise server using express
 const server = express();
 
 // Giving server ability to parse json
 server.use(express.json());
+server.use(passport.initialize());
+server.use(passport.session());
 
 // Home Route
-server.get("/", (req, res) => {
+server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
   res
     .status(200)
     .send({

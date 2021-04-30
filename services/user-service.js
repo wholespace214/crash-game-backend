@@ -6,7 +6,7 @@ exports.getUserByPhone = async (phone) => {
 };
 
 exports.getUserById = async (id) => {
-    return User.findOne({id: id});
+    return User.findOne({_id: id});
 }
 
 exports.saveUser = async (user) => {

@@ -43,7 +43,7 @@ exports.verifyLogin = async (phone, smsToken) => {
     let verification;
 
     try {
-        await twilio.verify.services(process.env.TWILIO_SID)
+        verification = await twilio.verify.services(process.env.TWILIO_SID)
             .verificationChecks
             .create({to: phone, code: smsToken})
     } catch (err) {
