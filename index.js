@@ -8,6 +8,9 @@ const express = require("express");
 // Import mongoose to connect to Database
 const mongoose = require("mongoose");
 
+//Import websocket service
+const websocketService = require("./services/websocket-service");
+
 // Import middleware for jwt verification
 const passport = require('passport');
 require('./util/auth');
@@ -31,9 +34,11 @@ server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
 
 // Import Routes
 const userRoute = require("./routes/users/users-routes");
+const eventRoute = require("./routes/users/events-routes");
 
 // Using Routes
 server.use("/api/user", userRoute);
+server.use("/api/event", passport.authenticate('jwt',{session: false}), eventRoute);
 
 // Connection to Database
 mongoose
@@ -44,8 +49,11 @@ mongoose
   .then(async () => console.log("Connection to DB successfull"))
   .catch((err) => console.log(err.message));
 
+websocketService.startServer();
+
 // Let server run and listen
 var app = server.listen(process.env.PORT || 8000, function () {
   var port = app.address().port;
   console.log(`API runs on port: ${port}`);
 });
+
