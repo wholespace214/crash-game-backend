@@ -1,10 +1,10 @@
 # Wallfair. Playmoney V1 Server-Side
-##server-side
+### server-side
 
 
-##Api-Endpoints
+# Api-Endpoints
 
-###Auth
+### Auth
 Header:
 "Authorization: Bearer jwtToken"
 
