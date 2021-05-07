@@ -35,10 +35,12 @@ server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
 // Import Routes
 const userRoute = require("./routes/users/users-routes");
 const eventRoute = require("./routes/users/events-routes");
+const secureUserRoute = require("./routes/users/secure-users-routes");
 
 // Using Routes
 server.use("/api/user", userRoute);
 server.use("/api/event", passport.authenticate('jwt',{session: false}), eventRoute);
+server.use("/api/user", passport.authenticate('jwt',{session: false}), secureUserRoute);
 
 // Connection to Database
 mongoose
