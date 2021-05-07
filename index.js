@@ -8,6 +8,9 @@ const express = require("express");
 // Import mongoose to connect to Database
 const mongoose = require("mongoose");
 
+//Import cors
+const cors = require('cors')
+
 //Import websocket service
 const websocketService = require("./services/websocket-service");
 
@@ -36,6 +39,8 @@ server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
 const userRoute = require("./routes/users/users-routes");
 const eventRoute = require("./routes/users/events-routes");
 const secureUserRoute = require("./routes/users/secure-users-routes");
+
+server.use(cors());
 
 // Using Routes
 server.use("/api/user", userRoute);
