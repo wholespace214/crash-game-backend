@@ -8,14 +8,23 @@ const express = require("express");
 // Import mongoose to connect to Database
 const mongoose = require("mongoose");
 
+//Import websocket service
+const websocketService = require("./services/websocket-service");
+
+// Import middleware for jwt verification
+const passport = require('passport');
+require('./util/auth');
+
 // Initialise server using express
 const server = express();
 
 // Giving server ability to parse json
 server.use(express.json());
+server.use(passport.initialize());
+server.use(passport.session());
 
 // Home Route
-server.get("/", (req, res) => {
+server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
   res
     .status(200)
     .send({
@@ -25,9 +34,11 @@ server.get("/", (req, res) => {
 
 // Import Routes
 const userRoute = require("./routes/users/users-routes");
+const eventRoute = require("./routes/users/events-routes");
 
 // Using Routes
 server.use("/api/user", userRoute);
+server.use("/api/event", passport.authenticate('jwt',{session: false}), eventRoute);
 
 // Connection to Database
 mongoose
@@ -35,13 +46,14 @@ mongoose
     useUnifiedTopology: true,
     useNewUrlParser: true,
   })
-  .then(() => console.log("Connection to DB successfull"))
-  .catch((err) => {
-    console.log(err.message);
-  });
+  .then(async () => console.log("Connection to DB successfull"))
+  .catch((err) => console.log(err.message));
+
+websocketService.startServer();
 
 // Let server run and listen
 var app = server.listen(process.env.PORT || 8000, function () {
   var port = app.address().port;
   console.log(`API runs on port: ${port}`);
 });
+

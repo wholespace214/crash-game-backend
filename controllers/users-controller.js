@@ -5,17 +5,11 @@ dotenv.config();
 // Imports from express validator to validate user input
 const { validationResult } = require("express-validator");
 
-// Import User model
-const User = require("../models/User");
-
-// Import JWT for authentication process
-const jwt = require("jsonwebtoken");
-
-// Import Bcrypt to hash users password
-const bcrypt = require("bcryptjs");
+// Import Auth Service
+const authService = require("../services/auth-service");
 
 // Controller to sign up a new user
-const signup = async (req, res, next) => {
+const login = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -23,59 +17,41 @@ const signup = async (req, res, next) => {
   }
 
   // Defining User Inputs
-  const { email, password } = req.body;
-
-  // Check if user with email address already exists
-  let existingUser;
-  try {
-    existingUser = await User.findOne({ email: email.toLowerCase() });
-  } catch (err) {
-    const error = new Error("Signing up failed, please try again.", 500);
-    return next(error);
-  }
-
-  // Answer if user already exists
-  if (existingUser) {
-    const error = new Error("User exists already, please login instead.", 422);
-    return next(error);
-  }
-
-  let hashedPassword;
-  try {
-    hashedPassword = await bcrypt.hash(password, 12);
-  } catch (err) {
-    const error = new Error("Could not create user, please try again.", 500);
-    return next(error);
-  }
-
-  const emailLowerCase = email.toLowerCase();
-
-  const createdUser = new User({
-    email: emailLowerCase,
-    password: hashedPassword,
-  });
+  const {phone} = req.body;
 
   try {
-    await createdUser.save();
-  } catch (err) {
-    const error = new Error("Signing up failed, please try again later.", 500);
-    return next(error);
-  }
+    let response = await authService.doLogin(phone);
+    res
+        .status(201)
+        .json({phone: phone, smsStatus: response});
 
-  let token;
-  try {
-    token = jwt.sign(
-      { userId: createdUser.id, email: createdUser.email },
-      process.env.JWT_KEY
-    );
   } catch (err) {
-    const error = new Error(err.message, 500);
-    return next(error);
+    let error = new Error(err.message, 422);
+    next(error);
   }
-
-  res
-    .status(201)
-    .json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
 
-exports.signup = signup;
+const verfiySms = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new Error("Invalid input passed, please check it", 422));
+  }
+
+  // Defining User Inputs
+  const {phone, smsToken} = req.body;
+
+  try {
+    let user = await authService.verifyLogin(phone, smsToken);
+
+    res
+        .status(201)
+        .json({userId: user.id, phone: user.phone, session: user.session});
+  } catch (err) {
+    let error = new Error(err.message, 422);
+    next(error);
+  }
+};
+
+exports.login = login;
+exports.verfiySms = verfiySms;
