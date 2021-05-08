@@ -6,6 +6,18 @@ const userSchema = new mongoose.Schema({
     required: true,
     max: 255,
   },
+  name: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 2,
+  },
+  email: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 2,
+  },
   session: {
     type: String,
     required: false,

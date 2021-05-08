@@ -30,8 +30,12 @@ Res:
 {
 "userId": "608ae87f8e78eb0224ad3e28",
 "phone": "+49123123123",
+"name*":"Max"
+"email*":"max@max.de"
 "session": "jwtToken"
 }
+
+*Optional only if provided
 
 ### GET http://localhost:8000/api/event/get/ID
 Res:

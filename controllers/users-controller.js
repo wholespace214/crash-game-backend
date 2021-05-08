@@ -8,6 +8,9 @@ const { validationResult } = require("express-validator");
 // Import Auth Service
 const authService = require("../services/auth-service");
 
+// Import User Service
+const userService = require("../services/user-service");
+
 // Controller to sign up a new user
 const login = async (req, res, next) => {
   // Validating User Inputs
@@ -46,12 +49,39 @@ const verfiySms = async (req, res, next) => {
 
     res
         .status(201)
-        .json({userId: user.id, phone: user.phone, session: user.session});
+        .json({userId: user.id, phone: user.phone, name: user.name, email: user.email, session: user.session});
   } catch (err) {
     let error = new Error(err.message, 422);
     next(error);
   }
 };
 
+const saveAdditionalInformation = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new Error("Invalid input passed, please check it", 422));
+  }
+
+  // Defining User Inputs
+  const {email, name} = req.body;
+
+  try {
+    let user = await userService.getUserById(req.user.id);
+
+    user.name = name;
+    user.email = email;
+    user = await userService.saveUser(user);
+
+    res
+        .status(201)
+        .json({userId: user.id, phone: user.phone, name: user.name, email: user.email});
+  } catch (err) {
+    let error = new Error(err.message, 422);
+    next(error);
+  }
+}
+
 exports.login = login;
 exports.verfiySms = verfiySms;
+exports.saveAdditionalInformation = saveAdditionalInformation;
