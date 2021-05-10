@@ -22,7 +22,7 @@ const getEvent = async (req, res, next) => {
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(new Error("Invalid input passed, please check it", 422));
+        return next(res.status(422).send("Invalid input passed, please check it"));
     }
 
     // Defining User Inputs
@@ -37,7 +37,7 @@ const createEvent = async (req, res, next) => {
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(new Error("Invalid input passed, please check it", 422));
+        return next(res.status(422).send("Invalid input passed, please check it"));
     }
 
    try {
@@ -58,7 +58,7 @@ const createEvent = async (req, res, next) => {
            .status(201)
            .json(event);
    } catch (err) {
-        let error = new Error(err.message, 422);
+        let error = res.status(422).send(err.message);
         next(error);
     }
 };

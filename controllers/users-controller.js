@@ -16,7 +16,7 @@ const login = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new Error("Invalid input passed, please check it", 422));
+    return next(res.status(422).send("Invalid input passed, please check it"));
   }
 
   // Defining User Inputs
@@ -29,7 +29,7 @@ const login = async (req, res, next) => {
         .json({phone: phone, smsStatus: response});
 
   } catch (err) {
-    let error = new Error(err.message, 422);
+    let error = res.status(422).send(err.message);
     next(error);
   }
 };
@@ -38,7 +38,7 @@ const verfiySms = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new Error("Invalid input passed, please check it", 422));
+    return next(res.status(422).send("Invalid input passed, please check it"));
   }
 
   // Defining User Inputs
@@ -51,7 +51,7 @@ const verfiySms = async (req, res, next) => {
         .status(201)
         .json({userId: user.id, phone: user.phone, name: user.name, email: user.email, session: user.session});
   } catch (err) {
-    let error = new Error(err.message, 422);
+    let error = res.status(422).send(err.message);
     next(error);
   }
 };
@@ -60,7 +60,7 @@ const saveAdditionalInformation = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new Error("Invalid input passed, please check it", 422));
+    return next(res.status(422).send("Invalid input passed, please check it"));
   }
 
   // Defining User Inputs
@@ -77,7 +77,7 @@ const saveAdditionalInformation = async (req, res, next) => {
         .status(201)
         .json({userId: user.id, phone: user.phone, name: user.name, email: user.email});
   } catch (err) {
-    let error = new Error(err.message, 422);
+    let error = res.status(422).send(err.message);
     next(error);
   }
 }
