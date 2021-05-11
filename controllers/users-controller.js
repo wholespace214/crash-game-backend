@@ -16,7 +16,7 @@ const login = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(res.status(422).send("Invalid input passed, please check it"));
+    return next(res.status(422).send("The phone number entered does not seem to be in the correct format"));
   }
 
   // Defining User Inputs
@@ -38,7 +38,7 @@ const verfiySms = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(res.status(422).send("Invalid input passed, please check it"));
+    return next(res.status(422).send("The code you entered seems to be wrong"));
   }
 
   // Defining User Inputs
@@ -60,7 +60,7 @@ const saveAdditionalInformation = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(res.status(422).send("Invalid input passed, please check it"));
+    return next(res.status(422).send("The mail address entered does not seem to be in the correct format"));
   }
 
   // Defining User Inputs

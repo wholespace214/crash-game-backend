@@ -11,7 +11,7 @@ router.post(
     "/saveAdditionalInformation",
     [
         check("name"),
-        check("email")
+        check("email").isEmail()
     ],
     userController.saveAdditionalInformation
 );
