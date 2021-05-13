@@ -8,12 +8,15 @@ const { check } = require("express-validator");
 const userController = require("../../controllers/users-controller");
 
 router.post(
-    "/saveAdditionalInformation",
-    [
-        check("name"),
-        check("email").isEmail()
-    ],
-    userController.saveAdditionalInformation
+  "/saveAdditionalInformation",
+  [check("name"), check("email").isEmail()],
+  userController.saveAdditionalInformation
+);
+
+router.post(
+  "/acceptConditions",
+  [check("conditions").isArray({ min: 3, max: 3 })],
+  userController.saveAcceptConditions
 );
 
 module.exports = router;
