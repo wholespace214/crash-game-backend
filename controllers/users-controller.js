@@ -16,18 +16,21 @@ const login = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(res.status(422).send("The phone number entered does not seem to be in the correct format"));
+    return next(
+      res
+        .status(422)
+        .send(
+          "The phone number entered does not seem to be in the correct format"
+        )
+    );
   }
 
   // Defining User Inputs
-  const {phone} = req.body;
+  const { phone } = req.body;
 
   try {
     let response = await authService.doLogin(phone);
-    res
-        .status(201)
-        .json({phone: phone, smsStatus: response});
-
+    res.status(201).json({ phone: phone, smsStatus: response });
   } catch (err) {
     let error = res.status(422).send(err.message);
     next(error);
@@ -42,14 +45,19 @@ const verfiySms = async (req, res, next) => {
   }
 
   // Defining User Inputs
-  const {phone, smsToken} = req.body;
+  const { phone, smsToken } = req.body;
 
   try {
     let user = await authService.verifyLogin(phone, smsToken);
 
-    res
-        .status(201)
-        .json({userId: user.id, phone: user.phone, name: user.name, email: user.email, session: user.session});
+    res.status(201).json({
+      userId: user.id,
+      phone: user.phone,
+      name: user.name,
+      email: user.email,
+      session: user.session,
+      confirmed: user.confirmed,
+    });
   } catch (err) {
     let error = res.status(422).send(err.message);
     next(error);
@@ -60,11 +68,17 @@ const saveAdditionalInformation = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(res.status(422).send("The mail address entered does not seem to be in the correct format"));
+    return next(
+      res
+        .status(422)
+        .send(
+          "The mail address entered does not seem to be in the correct format"
+        )
+    );
   }
 
   // Defining User Inputs
-  const {email, name} = req.body;
+  const { email, name } = req.body;
 
   try {
     let user = await userService.getUserById(req.user.id);
@@ -73,15 +87,40 @@ const saveAdditionalInformation = async (req, res, next) => {
     user.email = email;
     user = await userService.saveUser(user);
 
-    res
-        .status(201)
-        .json({userId: user.id, phone: user.phone, name: user.name, email: user.email});
+    res.status(201).json({
+      userId: user.id,
+      phone: user.phone,
+      name: user.name,
+      email: user.email,
+    });
   } catch (err) {
     let error = res.status(422).send(err.message);
     next(error);
   }
-}
+};
+
+const saveAcceptConditions = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(res.status(422).send("All conditions need to be accepted!"));
+  }
+
+  try {
+    let user = await userService.getUserById(req.user.id);
+    user.confirmed = true;
+    user = await userService.saveUser(user);
+
+    res.status(201).json({
+      confirmed: user.confirmed,
+    });
+  } catch (err) {
+    let error = res.status(422).send(err.message);
+    next(error);
+  }
+};
 
 exports.login = login;
 exports.verfiySms = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
+exports.saveAcceptConditions = saveAcceptConditions;

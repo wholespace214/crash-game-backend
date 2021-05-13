@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   confirmed: {
     type: Boolean,
     required: true,
-    default: true,
+    default: false,
   },
   date: {
     type: Date,
