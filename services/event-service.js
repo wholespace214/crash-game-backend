@@ -1,8 +1,8 @@
 // Import Event model
 const Event = require("../models/Event");
 
-exports.listEvent = async () => {
-    return Event.find();
+exports.listEvent = async (linkedTo) => {
+    return Event.find({linkedTo: linkedTo});
 };
 
 exports.getEvent = async (id) => {

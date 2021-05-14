@@ -5,15 +5,12 @@ const router = require("express").Router();
 const { check } = require("express-validator");
 
 // Import User Controller
-const eventController = require("../../controllers/events-controller");
+const streamController = require("../../controllers/streams-controller");
 
 //Login does register & login
 router.get(
-    "/list/id",
-    [
-        check("id").notEmpty()
-    ],
-    eventController.listEvents
+    "/list",
+    streamController.listStreams
 );
 
 router.get(
@@ -21,7 +18,7 @@ router.get(
     [
         check("id").notEmpty()
     ],
-    eventController.getEvent
+    streamController.getStream
 );
 
 router.post(
@@ -32,7 +29,7 @@ router.post(
         check("endDate"),
         check("liveStreamUrl"),
     ],
-    eventController.createEvent
+    streamController.createStream
 );
 
 module.exports = router;
