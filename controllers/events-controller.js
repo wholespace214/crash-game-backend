@@ -13,9 +13,18 @@ const eventService = require("../services/event-service");
 
 // Controller to sign up a new user
 const listEvents = async (req, res) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(new Error("Invalid input passed, please check it", 422));
+    }
+
+    // Defining User Inputs
+    const {id} = req.params;
+
     res
         .status(201)
-        .json(await eventService.listEvent());
+        .json(await eventService.listEvent(id));
 };
 
 const getEvent = async (req, res, next) => {

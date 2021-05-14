@@ -38,6 +38,7 @@ server.get("/", passport.authenticate('jwt',{session: false}), (req, res) => {
 // Import Routes
 const userRoute = require("./routes/users/users-routes");
 const eventRoute = require("./routes/users/events-routes");
+const streamRoute = require("./routes/users/stream-routes");
 const secureUserRoute = require("./routes/users/secure-users-routes");
 
 server.use(cors());
@@ -45,6 +46,7 @@ server.use(cors());
 // Using Routes
 server.use("/api/user", userRoute);
 server.use("/api/event", passport.authenticate('jwt',{session: false}), eventRoute);
+server.use("/api/stream", passport.authenticate('jwt',{session: false}), streamRoute);
 server.use("/api/user", passport.authenticate('jwt',{session: false}), secureUserRoute);
 
 // Connection to Database

@@ -6,21 +6,27 @@ const userSchema = new mongoose.Schema({
         required: true,
         max: 255,
     },
-    betOptions: [
-        {
-            name: String,
-            //TODO more bet parameter
-        }
-    ],
+    endDate: {
+        type: Date,
+        required: true
+    },
+    liveStreamUrl: {
+        type: String,
+        required: false,
+        max: 2048,
+    },
     date: {
         type: Date,
         required: true,
         default: Date.now,
     },
-    linkedTo: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Stream'
-    }
+    events: [{
+        text: String,
+        linkedTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Event'
+        }
+    }]
 });
 
 module.exports = mongoose.model("Event", userSchema);
