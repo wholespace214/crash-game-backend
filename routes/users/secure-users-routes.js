@@ -19,4 +19,6 @@ router.post(
   userController.saveAcceptConditions
 );
 
+router.get("/:userId", userController.getUserInfo);
+
 module.exports = router;

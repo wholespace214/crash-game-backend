@@ -11,6 +11,9 @@ const authService = require("../services/auth-service");
 // Import User Service
 const userService = require("../services/user-service");
 
+// Import User Model
+const User = require("../models/User");
+
 // Controller to sign up a new user
 const login = async (req, res, next) => {
   // Validating User Inputs
@@ -120,7 +123,38 @@ const saveAcceptConditions = async (req, res, next) => {
   }
 };
 
+// Receive all users
+const getUsers = async (req, res, next) => {
+  let users;
+  try {
+    users = await User.find({}, { name: 1, coins: 1 });
+  } catch (err) {
+    const error = new Error(
+      "Fetching users failed, please try again later.",
+      500
+    );
+    return next(error);
+  }
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
+};
+
+// Receive specific user information
+const getUserInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    res.status(200).json({ name: user.name, balance: user.coins });
+  } catch (err) {
+    res
+      .status(400)
+      .send(
+        "Es ist ein Fehler aufgetreten beim laden Deiner Account Informationen"
+      );
+  }
+};
+
 exports.login = login;
 exports.verfiySms = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
+exports.getUsers = getUsers;
+exports.getUserInfo = getUserInfo;
