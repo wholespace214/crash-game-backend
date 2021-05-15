@@ -19,6 +19,6 @@ router.post(
   userController.verfiySms
 );
 
-router.get("/getUsers", userController.getUserInfo);
+router.get("/getUsers", userController.getUsers);
 
 module.exports = router;

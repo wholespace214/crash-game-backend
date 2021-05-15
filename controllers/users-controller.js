@@ -123,7 +123,8 @@ const saveAcceptConditions = async (req, res, next) => {
   }
 };
 
-const getUserInfo = async (req, res, next) => {
+// Receive all users
+const getUsers = async (req, res, next) => {
   let users;
   try {
     users = await User.find({}, { name: 1, coins: 1 });
@@ -137,8 +138,23 @@ const getUserInfo = async (req, res, next) => {
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
+// Receive specific user information
+const getUserInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    res.status(200).json({ name: user.name, balance: user.coins });
+  } catch (err) {
+    res
+      .status(400)
+      .send(
+        "Es ist ein Fehler aufgetreten beim laden Deiner Account Informationen"
+      );
+  }
+};
+
 exports.login = login;
 exports.verfiySms = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
+exports.getUsers = getUsers;
 exports.getUserInfo = getUserInfo;
