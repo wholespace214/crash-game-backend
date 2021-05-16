@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     max: 2048,
     min: 8,
   },
+  ref: {
+    type: String,
+    required: false,
+  },
   coins: {
     type: Number,
     required: true,
