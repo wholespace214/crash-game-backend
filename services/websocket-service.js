@@ -72,6 +72,14 @@ wss.on('connection', function connection(ws) {
     })
 })
 
+exports.sendMessageToEvent = (eventId, message) => {
+    eventRooms[eventId].forEach(function each(client) {
+        if (client.readyState === Websocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
+
 exports.startServer = () => {
     //start our server
     server.listen( 8999, () => {
