@@ -29,10 +29,10 @@ const login = async (req, res, next) => {
   }
 
   // Defining User Inputs
-  const { phone } = req.body;
+  const { phone, ref } = req.body;
 
   try {
-    let response = await authService.doLogin(phone);
+    let response = await authService.doLogin(phone, ref);
     res.status(201).json({ phone: phone, smsStatus: response });
   } catch (err) {
     let error = res.status(422).send(err.message);
