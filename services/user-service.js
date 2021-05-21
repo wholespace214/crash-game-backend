@@ -1,6 +1,9 @@
 // Import User model
 const User = require("../models/User");
 
+const { Erc20 } = require('smart_contract_mock');
+const EVNT = new Erc20('EVNT');
+
 exports.getUserByPhone = async (phone) => {
     return User.findOne({phone: phone});
 };
@@ -20,6 +23,7 @@ exports.rewardRefUser= async (ref) => {
 
     let user = await this.getUserById(ref);
     user.coins += 500;
+    await EVNT.mint(ref, 500);
     await this.saveUser(user);
 }
 
