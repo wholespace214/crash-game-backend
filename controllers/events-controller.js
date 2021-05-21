@@ -5,8 +5,9 @@ dotenv.config();
 // Imports from express validator to validate user input
 const { validationResult } = require("express-validator");
 
-// Import Event model
+// Import Models
 const Event = require("../models/Event");
+const Bet = require("../models/Bet");
 
 // Import Auth Service
 const eventService = require("../services/event-service");
@@ -21,10 +22,11 @@ const listEvents = async (req, res) => {
 
     // Defining User Inputs
     const {id} = req.params;
+    let eventList = await eventService.listEvent(id);
 
     res
         .status(201)
-        .json(await eventService.listEvent(id));
+        .json(eventList);
 };
 
 const getEvent = async (req, res, next) => {
@@ -51,14 +53,15 @@ const createEvent = async (req, res, next) => {
 
    try {
        // Defining User Inputs
-       const {title, liveMode, liveStreamUrl, endDate} = req.body;
+       const {name, tags, streamUrl, previewImageUrl} = req.body;
 
 
        const createEvent = new Event({
-           title: title,
-           liveMode: liveMode,
-           liveStreamUrl: liveStreamUrl,
-           endDate: endDate
+           name: name,
+           tags: tags,
+           previewImageUrl: previewImageUrl,
+           streamUrl: streamUrl,
+           bets: []
        });
 
        let event = await eventService.saveEvent(createEvent);
@@ -72,6 +75,78 @@ const createEvent = async (req, res, next) => {
     }
 };
 
+const createBet = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send("Invalid input passed, please check it"));
+    }
+
+    try {
+        // Defining User Inputs
+        const {eventId, marketQuestion, hot, betOne, betTwo, endDate} = req.body;
+
+
+        let event = await eventService.getEvent(eventId);
+
+        const createBet = new Bet({
+            marketQuestion: marketQuestion,
+            hot: hot,
+            betOne: betOne,
+            betTwo: betTwo,
+            endDate: endDate,
+            event: eventId,
+            creator: req.user.id
+        });
+
+        let bet = await eventService.saveBet(createBet);
+
+        if(event.bets === undefined) {
+            event.bets = [];
+        }
+
+        event.bets.push(createBet);
+        event = await eventService.saveEvent(event);
+
+        res
+            .status(201)
+            .json(event);
+    } catch (err) {
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
+const placeBet = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send("Invalid input passed, please check it"));
+    }
+
+    try {
+        // Defining User Inputs
+        const {amount, betOne, betTwo} = req.body;
+        const {id} = req.params;
+
+
+        let bet = await eventService.getBet(id);
+
+        //TODO KONSTI place bet maybe store in db??
+
+        bet = await eventService.saveBet(createBet);
+
+        res
+            .status(201)
+            .json(bet);
+    } catch (err) {
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
 exports.listEvents = listEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.createBet = createBet;
+exports.placeBet = placeBet;
