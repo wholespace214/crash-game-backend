@@ -2,7 +2,7 @@
 const Event = require("../models/Event");
 
 //Import websocket service
-const websocketService = require("./services/websocket-service");
+const websocketService = require("./websocket-service");
 
 exports.listEvent = async (linkedTo) => {
     return Event.find({linkedTo: linkedTo});
