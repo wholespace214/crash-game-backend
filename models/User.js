@@ -18,11 +18,21 @@ const userSchema = new mongoose.Schema({
     max: 128,
     min: 2,
   },
+  profilePictureUrl: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 2
+  },
   session: {
     type: String,
     required: false,
     max: 2048,
     min: 8,
+  },
+  ref: {
+    type: String,
+    required: false,
   },
   coins: {
     type: Number,

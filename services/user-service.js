@@ -12,3 +12,20 @@ exports.getUserById = async (id) => {
 exports.saveUser = async (user) => {
     return user.save();
 }
+
+exports.rewardRefUser= async (ref) => {
+    if(ref === undefined) {
+        return;
+    }
+
+    let user = await this.getUserById(ref);
+    user.coins += 500;
+    await this.saveUser(user);
+}
+
+
+//TODO call function
+exports.createUser = async (user) => {
+    //TODO push user in marketing tools
+    return user.save();
+}
