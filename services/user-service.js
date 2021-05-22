@@ -21,10 +21,7 @@ exports.rewardRefUser= async (ref) => {
         return;
     }
 
-    let user = await this.getUserById(ref);
-    user.coins += 500;
     await EVNT.mint(ref, 500);
-    await this.saveUser(user);
 }
 
 

@@ -34,11 +34,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  coins: {
-    type: Number,
-    required: true,
-    default: 10000,
-  },
   openBets: {
     type: Array,
     required: true,

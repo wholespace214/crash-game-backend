@@ -9,6 +9,7 @@
 Header:
 "Authorization: Bearer jwtToken"
 
+## User Endpoints
 ### POST http://localhost:8000/api/user/login
 
 Request:
@@ -49,6 +50,23 @@ Successful Result:
 
 *Optional only if provided
 
+
+### GET http://localhost:8000/api/user/:userId
+
+Successful Result:
+```json
+{
+  "userId": "608ae87f8e78eb0224ad3e28",
+  "name*": "Max",
+  "profilePictureUrl*": "https://previewImageUrl.asd",
+  "balance": 900
+}
+```
+
+*Optional only if provided
+
+
+## Event Endpoints
 ### GET http://localhost:8000/api/event/get/ID
 
 Successful Result:
@@ -152,6 +170,7 @@ Successful Result:
 }
 ```
 
+## Bet Endpoints
 ### POST http://localhost:8000/api/event/bet/create
 
 Request:
