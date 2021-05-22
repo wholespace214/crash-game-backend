@@ -41,6 +41,7 @@ router.post(
         check("betOne"),
         check("betTwo"),
         check("endDate"),
+        check("liquidityAmount")
     ],
     eventController.createBet
 );

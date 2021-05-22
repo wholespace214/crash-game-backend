@@ -85,7 +85,7 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {eventId, marketQuestion, hot, betOne, betTwo, endDate} = req.body;
+        const {eventId, marketQuestion, hot, betOne, betTwo, endDate, liquidityAmount} = req.body;
 
 
         let event = await eventService.getEvent(eventId);
@@ -100,13 +100,14 @@ const createBet = async (req, res, next) => {
             creator: req.user.id
         });
 
+        const betContract = new BetContract(createBet.id);
+        await betContract.addLiquidity(req.user.id, liquidityAmount);
+
         let bet = await eventService.saveBet(createBet);
 
         if(event.bets === undefined) {
             event.bets = [];
         }
-
-        // ToDo Konsti: Provide Liquidity
 
         event.bets.push(createBet);
         event = await eventService.saveEvent(event);
