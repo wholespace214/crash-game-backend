@@ -14,6 +14,11 @@ const userService = require("../services/user-service");
 // Import User Model
 const User = require("../models/User");
 
+
+const { Erc20 } = require('smart_contract_mock');
+const EVNT = new Erc20('EVNT');
+
+
 // Controller to sign up a new user
 const login = async (req, res, next) => {
   // Validating User Inputs
@@ -127,7 +132,7 @@ const saveAcceptConditions = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   let users;
   try {
-    users = await User.find({}, { name: 1, coins: 1 });
+    users = await User.find({}, { name: 1 });
   } catch (err) {
     const error = new Error(
       "Fetching users failed, please try again later.",
@@ -135,21 +140,30 @@ const getUsers = async (req, res, next) => {
     );
     return next(error);
   }
-  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
+  const usersWithBalance = [];
+
+  for (const user of users) {
+    const balance = await EVNT.balanceOf(user.id);
+    usersWithBalance.push({userId: user.id, name: user.name, balance: balance});
+  }
+
+  res.json({ users: usersWithBalance });
 };
 
 // Receive specific user information
 const getUserInfo = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    res.status(200).json({ name: user.name, balance: user.coins });
-  } catch (err) {
-    res
-      .status(400)
-      .send(
-        "Es ist ein Fehler aufgetreten beim laden Deiner Account Informationen"
-      );
-  }
+    try {
+        const user = await User.findById(req.params.userId);
+        const balance = await EVNT.balanceOf(req.params.userId);
+        res.status(200).json({
+            userId: user.id,
+            name: user.name,
+            profilePictureUrl: user.profilePictureUrl,
+            balance: balance
+        });
+    } catch (err) {
+        res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
+    }
 };
 
 exports.login = login;

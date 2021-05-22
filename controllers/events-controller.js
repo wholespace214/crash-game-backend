@@ -11,6 +11,7 @@ const Bet = require("../models/Bet");
 
 // Import Auth Service
 const eventService = require("../services/event-service");
+const {BetContract} = require("smart_contract_mock");
 
 // Controller to sign up a new user
 const listEvents = async (req, res) => {
@@ -84,7 +85,7 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {eventId, marketQuestion, hot, betOne, betTwo, endDate} = req.body;
+        const {eventId, marketQuestion, hot, betOne, betTwo, endDate, liquidityAmount} = req.body;
 
 
         let event = await eventService.getEvent(eventId);
@@ -98,6 +99,9 @@ const createBet = async (req, res, next) => {
             event: eventId,
             creator: req.user.id
         });
+
+        const betContract = new BetContract(createBet.id);
+        await betContract.addLiquidity(req.user.id, liquidityAmount);
 
         let bet = await eventService.saveBet(createBet);
 
@@ -126,13 +130,17 @@ const placeBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, betOne, betTwo} = req.body;
+        const {amount, outcome} = req.body;
         const {id} = req.params;
 
+        if (outcome > 1 || outcome < 0) {
+            throw Error("Invalid outcome");
+        }
 
         let bet = await eventService.getBet(id);
 
-        //TODO KONSTI place bet maybe store in db??
+        const betContract = new BetContract(id);
+        await betContract.buy(req.user.id, amount, ["yes", "no"][outcome], 1);
 
         bet = await eventService.saveBet(createBet);
 
