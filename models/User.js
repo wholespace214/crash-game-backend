@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
     max: 128,
     min: 2,
   },
+  profilePictureUrl: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 2
+  },
   session: {
     type: String,
     required: false,
@@ -27,11 +33,6 @@ const userSchema = new mongoose.Schema({
   ref: {
     type: String,
     required: false,
-  },
-  coins: {
-    type: Number,
-    required: true,
-    default: 10000,
   },
   openBets: {
     type: Array,

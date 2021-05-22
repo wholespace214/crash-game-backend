@@ -24,6 +24,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock",
     "twilio": "^3.61.0",
     "ws": "^7.4.5"
   },

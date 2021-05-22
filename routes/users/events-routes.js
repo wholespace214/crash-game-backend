@@ -9,10 +9,7 @@ const eventController = require("../../controllers/events-controller");
 
 //Login does register & login
 router.get(
-    "/list/id",
-    [
-        check("id").notEmpty()
-    ],
+    "/list",
     eventController.listEvents
 );
 
@@ -27,12 +24,36 @@ router.get(
 router.post(
     "/create",
     [
-        check("title"),
-        check("liveMode"),
-        check("endDate"),
-        check("liveStreamUrl"),
+        check("name"),
+        check("tags"),
+        check("streamUrl"),
+        check("previewImageUrl"),
     ],
     eventController.createEvent
+);
+
+router.post(
+    "/bet/create",
+    [
+        check("eventId"),
+        check("marketQuestion"),
+        check("hot"),
+        check("betOne"),
+        check("betTwo"),
+        check("endDate"),
+        check("liquidityAmount")
+    ],
+    eventController.createBet
+);
+
+router.post(
+    "/bet/:id/place",
+    [
+        check("amount"),
+        check("betOne"),//Boolean
+        check("betTwo"),//Boolean
+    ],
+    eventController.placeBet
 );
 
 module.exports = router;

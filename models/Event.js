@@ -1,26 +1,35 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-    title: {
+const eventSchema = new mongoose.Schema({
+    name: {
         type: String,
         required: true,
         max: 255,
     },
-    betOptions: [
+    previewImageUrl: {
+            type: String,
+            required: true,
+            max: 255,
+    },
+    streamUrl: {
+        type: String,
+        required: true,
+        max: 500,
+    },
+    tags: [
         {
-            name: String,
-            //TODO more bet parameter
+            name: String
         }
-    ],
+        ],
     date: {
         type: Date,
         required: true,
         default: Date.now,
     },
-    linkedTo: {
+    bets: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Stream'
-    }
+        ref: 'Bet'
+    }]
 });
 
-module.exports = mongoose.model("Event", userSchema);
+module.exports = mongoose.model("Event", eventSchema);

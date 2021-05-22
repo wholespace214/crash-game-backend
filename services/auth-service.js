@@ -10,6 +10,9 @@ const userService = require("../services/user-service");
 //Import twilio client
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const { Erc20 } = require('smart_contract_mock');
+const EVNT = new Erc20('EVNT');
+
 exports.doLogin = async (phone, ref) => {
     // Check if user with phone already exists
     let existingUser = await userService.getUserByPhone(phone);
@@ -29,6 +32,8 @@ exports.doLogin = async (phone, ref) => {
 
         try {
             await userService.saveUser(createdUser);
+
+            await EVNT.mint(createdUser.id.toString(), 1000);
         } catch (err) {
             throw new Error("Signing up/in failed, please try again later.", 500);
         }
