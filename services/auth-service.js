@@ -31,9 +31,9 @@ exports.doLogin = async (phone, ref) => {
         await userService.rewardRefUser(ref);
 
         try {
-            await userService.saveUser(createdUser);
+            await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
 
-            await EVNT.mint(createdUser.id.toString(), 1000);
+            await userService.saveUser(createdUser);
         } catch (err) {
             throw new Error("Signing up/in failed, please try again later.", 500);
         }

@@ -144,7 +144,7 @@ const getUsers = async (req, res, next) => {
 
   for (const user of users) {
     const balance = await EVNT.balanceOf(user.id);
-    usersWithBalance.push({userId: user.id, name: user.name, balance: balance});
+    usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
   }
 
   res.json({ users: usersWithBalance });
@@ -159,7 +159,7 @@ const getUserInfo = async (req, res) => {
             userId: user.id,
             name: user.name,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance
+            balance: balance / EVNT.ONE
         });
     } catch (err) {
         res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );

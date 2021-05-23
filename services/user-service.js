@@ -21,7 +21,7 @@ exports.rewardRefUser= async (ref) => {
         return;
     }
 
-    await EVNT.mint(ref, 500);
+    await EVNT.mint(ref, 500 * EVNT.ONE);
 }
 
 
