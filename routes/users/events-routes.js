@@ -49,11 +49,23 @@ router.post(
 router.post(
     "/bet/:id/place",
     [
-        check("amount"),
-        check("betOne"),//Boolean
-        check("betTwo"),//Boolean
+        check("amount").isNumeric(),
+        check("isOutcomeOne").isBoolean()
     ],
     eventController.placeBet
+);
+
+router.post(
+    "/bet/:id/outcomes",
+    [
+        check("amount").isNumeric()
+    ],
+    eventController.calculateOutcome
+);
+
+router.get(
+    "/bet/:id/payout",
+    eventController.payoutBet
 );
 
 module.exports = router;

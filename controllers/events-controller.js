@@ -11,7 +11,9 @@ const Bet = require("../models/Bet");
 
 // Import Auth Service
 const eventService = require("../services/event-service");
-const {BetContract} = require("smart_contract_mock");
+const userService = require("../services/user-service");
+const { BetContract, Erc20 } = require("smart_contract_mock");
+const EVNT = new Erc20('EVNT');
 
 // Controller to sign up a new user
 const listEvents = async (req, res) => {
@@ -101,7 +103,7 @@ const createBet = async (req, res, next) => {
         });
 
         const betContract = new BetContract(createBet.id);
-        await betContract.addLiquidity(req.user.id, liquidityAmount);
+        await betContract.addLiquidity(req.user.id, liquidityAmount * EVNT.ONE);
 
         let bet = await eventService.saveBet(createBet);
 
@@ -130,23 +132,82 @@ const placeBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, outcome} = req.body;
+        const {amount, isOutcomeOne} = req.body;
         const {id} = req.params;
 
-        if (outcome > 1 || outcome < 0) {
-            throw Error("Invalid outcome");
+        if (amount <= 0) {
+            throw Error("Invalid input passed, please check it");
         }
 
-        let bet = await eventService.getBet(id);
+        let outcome = 1;
+        if (isOutcomeOne) { outcome = 0; }
+
+        const bet = await eventService.getBet(id);
+        const user = await userService.getUserById(req.user.id);
 
         const betContract = new BetContract(id);
-        await betContract.buy(req.user.id, amount, ["yes", "no"][outcome], 1);
+        await betContract.buy(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], 1);
 
-        bet = await eventService.saveBet(createBet);
+        user.openBets.push(bet.id);
 
-        res
-            .status(201)
-            .json(bet);
+        await userService.saveUser(user);
+
+        res.status(201).json(bet);
+    } catch (err) {
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
+const calculateOutcome = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send("Invalid input passed, please check it"));
+    }
+
+    try {
+        // Defining User Inputs
+        const {amount} = req.body;
+        const {id} = req.params;
+
+        if (amount <= 0) {
+            throw Error("Invalid input passed, please check it");
+        }
+
+        const betContract = new BetContract(id);
+        const outcomeOne = await betContract.calcBuy(amount * EVNT.ONE, "yes");
+        const outcomeTwo = await betContract.calcBuy(amount * EVNT.ONE, "no");
+
+        res.status(200).json({outcomeOne: outcomeOne / EVNT.ONE, outcomeTwo: outcomeTwo / EVNT.ONE});
+    } catch (err) {
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
+const payoutBet = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send("Invalid input passed, please check it"));
+    }
+
+    try {
+        const {id} = req.params;
+
+        const bet = await eventService.getBet(id);
+        const user = await userService.getUserById(req.user.id);
+
+        const betContract = new BetContract(id);
+        await betContract.getPayout(req.user.id);
+
+        user.openBets = user.openBets.filter(item => item !== bet.id);
+        user.closedBets.push(bet.id);
+
+        await userService.saveUser(user);
+
+        res.status(201).json(bet);
     } catch (err) {
         let error = res.status(422).send(err.message);
         next(error);
@@ -158,3 +219,5 @@ exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.createBet = createBet;
 exports.placeBet = placeBet;
+exports.calculateOutcome = calculateOutcome;
+exports.payoutBet = payoutBet;
