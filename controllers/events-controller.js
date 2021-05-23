@@ -135,6 +135,10 @@ const placeBet = async (req, res, next) => {
         const {amount, isOutcomeOne} = req.body;
         const {id} = req.params;
 
+        if (amount <= 0) {
+            throw Error("Invalid input passed, please check it");
+        }
+
         let outcome = 1;
         if (isOutcomeOne) { outcome = 0; }
 
@@ -166,6 +170,10 @@ const calculateOutcome = async (req, res, next) => {
         // Defining User Inputs
         const {amount} = req.body;
         const {id} = req.params;
+
+        if (amount <= 0) {
+            throw Error("Invalid input passed, please check it");
+        }
 
         const betContract = new BetContract(id);
         const outcomeOne = await betContract.calcBuy(amount * EVNT.ONE, "yes");
