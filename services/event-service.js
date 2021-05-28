@@ -6,7 +6,7 @@ const Bet = require("../models/Bet");
 const websocketService = require("./websocket-service");
 
 exports.listEvent = async (linkedTo) => {
-    return Event.find({linkedTo: linkedTo}).populate('bets');
+    return Event.find().populate('bets');
 };
 
 exports.getEvent = async (id) => {

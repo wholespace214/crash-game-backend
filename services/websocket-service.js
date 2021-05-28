@@ -37,11 +37,14 @@ const wss = new Websocket.Server({
     server
 });
 
-
-wss.on('connection', function connection(ws) {
+wss.on('connection', function connection(ws, req) {
+    const token = req.url.split('/')[1];
+    const user = jwt.verify(token, process.env.JWT_KEY).userId;
     ws.on('message', function incoming(data) {
         try {
             let obj = JSON.parse(data);
+            obj.userId = user;
+            obj.date = new Date();
             if(obj.event !== undefined && obj.event === "joinRoom") {
                 if(eventRooms[obj.eventId] === undefined) {
                     eventRooms[obj.eventId] = [];
