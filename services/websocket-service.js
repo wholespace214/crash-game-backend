@@ -1,17 +1,17 @@
 // Import express
-const express = require("express");
+const express = require('express');
 
 //Import http
-const http = require("http");
+const http = require('http');
 
 //Import ws
-const Websocket = require("ws");
+const Websocket = require('ws');
 
 // Import User Service
-const userService = require("../services/user-service");
+const userService = require('../services/user-service');
 
 // Import JWT for authentication process
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 const server = http.createServer(express());
 
@@ -34,35 +34,48 @@ const wss = new Websocket.Server({
             return false;
         }
     },
-    server
+    server,
 });
 
-wss.on('connection', function connection(ws, req) {
+wss.on('connection', function connection (ws, req) {
     const token = req.url.split('/')[1];
-    const user = jwt.verify(token, process.env.JWT_KEY).userId;
-    ws.on('message', function incoming(data) {
+    const user  = jwt.verify(token, process.env.JWT_KEY).userId;
+
+    ws.on('message', function incoming (data) {
         try {
-            let obj = JSON.parse(data);
+            let obj    = JSON.parse(data);
             obj.userId = user;
-            obj.date = new Date();
-            if(obj.event !== undefined && obj.event === "joinRoom") {
-                if(eventRooms[obj.eventId] === undefined) {
+            obj.date   = new Date();
+
+            if (
+                obj.event !== undefined &&
+                obj.event === 'joinRoom'
+            ) {
+                if (eventRooms[obj.eventId] === undefined) {
                     eventRooms[obj.eventId] = [];
                 }
+
                 eventRooms[obj.eventId].push(ws);
 
-                eventRooms[obj.eventId].forEach(function each(client) {
+                eventRooms[obj.eventId].forEach(function each (client) {
                     if (client !== ws && client.readyState === Websocket.OPEN) {
-                        client.send(obj);
+                        data = JSON.stringify(obj);
+
+                        client.send(data);
                     }
                 });
             }
 
-            if(obj.event !== undefined && obj.event === "chat" &&
-                obj.eventId !== undefined) {
-                eventRooms[obj.eventId].forEach(function each(client) {
+            if (
+                obj.event !== undefined &&
+                obj.event === 'chat' &&
+                obj.eventId !== undefined
+            ) {
+                eventRooms[obj.eventId].forEach(function each (client) {
                     if (client.readyState === Websocket.OPEN) {
-                        client.send(obj);
+                        data = JSON.stringify(obj);
+
+                        client.send(data);
                     }
                 });
             }
@@ -71,21 +84,20 @@ wss.on('connection', function connection(ws, req) {
             console.error(err);
             console.log('failed to handle message ' + data);
         }
-
-    })
-})
+    });
+});
 
 exports.sendMessageToEvent = (eventId, message) => {
-    eventRooms[eventId].forEach(function each(client) {
+    eventRooms[eventId].forEach(function each (client) {
         if (client.readyState === Websocket.OPEN) {
             client.send(message);
         }
     });
-}
+};
 
 exports.startServer = () => {
     //start our server
-    server.listen( 8999, () => {
+    server.listen(8999, () => {
         console.log(`Socket server started on port ${server.address().port} :)`);
     });
-}
+};
