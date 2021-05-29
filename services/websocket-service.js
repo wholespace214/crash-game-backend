@@ -53,7 +53,7 @@ wss.on('connection', function connection(ws, req) {
 
                 eventRooms[obj.eventId].forEach(function each(client) {
                     if (client !== ws && client.readyState === Websocket.OPEN) {
-                        client.send(data);
+                        client.send(obj);
                     }
                 });
             }
@@ -62,7 +62,7 @@ wss.on('connection', function connection(ws, req) {
                 obj.eventId !== undefined) {
                 eventRooms[obj.eventId].forEach(function each(client) {
                     if (client.readyState === Websocket.OPEN) {
-                        client.send(data);
+                        client.send(obj);
                     }
                 });
             }
