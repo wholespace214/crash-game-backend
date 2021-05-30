@@ -181,8 +181,7 @@ Request:
   "hot": true,
   "betOne": "Jonas",
   "betTwo": "Jörn",
-  "endDate": "1621622318001",
-  "liquidityAmount": 1000
+  "endDate": "1621622318001"
 }
 ```
 
@@ -272,7 +271,7 @@ Successful Result:
 }
 ```
 
-### GETT http://localhost:8000/api/event/bet/:id/payout
+### GET http://localhost:8000/api/event/bet/:id/payout
 
 Successful Result:
 ```json
