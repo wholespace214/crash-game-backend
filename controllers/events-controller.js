@@ -87,8 +87,8 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {eventId, marketQuestion, hot, betOne, betTwo, endDate, liquidityAmount} = req.body;
-
+        const {eventId, marketQuestion, hot, betOne, betTwo, endDate} = req.body;
+        const liquidityAmount = 10000;
 
         let event = await eventService.getEvent(eventId);
 
@@ -102,10 +102,12 @@ const createBet = async (req, res, next) => {
             creator: req.user.id
         });
 
+        const liquidityProviderWallet = "LIQUIDITY_" + createBet.id;
         const betContract = new BetContract(createBet.id);
-        await betContract.addLiquidity(req.user.id, liquidityAmount * EVNT.ONE);
+        await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+        await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
 
-        let bet = await eventService.saveBet(createBet);
+        await eventService.saveBet(createBet);
 
         if(event.bets === undefined) {
             event.bets = [];
@@ -114,9 +116,7 @@ const createBet = async (req, res, next) => {
         event.bets.push(createBet);
         event = await eventService.saveEvent(event);
 
-        res
-            .status(201)
-            .json(event);
+        res.status(201).json(event);
     } catch (err) {
         let error = res.status(422).send(err.message);
         next(error);
