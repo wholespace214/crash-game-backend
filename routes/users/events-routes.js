@@ -40,8 +40,7 @@ router.post(
         check("hot"),
         check("betOne"),
         check("betTwo"),
-        check("endDate"),
-        check("liquidityAmount")
+        check("endDate")
     ],
     eventController.createBet
 );
