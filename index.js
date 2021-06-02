@@ -11,9 +11,6 @@ const mongoose = require("mongoose");
 //Import cors
 const cors = require('cors')
 
-//Import websocket service
-const websocketService = require("./services/websocket-service");
-
 // Import middleware for jwt verification
 const passport = require("passport");
 require("./util/auth");
@@ -54,8 +51,6 @@ mongoose
   })
   .then(async () => console.log("Connection to DB successfull"))
   .catch((err) => console.log(err.message));
-
-websocketService.startServer();
 
 // Let server run and listen
 var app = server.listen(process.env.PORT || 8000, function () {

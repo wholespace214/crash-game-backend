@@ -97,7 +97,7 @@ exports.sendMessageToEvent = (eventId, message) => {
 
 exports.startServer = () => {
     //start our server
-    server.listen(8999, () => {
+    server.listen(process.env.PORT || 8999, () => {
         console.log(`Socket server started on port ${server.address().port} :)`);
     });
 };
