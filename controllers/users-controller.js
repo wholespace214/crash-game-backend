@@ -159,11 +159,24 @@ const getUserInfo = async (req, res) => {
             userId: user.id,
             name: user.name,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance / EVNT.ONE
+            balance: balance / EVNT.ONE,
         });
     } catch (err) {
         res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
     }
+};
+
+// Receive specific user information
+const getRefList = async (req, res) => {
+  try {
+    const refList = await userService.getRefByUserId(req.user.id);
+    res.status(200).json({
+      userId: req.user.id,
+      refList: refList
+    });
+  } catch (err) {
+    res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
+  }
 };
 
 exports.login = login;
@@ -172,3 +185,4 @@ exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUsers = getUsers;
 exports.getUserInfo = getUserInfo;
+exports.getRefList = getRefList;

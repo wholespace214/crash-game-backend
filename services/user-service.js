@@ -12,6 +12,10 @@ exports.getUserById = async (id) => {
     return User.findOne({_id: id});
 }
 
+exports.getRefByUserId = async (id) => {
+    return User.find({ref: id})
+}
+
 exports.saveUser = async (user) => {
     return user.save();
 }

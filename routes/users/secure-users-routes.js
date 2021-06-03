@@ -19,6 +19,11 @@ router.post(
   userController.saveAcceptConditions
 );
 
+router.get(
+    "/refList",
+    userController.getRefList
+);
+
 router.get("/:userId", userController.getUserInfo);
 
 module.exports = router;
