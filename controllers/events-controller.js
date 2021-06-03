@@ -148,11 +148,16 @@ const placeBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const { amount, isOutcomeOne } = req.body;
-        const { id }                   = req.params;
+        const {amount, isOutcomeOne, minOutcomeTokens} = req.body;
+        const {id} = req.params;
 
         if (amount <= 0) {
             throw Error('Invalid input passed, please check it');
+        }
+
+        let minOutcomeTokensToBuy = 1;
+        if (minOutcomeTokens > 1) {
+            minOutcomeTokensToBuy = minOutcomeTokens;
         }
 
         let outcome = 1;
@@ -174,7 +179,7 @@ const placeBet = async (req, res, next) => {
         const investmentAmount = amount * EVNT.ONE;
         const outcomeToken     = ['yes', 'no'][outcome];
 
-        await betContract.buy(userId, investmentAmount, outcomeToken, 1);
+        await betContract.buy(userId, investmentAmount, outcomeToken, minOutcomeTokensToBuy);
 
         console.debug(LOG_TAG, 'Successfully bought Tokens');
 
@@ -183,6 +188,55 @@ const placeBet = async (req, res, next) => {
         const outcomeValue = [bet.betOne, bet.betTwo][outcome];
 
         eventService.placeBet(userId, bet, amount, outcomeValue);
+
+        await userService.saveUser(user);
+        console.debug(LOG_TAG, 'Saved user');
+
+        res.status(201).json(bet);
+    } catch (err) {
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
+const pullOutBet = async (req, res, next) => {
+    const LOG_TAG = '[PLACE-BET]';
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send("Invalid input passed, please check it"));
+    }
+
+    try {
+        // Defining User Inputs
+        const {amount, isOutcomeOne, maxOutcomeTokens} = req.body;
+        const {id} = req.params;
+
+        if (amount <= 0) {
+            throw Error("Invalid input passed, please check it");
+        }
+
+        let maxOutcomeTokensToSell = Number.MAX_SAFE_INTEGER;
+        if (maxOutcomeTokens) {
+            maxOutcomeTokensToSell = maxOutcomeTokens;
+        }
+
+        let outcome = 1;
+        if (isOutcomeOne) {
+            outcome = 0;
+        }
+
+        console.debug(LOG_TAG, 'Placing Bet', id, req.user.id);
+        const bet = await eventService.getBet(id);
+        const user = await userService.getUserById(req.user.id);
+
+        console.debug(LOG_TAG, 'Interacting with the AMM');
+        const betContract = new BetContract(id);
+        await betContract.sell(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], maxOutcomeTokensToSell);
+        console.debug(LOG_TAG, 'Successfully sold Tokens');
+
+        user.openBets = user.openBets.filter(item => item !== bet.id);
+        user.closedBets.push(bet.id);
 
         await userService.saveUser(user);
         console.debug(LOG_TAG, 'Saved user');
@@ -259,10 +313,11 @@ const payoutBet = async (req, res, next) => {
     }
 };
 
-exports.listEvents       = listEvents;
-exports.getEvent         = getEvent;
-exports.createEvent      = createEvent;
-exports.createBet        = createBet;
-exports.placeBet         = placeBet;
+exports.listEvents = listEvents;
+exports.getEvent = getEvent;
+exports.createEvent = createEvent;
+exports.createBet = createBet;
+exports.placeBet = placeBet;
+exports.pullOutBet = pullOutBet;
 exports.calculateOutcome = calculateOutcome;
 exports.payoutBet        = payoutBet;
