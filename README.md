@@ -71,6 +71,7 @@ Successful Result:
   "userId": "60b50d820619b44617959d43",
   "refList": [
     {
+      "id": "60b50d820619b44617959d43",
       "name": "Nicholas",
       "email": "nicholas@wallfair.io"
     }

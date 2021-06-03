@@ -16,7 +16,7 @@ exports.getUserById = async (id) => {
 exports.getRefByUserId = async (id) => {
     let result = [];
     await User.find({ref: id}).then(function(users) {
-        users.forEach(entry => result.push(pick(entry, ['name', 'email'])));
+        users.forEach(entry => result.push(pick(entry, ['id', 'name', 'email'])));
     });
     return result;
 }
