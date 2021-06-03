@@ -1,5 +1,6 @@
 // Import User model
 const User = require("../models/User");
+const pick = require('lodash.pick');
 
 const { Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
@@ -13,7 +14,11 @@ exports.getUserById = async (id) => {
 }
 
 exports.getRefByUserId = async (id) => {
-    return User.find({ref: id})
+    let result = [];
+    await User.find({ref: id}).then(function(users) {
+        users.forEach(entry => result.push(pick(entry, ['name', 'email'])));
+    });
+    return result;
 }
 
 exports.saveUser = async (user) => {

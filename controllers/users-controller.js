@@ -175,6 +175,7 @@ const getRefList = async (req, res) => {
       refList: refList
     });
   } catch (err) {
+    console.debug(err);
     res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
   }
 };

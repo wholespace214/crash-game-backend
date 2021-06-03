@@ -63,6 +63,21 @@ Successful Result:
 }
 ```
 
+### GET http://localhost:8000/api/user/refList
+
+Successful Result:
+```json
+{
+  "userId": "60b50d820619b44617959d43",
+  "refList": [
+    {
+      "name": "Nicholas",
+      "email": "nicholas@wallfair.io"
+    }
+  ],
+}
+```
+
 *Optional only if provided
 
 
