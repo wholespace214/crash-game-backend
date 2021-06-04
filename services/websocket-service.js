@@ -1,103 +1,54 @@
-// Import express
-const express = require('express');
-
-//Import http
-const http = require('http');
-
-//Import ws
-const Websocket = require('ws');
-
-// Import User Service
-const userService = require('../services/user-service');
-
-// Import JWT for authentication process
-const jwt = require('jsonwebtoken');
-
-const server = http.createServer(express());
-
 const eventRooms = {};
 
-//initialize the WebSocket server instance
-const wss = new Websocket.Server({
-    verifyClient: async (info, done) => {
-        console.log('------verify client------');
+exports.handleChatMessage = function (socket, data, user) {
+    try {
+        let obj = data;
+        obj.userId = user;
+        obj.date = new Date();
 
-        const token = info.req.url.split('/')[1];
-        try {
-            let decoded = jwt.verify(token, process.env.JWT_KEY);
+        if (
+            obj.event !== undefined &&
+            obj.event === 'joinRoom'
+        ) {
+            if (eventRooms[obj.eventId] === undefined) {
+                eventRooms[obj.eventId] = [];
+            }
 
-            info.req.user = await userService.getUserById(decoded.userId);
+            eventRooms[obj.eventId].push(socket);
 
-            done(info.req);
-        } catch (err) {
-            console.log('------verify client failed ------');
-            return false;
-        }
-    },
-    server,
-});
+            eventRooms[obj.eventId].forEach(function each(client) {
+                if (client !== socket && io.sockets.sockets[client.id] !== undefined) {
+                    //data = JSON.stringify(obj);
 
-wss.on('connection', function connection (ws, req) {
-    const token = req.url.split('/')[1];
-    const user  = jwt.verify(token, process.env.JWT_KEY).userId;
-
-    ws.on('message', function incoming (data) {
-        try {
-            let obj    = JSON.parse(data);
-            obj.userId = user;
-            obj.date   = new Date();
-
-            if (
-                obj.event !== undefined &&
-                obj.event === 'joinRoom'
-            ) {
-                if (eventRooms[obj.eventId] === undefined) {
-                    eventRooms[obj.eventId] = [];
+                    client.emit('message', data);
                 }
-
-                eventRooms[obj.eventId].push(ws);
-
-                eventRooms[obj.eventId].forEach(function each (client) {
-                    if (client !== ws && client.readyState === Websocket.OPEN) {
-                        data = JSON.stringify(obj);
-
-                        client.send(data);
-                    }
-                });
-            }
-
-            if (
-                obj.event !== undefined &&
-                obj.event === 'chat' &&
-                obj.eventId !== undefined
-            ) {
-                eventRooms[obj.eventId].forEach(function each (client) {
-                    if (client.readyState === Websocket.OPEN) {
-                        data = JSON.stringify(obj);
-
-                        client.send(data);
-                    }
-                });
-            }
-
-        } catch (err) {
-            console.error(err);
-            console.log('failed to handle message ' + data);
+            });
         }
-    });
-});
 
-exports.sendMessageToEvent = (eventId, message) => {
+        if (
+            obj.event !== undefined &&
+            obj.event === 'chat' &&
+            obj.eventId !== undefined
+        ) {
+            eventRooms[obj.eventId].forEach(function each(client) {
+                if (client.readyState === Websocket.OPEN) {
+                    //data = JSON.stringify(obj);
+
+                    client.emit('message', data);
+                }
+            });
+        }
+
+    } catch (err) {
+        console.error(err);
+        console.log('failed to handle message ' + data);
+    }
+}
+
+exports.sendMessageToEvent = (io, eventId, data) => {
     eventRooms[eventId].forEach(function each (client) {
-        if (client.readyState === Websocket.OPEN) {
-            client.send(message);
+        if (io.sockets.sockets[client.id] !== undefined) {
+            client.emit('message', data);
         }
-    });
-};
-
-exports.startServer = () => {
-    //start our server
-    server.listen(process.env.PORT || 8999, () => {
-        console.log(`Socket server started on port ${server.address().port} :)`);
     });
 };

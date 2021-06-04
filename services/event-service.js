@@ -3,7 +3,7 @@ const Event = require("../models/Event");
 const Bet = require("../models/Bet");
 
 //Import websocket service
-const websocketService = require("./websocket-service");
+/*const websocketService = require("./websocket-service");*/
 
 exports.listEvent = async (linkedTo) => {
     return Event.find().populate('bets');
@@ -19,7 +19,7 @@ exports.getBet = async (id) => {
 
 exports.placeBet = async (id) => {
     let bet = Bet.findOne({_id: id});
-    websocketService.sendMessageToEvent(bet.event, "BET ON ..XX..")
+    /*websocketService.sendMessageToEvent(bet.event, "BET ON ..XX..")*/
 }
 
 exports.saveEvent = async (event) => {
