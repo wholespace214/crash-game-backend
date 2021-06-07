@@ -179,7 +179,7 @@ const placeBet = async (req, res, next) => {
         const investmentAmount = amount * EVNT.ONE;
         const outcomeToken     = ['yes', 'no'][outcome];
 
-        await betContract.buy(userId, investmentAmount, outcomeToken, minOutcomeTokensToBuy);
+        await betContract.buy(userId, investmentAmount, outcomeToken, minOutcomeTokensToBuy * EVNT.ONE);
 
         console.debug(LOG_TAG, 'Successfully bought Tokens');
 
@@ -192,7 +192,7 @@ const placeBet = async (req, res, next) => {
         await userService.saveUser(user);
         console.debug(LOG_TAG, 'Saved user');
 
-        res.status(201).json(bet);
+        res.status(200).json(bet);
     } catch (err) {
         let error = res.status(422).send(err.message);
         next(error);
@@ -228,20 +228,13 @@ const pullOutBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Placing Bet', id, req.user.id);
         const bet = await eventService.getBet(id);
-        const user = await userService.getUserById(req.user.id);
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id);
-        await betContract.sell(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], maxOutcomeTokensToSell);
+        await betContract.sell(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], maxOutcomeTokensToSell * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
 
-        user.openBets = user.openBets.filter(item => item !== bet.id);
-        user.closedBets.push(bet.id);
-
-        await userService.saveUser(user);
-        console.debug(LOG_TAG, 'Saved user');
-
-        res.status(201).json(bet);
+        res.status(200).json(bet);
     } catch (err) {
         let error = res.status(422).send(err.message);
         next(error);

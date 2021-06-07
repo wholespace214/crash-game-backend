@@ -50,17 +50,17 @@ router.post(
     [
         check("amount").isNumeric(),
         check("isOutcomeOne").isBoolean(),
-        check("minOutcomeTokens").isNumeric().default(0)
+        check("minOutcomeTokens").isNumeric().default(0).optional()
     ],
     eventController.placeBet
 );
 
 router.post(
-    "/bet/:id/backout",
+    "/bet/:id/pullout",
     [
         check("amount").isNumeric(),
         check("isOutcomeOne").isBoolean(),
-        check("maxOutcomeTokens").isNumeric().default(Number.MAX_SAFE_INTEGER)
+        check("maxOutcomeTokens").isNumeric().default(Number.MAX_SAFE_INTEGER).optional()
     ],
     eventController.pullOutBet
 );
