@@ -1,41 +1,36 @@
 const eventRooms = {};
 
-exports.handleChatMessage = function (socket, data, user) {
+exports.handleChatMessage = function (io, socket, data, user) {
     try {
-        let obj = data;
-        obj.userId = user;
-        obj.date = new Date();
+        data.userId = user;
+        data.date   = new Date();
 
         if (
-            obj.event !== undefined &&
-            obj.event === 'joinRoom'
+            data.event !== undefined &&
+            data.event === 'joinRoom'
         ) {
-            if (eventRooms[obj.eventId] === undefined) {
-                eventRooms[obj.eventId] = [];
+            if (eventRooms[data.eventId] === undefined) {
+                eventRooms[data.eventId] = [];
             }
 
-            eventRooms[obj.eventId].push(socket);
+            eventRooms[data.eventId].push(socket);
 
-            eventRooms[obj.eventId].forEach(function each(client) {
+            eventRooms[data.eventId].forEach(function each (client) {
                 if (client !== socket && io.sockets.sockets[client.id] !== undefined) {
-                    //data = JSON.stringify(obj);
+                    data = JSON.stringify(data);
 
-                    client.emit('message', data);
+                    client.emit('joinRoom', data);
                 }
             });
         }
 
         if (
-            obj.event !== undefined &&
-            obj.event === 'chat' &&
-            obj.eventId !== undefined
+            data.event !== undefined &&
+            data.event === 'chat' &&
+            data.eventId !== undefined
         ) {
-            eventRooms[obj.eventId].forEach(function each(client) {
-                if (client.readyState === Websocket.OPEN) {
-                    //data = JSON.stringify(obj);
-
-                    client.emit('message', data);
-                }
+            eventRooms[data.eventId].forEach(function each (client) {
+                client.emit('chatMessage', data);
             });
         }
 
@@ -43,7 +38,7 @@ exports.handleChatMessage = function (socket, data, user) {
         console.error(err);
         console.log('failed to handle message ' + data);
     }
-}
+};
 
 exports.sendMessageToEvent = (io, eventId, data) => {
     eventRooms[eventId].forEach(function each (client) {
