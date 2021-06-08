@@ -17,11 +17,12 @@ exports.getBet = async (id) => {
     return Bet.findOne({ _id: id });
 };
 
-exports.placeBet = async (bet) => {
+exports.placeBet = async (userId, bet, investmentAmount, outcome) => {
     if (bet) {
         const eventId = bet.event;
+        const betId   = bet._id;
 
-        websocketService.emitPlaceBetToAllByEventId(eventId, bet);
+        websocketService.emitPlaceBetToAllByEventId(eventId, userId, betId, investmentAmount, outcome);
     }
 };
 

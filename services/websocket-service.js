@@ -52,8 +52,16 @@ exports.handleJoinRoom = function (socket, data, userId) {
     }
 };
 
-exports.emitPlaceBetToAllByEventId = (eventId, bet) => {
-    emitToAllByEventId(eventId, 'betPlaced', bet);
+exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, outcome) => {
+    const betPlacedData = {
+        eventId,
+        userId,
+        betId,
+        investmentAmount,
+        outcome,
+    };
+
+    emitToAllByEventId(eventId, 'betPlaced', betPlacedData);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
