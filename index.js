@@ -1,37 +1,39 @@
 // Import and configure dotenv to enable use of environmental variable
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 dotenv.config();
 
 // Import express
-const express = require("express");
-const http = require('http');
+const express = require('express');
+const http    = require('http');
 
 // Import mongoose to connect to Database
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const websocketService = require("./services/websocket-service");
+const websocketService = require('./services/websocket-service');
 
 //Import cors
-const cors = require('cors')
+const cors = require('cors');
 
 // Import middleware for jwt verification
-const passport = require("passport");
-require("./util/auth");
+const passport = require('passport');
+require('./util/auth');
 
 // Initialise server using express
-const server = express();
-const httpServer = http.createServer(server)
+const server      = express();
+const httpServer  = http.createServer(server)
 ;
 const socketioJwt = require('socketio-jwt');
-const { Server } = require("socket.io");
-const io = new Server(httpServer, {
+const { Server }  = require('socket.io');
+const io          = new Server(httpServer, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-        allowedHeaders: ["*"],
-        credentials: true
-    }
+        origin:         '*',
+        methods:        ['GET', 'POST'],
+        allowedHeaders: ['*'],
+        credentials:    true,
+    },
 });
+
+websocketService.setIO(io);
 
 // Giving server ability to parse json
 server.use(express.json());
@@ -39,51 +41,59 @@ server.use(passport.initialize());
 server.use(passport.session());
 
 // Home Route
-server.get("/", (req, res) => {
-  res.status(200).send({
-    message: "Blockchain meets Prediction Markets made Simple. - Wallfair.",
-  });
+server.get('/', (req, res) => {
+    res.status(200).send({
+        message: 'Blockchain meets Prediction Markets made Simple. - Wallfair.',
+    });
 });
 
 // Import Routes
-const userRoute = require("./routes/users/users-routes");
-const eventRoute = require("./routes/users/events-routes");
-const secureUserRoute = require("./routes/users/secure-users-routes");
+const userRoute       = require('./routes/users/users-routes');
+const eventRoute      = require('./routes/users/events-routes');
+const secureUserRoute = require('./routes/users/secure-users-routes');
 
 server.use(cors());
 
 // Using Routes
-server.use("/api/user", userRoute);
-server.use("/api/event", passport.authenticate('jwt',{session: false}), eventRoute);
-server.use("/api/user", passport.authenticate('jwt',{session: false}), secureUserRoute);
-
+server.use('/api/user', userRoute);
+server.use('/api/event', passport.authenticate('jwt', { session: false }), eventRoute);
+server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
 // Connection to Database
 mongoose
-  .connect(process.env.DB_CONNECTION, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  })
-  .then(async () => console.log("Connection to DB successfull"))
-  .catch((err) => console.log(err.message));
+    .connect(process.env.DB_CONNECTION, {
+        useUnifiedTopology: true,
+        useNewUrlParser:    true,
+    })
+    .then(
+        async () => console.log('Connection to Mongo-DB successful'),
+    )
+    .catch(
+        (error) => console.log(error.message),
+    );
 
 io.use(socketioJwt.authorize({
-    secret: process.env.JWT_KEY,
-    handshake: true,
-    auth_header_required: true
+    secret:               process.env.JWT_KEY,
+    handshake:            true,
+    auth_header_required: true,
 }));
 
 io.on('connection', (socket) => {
-    let user = socket.decoded_token.userId;
-    socket.on('message', (msg) => {
-        websocketService.handleChatMessage(io, socket, msg, user);
-    });
-});
+    const userId = socket.decoded_token.userId;
 
+    socket.on(
+        'chatMessage',
+        (data) => websocketService.handleChatMessage(socket, data, userId),
+    );
+    socket.on(
+        'joinRoom',
+        (data) => websocketService.handleJoinRoom(socket, data, userId),
+    );
+});
 
 // Let server run and listen
-var appServer = httpServer.listen(process.env.PORT || 8000, function () {
-  var port = appServer.address().port;
-  console.log(`API runs on port: ${port}`);
-});
+const appServer = httpServer.listen(process.env.PORT || 8000, function () {
+    const port = appServer.address().port;
 
+    console.log(`API runs on port: ${port}`);
+});
