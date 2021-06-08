@@ -167,6 +167,7 @@ const placeBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Successfully bought Tokens');
 
         user.openBets.push(bet.id);
+        eventService.placeBet(bet);
 
         await userService.saveUser(user);
         console.debug(LOG_TAG, 'Saved user');
