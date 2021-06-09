@@ -40,6 +40,7 @@ const login = async (req, res, next) => {
     let response = await authService.doLogin(phone, ref);
     res.status(201).json({ phone: phone, smsStatus: response });
   } catch (err) {
+    console.error(err);
     let error = res.status(422).send(err.message);
     next(error);
   }
