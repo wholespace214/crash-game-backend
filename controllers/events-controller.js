@@ -76,6 +76,7 @@ const createEvent = async (req, res, next) => {
 
         res.status(201).json(event);
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -133,6 +134,7 @@ const createBet = async (req, res, next) => {
 
         res.status(201).json(event);
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -194,6 +196,7 @@ const placeBet = async (req, res, next) => {
 
         res.status(200).json(bet);
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -236,6 +239,7 @@ const pullOutBet = async (req, res, next) => {
 
         res.status(200).json(bet);
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -269,6 +273,7 @@ const calculateOutcome = async (req, res, next) => {
 
         res.status(200).json({ outcomeOne: outcomeOne / EVNT.ONE, outcomeTwo: outcomeTwo / EVNT.ONE });
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -301,6 +306,7 @@ const payoutBet = async (req, res, next) => {
 
         res.status(201).json(bet);
     } catch (err) {
+        console.error(err.message);
         let error = res.status(422).send(err.message);
         next(error);
     }
