@@ -53,13 +53,15 @@ exports.handleJoinRoom = function (socket, data, userId) {
 };
 
 exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, outcome) => {
-    const betPlacedData = {
-        eventId,
+    const betPlacedData = getCopyWithBaseResponseData(
+        {
+            eventId,
+            betId,
+            investmentAmount,
+            outcome,
+        },
         userId,
-        betId,
-        investmentAmount,
-        outcome,
-    };
+    );
 
     emitToAllByEventId(eventId, 'betPlaced', betPlacedData);
 };
