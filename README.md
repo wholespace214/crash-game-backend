@@ -252,9 +252,39 @@ Request:
 ```json
 {
   "amount": 10,
-  "isOutcomeOne": true
+  "isOutcomeOne": true,
+  "minOutcomeTokens*": 400
 }
 ```
+
+*Optional
+
+Successful Result:
+```json
+{
+  "_id": "60a7ff5364dee4f956660797",
+  "marketQuestion": "Wer gewinnt Redbull",
+  "hot": true,
+  "betOne": "Jonas",
+  "betTwo": "Jörn",
+  "event": "60a7f9bdc0a1a7f8913b4a23",
+  "creator": "60a35b31bbb1f700155f2066",
+  "date": "2021-05-21T18:43:31.908Z",
+  "__v": 0
+}
+```
+
+### POST http://localhost:8000/api/event/bet/:id/pullout
+Request:
+```json
+{
+  "amount": 10,
+  "isOutcomeOne": true,
+  "maxOutcomeTokens*": 400
+}
+```
+
+*Optional
 
 Successful Result:
 ```json
