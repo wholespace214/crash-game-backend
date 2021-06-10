@@ -1,6 +1,7 @@
 // Import User model
 const User = require("../models/User");
 const pick = require('lodash.pick');
+const bcrypt = require('bcrypt');
 
 const { Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
@@ -31,6 +32,17 @@ exports.rewardRefUser= async (ref) => {
     }
 
     await EVNT.mint(ref, 500 * EVNT.ONE);
+}
+
+exports.securePassword = async (user, password ) => {
+    bcrypt.hash(password, 10, function(err, hash) {
+        user.password = hash;
+        user.save();
+    });
+}
+
+exports.comparePassword = async (user, plainPassword ) => {
+    return await bcrypt.compare(plainPassword, user.password);
 }
 
 

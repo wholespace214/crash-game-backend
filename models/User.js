@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema({
     max: 2048,
     min: 8,
   },
+  password: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 8,
+  },
   ref: {
     type: String,
     required: false,

@@ -6,9 +6,29 @@ dotenv.config();
 const express = require('express');
 const http    = require('http');
 
+//Import admin service
+const adminService = require('./services/admin-service');
+
 // Import mongoose to connect to Database
 const mongoose = require('mongoose');
 
+// Connection to Database
+mongoose
+    .connect(process.env.DB_CONNECTION, {
+        useUnifiedTopology: true,
+        useNewUrlParser:    true,
+    })
+    .then(
+        async () => console.log('Connection to Mongo-DB successful'),
+    )
+    .catch(
+        (error) => console.log(error.message),
+    );
+
+adminService.setMongoose(mongoose);
+adminService.initialize();
+
+//Import Socket.io service
 const websocketService = require('./services/websocket-service');
 
 //Import cors
@@ -20,8 +40,8 @@ require('./util/auth');
 
 // Initialise server using express
 const server      = express();
-const httpServer  = http.createServer(server)
-;
+const httpServer  = http.createServer(server);
+
 const socketioJwt = require('socketio-jwt');
 const { Server }  = require('socket.io');
 const io          = new Server(httpServer, {
@@ -39,6 +59,9 @@ websocketService.setIO(io);
 server.use(express.json());
 server.use(passport.initialize());
 server.use(passport.session());
+adminService.buildRouter();
+server.use(adminService.getRootPath(), adminService.getRouter());
+server.use(adminService.getLoginPath(), adminService.getRouter());
 
 // Home Route
 server.get('/', (req, res) => {
@@ -58,19 +81,6 @@ server.use(cors());
 server.use('/api/user', userRoute);
 server.use('/api/event', passport.authenticate('jwt', { session: false }), eventRoute);
 server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
-
-// Connection to Database
-mongoose
-    .connect(process.env.DB_CONNECTION, {
-        useUnifiedTopology: true,
-        useNewUrlParser:    true,
-    })
-    .then(
-        async () => console.log('Connection to Mongo-DB successful'),
-    )
-    .catch(
-        (error) => console.log(error.message),
-    );
 
 io.use(socketioJwt.authorize({
     secret:               process.env.JWT_KEY,
