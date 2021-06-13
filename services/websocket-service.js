@@ -71,8 +71,8 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
 
     if (eventEventRooms) {
         console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event #' + eventId);
-        
-        eventRooms.forEach(
+
+        eventEventRooms.forEach(
             (client) => {
                 try {
                     client.emit(emitEventName, data);
