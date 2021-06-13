@@ -1,5 +1,5 @@
 // Import and configure dotenv to enable use of environmental variable
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 dotenv.config();
 
 // Imports from express validator to validate user input
@@ -18,7 +18,7 @@ const eventService = require("../services/event-service");
 const User = require("../models/User");
 
 
-const { Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 
@@ -188,14 +188,35 @@ const getOpenBetsList = async (request, response) => {
 
     try {
         if (user) {
-            const openBetIds = user.openBets;
+            const userId     = user.id;
+            const openBetIds = user.openBets.filter(
+                (value, index, self) => self.indexOf(value) === index,
+            );
             const openBets   = [];
 
             for (const openBetId of openBetIds) {
-                const bet = await eventService.getBet(openBetId);
+                const betContract = new BetContract(openBetId);
+                const yesBalance  = await betContract.yesToken.balanceOf(userId);
+                const noBalance   = await betContract.noToken.balanceOf(userId);
 
-                if (bet) {
-                    openBets.push(bet);
+                if (yesBalance) {
+                    const openBetYes = {
+                        betId:            openBetId,
+                        outcome:          0,
+                        investmentAmount: yesBalance / EVNT.ONE,
+                    };
+
+                    openBets.push(openBetYes);
+                }
+
+                if (noBalance) {
+                    const openBetNo = {
+                        betId:            openBetId,
+                        outcome:          1,
+                        investmentAmount: noBalance / EVNT.ONE,
+                    };
+
+                    openBets.push(openBetNo);
                 }
             }
 
