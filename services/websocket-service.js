@@ -67,18 +67,22 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, 
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
-    console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event #' + eventId);
+    const eventEventRooms = eventRooms[eventId];
 
-    eventRooms[eventId].forEach(
-        (client) => {
-            try {
-                client.emit(emitEventName, data);
-            } catch (error) {
-                console.error(error);
-                console.log(LOG_TAG, 'failed to emit event "' + emitEventName + '" to client #' + client.id);
-            }
-        },
-    );
+    if (eventEventRooms) {
+        console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event #' + eventId);
+        
+        eventRooms.forEach(
+            (client) => {
+                try {
+                    client.emit(emitEventName, data);
+                } catch (error) {
+                    console.error(error);
+                    console.log(LOG_TAG, 'failed to emit event "' + emitEventName + '" to client #' + client.id);
+                }
+            },
+        );
+    }
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
