@@ -11,6 +11,9 @@ const authService = require("../services/auth-service");
 // Import User Service
 const userService = require("../services/user-service");
 
+// Import Event Service
+const eventService = require("../services/event-service");
+
 // Import User Model
 const User = require("../models/User");
 
@@ -180,10 +183,48 @@ const getRefList = async (req, res) => {
   }
 };
 
-exports.login = login;
-exports.verfiySms = verfiySms;
+const getOpenBetsList = async (request, response) => {
+    const user = request.user;
+
+    try {
+        if (user) {
+            const openBetIds = user.openBets;
+            const openBets   = [];
+
+            for (const openBetId of openBetIds) {
+                const bet = await eventService.getBet(openBetId);
+
+                if (bet) {
+                    openBets.push(bet);
+                }
+            }
+
+            response
+                .status(200)
+                .json({
+                    openBets,
+                })
+            ;
+        } else {
+            response
+                .status(404)
+                .send('User not found')
+            ;
+        }
+    } catch (error) {
+        console.error(error);
+        response
+            .status(500)
+            .send('An error occured loading open bets list: ' + error.message)
+        ;
+    }
+};
+
+exports.login                     = login;
+exports.verfiySms                 = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
-exports.saveAcceptConditions = saveAcceptConditions;
-exports.getUsers = getUsers;
-exports.getUserInfo = getUserInfo;
-exports.getRefList = getRefList;
+exports.saveAcceptConditions      = saveAcceptConditions;
+exports.getUsers                  = getUsers;
+exports.getUserInfo               = getUserInfo;
+exports.getRefList                = getRefList;
+exports.getOpenBetsList           = getOpenBetsList;
