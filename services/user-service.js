@@ -27,9 +27,10 @@ exports.saveUser = async (user) => {
 }
 
 exports.rewardRefUser= async (ref) => {
-    if(ref === undefined) {
+    if(ref === undefined || ref === null) {
         return;
     }
+    console.debug('try to reward ref');
 
     await EVNT.mint(ref, 500 * EVNT.ONE);
 }

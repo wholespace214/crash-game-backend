@@ -23,7 +23,7 @@ exports.doLogin = async (phone, ref) => {
 
 
     if (!existingUser) {
-        const createdUser = new User({
+        let createdUser = new User({
             phone: phone,
             ref: ref
         });
@@ -31,9 +31,10 @@ exports.doLogin = async (phone, ref) => {
         await userService.rewardRefUser(ref);
 
         try {
-            await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
-
             await userService.saveUser(createdUser);
+            createdUser = await userService.getUserByPhone(phone);
+            console.debug('createdUser ' + createdUser.id);
+            await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
         } catch (err) {
             throw new Error("Signing up/in failed, please try again later.", 500);
         }
