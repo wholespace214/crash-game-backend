@@ -1,6 +1,5 @@
-const LOG_TAG    = '[SOCKET] ';
-const eventRooms = {};
-let io           = null;
+const LOG_TAG = '[SOCKET] ';
+let io        = null;
 
 exports.setIO = (newIo) => io = newIo;
 
@@ -12,9 +11,7 @@ exports.handleChatMessage = function (socket, data, userId) {
 
         console.debug(LOG_TAG, 'user ' + userId + ' sends message "' + message + '"');
 
-        eventRooms[eventId].forEach(
-            (client) => client.emit('chatMessage', responseData),
-        );
+        emitToAllByEventId(eventId, 'chatMessage', responseData);
     } catch (error) {
         console.error(error);
         console.log(LOG_TAG, 'failed to handle message', data);
@@ -23,26 +20,10 @@ exports.handleChatMessage = function (socket, data, userId) {
 
 exports.handleJoinRoom = function (socket, data, userId) {
     try {
-        const responseData = getCopyWithBaseResponseData(data, userId);
         const eventId      = data.eventId;
 
         if (eventId) {
-            if (eventRooms[eventId] === undefined) {
-                eventRooms[eventId] = [];
-            }
-
-            eventRooms[eventId].push(socket);
-
-            eventRooms[eventId].forEach(
-                (client) => {
-                    if (
-                        client !== socket &&
-                        io.sockets.sockets[client.id] !== undefined
-                    ) {
-                        client.emit('joinRoom', responseData);
-                    }
-                },
-            );
+            socket.join(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
@@ -67,22 +48,9 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, 
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
-    const eventEventRooms = eventRooms[eventId];
+    console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
 
-    if (eventEventRooms) {
-        console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event #' + eventId);
-
-        eventEventRooms.forEach(
-            (client) => {
-                try {
-                    client.emit(emitEventName, data);
-                } catch (error) {
-                    console.error(error);
-                    console.log(LOG_TAG, 'failed to emit event "' + emitEventName + '" to client #' + client.id);
-                }
-            },
-        );
-    }
+    io.to(eventId).emit(emitEventName, data);
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
