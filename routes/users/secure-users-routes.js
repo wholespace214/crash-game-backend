@@ -24,6 +24,11 @@ router.get(
     userController.getRefList
 );
 
+router.get(
+    "/open-bets",
+    userController.getOpenBetsList
+);
+
 router.get("/:userId", userController.getUserInfo);
 
 module.exports = router;

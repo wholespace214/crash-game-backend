@@ -1,5 +1,5 @@
 // Import and configure dotenv to enable use of environmental variable
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 dotenv.config();
 
 // Imports from express validator to validate user input
@@ -11,11 +11,14 @@ const authService = require("../services/auth-service");
 // Import User Service
 const userService = require("../services/user-service");
 
+// Import Event Service
+const eventService = require("../services/event-service");
+
 // Import User Model
 const User = require("../models/User");
 
 
-const { Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 
@@ -180,10 +183,69 @@ const getRefList = async (req, res) => {
   }
 };
 
-exports.login = login;
-exports.verfiySms = verfiySms;
+const getOpenBetsList = async (request, response) => {
+    const user = request.user;
+
+    try {
+        if (user) {
+            const userId     = user.id;
+            const openBetIds = user.openBets.filter(
+                (value, index, self) => self.indexOf(value) === index,
+            );
+            const openBets   = [];
+
+            for (const openBetId of openBetIds) {
+                const betContract = new BetContract(openBetId);
+                const yesBalance  = await betContract.yesToken.balanceOf(userId);
+                const noBalance   = await betContract.noToken.balanceOf(userId);
+
+                if (yesBalance) {
+                    const openBetYes = {
+                        betId:            openBetId,
+                        outcome:          0,
+                        investmentAmount: yesBalance / EVNT.ONE,
+                    };
+
+                    openBets.push(openBetYes);
+                }
+
+                if (noBalance) {
+                    const openBetNo = {
+                        betId:            openBetId,
+                        outcome:          1,
+                        investmentAmount: noBalance / EVNT.ONE,
+                    };
+
+                    openBets.push(openBetNo);
+                }
+            }
+
+            response
+                .status(200)
+                .json({
+                    openBets,
+                })
+            ;
+        } else {
+            response
+                .status(404)
+                .send('User not found')
+            ;
+        }
+    } catch (error) {
+        console.error(error);
+        response
+            .status(500)
+            .send('An error occured loading open bets list: ' + error.message)
+        ;
+    }
+};
+
+exports.login                     = login;
+exports.verfiySms                 = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
-exports.saveAcceptConditions = saveAcceptConditions;
-exports.getUsers = getUsers;
-exports.getUserInfo = getUserInfo;
-exports.getRefList = getRefList;
+exports.saveAcceptConditions      = saveAcceptConditions;
+exports.getUsers                  = getUsers;
+exports.getUserInfo               = getUserInfo;
+exports.getRefList                = getRefList;
+exports.getOpenBetsList           = getOpenBetsList;

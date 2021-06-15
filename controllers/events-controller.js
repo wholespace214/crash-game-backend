@@ -229,7 +229,7 @@ const pullOutBet = async (req, res, next) => {
             outcome = 0;
         }
 
-        console.debug(LOG_TAG, 'Placing Bet', id, req.user.id);
+        console.debug(LOG_TAG, 'Pulling out Bet', id, req.user.id);
         const bet = await eventService.getBet(id);
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
