@@ -20,7 +20,7 @@ exports.handleChatMessage = function (socket, data, userId) {
 
 exports.handleJoinRoom = function (socket, data, userId) {
     try {
-        const eventId      = data.eventId;
+        const eventId = data.eventId;
 
         if (eventId) {
             socket.join(eventId);
@@ -49,8 +49,7 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, 
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
-
-    io.to(eventId).emit(emitEventName, data);
+    io.emit(emitEventName, data);
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
