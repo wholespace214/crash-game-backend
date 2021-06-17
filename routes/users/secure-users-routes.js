@@ -9,7 +9,7 @@ const userController = require("../../controllers/users-controller");
 
 router.post(
   "/saveAdditionalInformation",
-  [check("name"), check("email").isEmail()],
+  [check("name").notEmpty(), check("email").isEmail(), check("username").notEmpty()],
   userController.saveAdditionalInformation
 );
 

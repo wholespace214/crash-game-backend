@@ -12,6 +12,12 @@ const userSchema = new mongoose.Schema({
     max: 128,
     min: 2,
   },
+  username: {
+    type: String,
+    required: false,
+    max: 128,
+    min: 2,
+  },
   email: {
     type: String,
     required: false,

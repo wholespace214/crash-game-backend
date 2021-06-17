@@ -90,13 +90,14 @@ const saveAdditionalInformation = async (req, res, next) => {
   }
 
   // Defining User Inputs
-  const { email, name } = req.body;
+  const { email, name, username } = req.body;
 
   try {
     let user = await userService.getUserById(req.user.id);
 
     user.name = name;
     user.email = email;
+    user.username = username;
     user = await userService.saveUser(user);
 
     res.status(201).json({
