@@ -22,6 +22,8 @@ jobs:
     steps:
       # Checkout the code as the first step.
       - checkout
+      - setup_remote_docker:
+        docker_layer_caching: true
       - run:
           name: Run tests
           command: bash auto-deploy.sh
