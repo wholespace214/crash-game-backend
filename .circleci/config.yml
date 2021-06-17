@@ -24,9 +24,10 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
-      - run:
-          name: Run tests
-          command: bash auto-deploy.sh
+      - run: |
+          docker login -u ${DIGITALOCEAN_ACCESS_TOKEN} -p ${DIGITALOCEAN_ACCESS_TOKEN} registry.digitalocean.com
+          docker build . -t registry.digitalocean.com/wallfair/backend -f Dockerfile.node
+          docker push registry.digitalocean.com/wallfair/backend
 
 workflows:
   # Below is the definition of your workflow.
