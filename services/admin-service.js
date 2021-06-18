@@ -1,3 +1,4 @@
+const {BetContract} = require('smart_contract_mock');
 const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
@@ -33,7 +34,59 @@ exports.initialize = function () {
                     'profilePictureUrl',
                 ]
             }
-        }, Bet, Event],
+        }, {
+            resource: Bet,
+            options: {
+                actions: {
+                        resolve: {
+                            // create a totally new action
+                            actionType: 'record',
+                            icon: 'Receipt',
+                            isVisible: true,
+                            handler: async (request, response, context) => {
+                                return {
+                                    record: context.record.toJSON(context.currentAdmin),
+                                }
+                            },
+                            component: AdminBro.bundle('./components/resolve'),
+                        },
+                        'yes-resolve': {
+                            // create a totally new action
+                            actionType: 'record',
+                            isVisible: false,
+                            handler: async (request, response, context) => {
+                                const id = context.record.params._id;
+                                const betContract = new BetContract(id);
+                                await betContract.resolveBet('Wallfair Admin User', 'yes');
+                                context.record.params.message = 'The winner is no';
+                                const bet = await Bet.findById(id);
+                                bet.winner = 'betOne';
+                                await bet.save();
+                                return {
+                                    record: context.record.toJSON(context.currentAdmin),
+                                }
+                            },
+                        },
+                        'no-resolve': {
+                            // create a totally new action
+                            actionType: 'record',
+                            isVisible: false,
+                            handler: async (request, response, context) => {
+                                const id = context.record.params._id;
+                                 const betContract = new BetContract(id);
+                                 await betContract.resolveBet('Wallfair Admin User', 'no');
+                                context.record.params.message = 'The winner is no';
+                                const bet = await Bet.findById(id);
+                                bet.winner = 'betTwo';
+                                await bet.save();
+                                return {
+                                    record: context.record.toJSON(context.currentAdmin),
+                                }
+                            },
+                        },
+                    },
+            }
+        }, Event],
         rootPath: '/admin',
         branding: {
             companyName: 'WALLFAIR',
