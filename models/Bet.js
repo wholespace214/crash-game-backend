@@ -20,7 +20,7 @@ const betSchema = new mongoose.Schema({
         required: true,
         max: 255,
     },
-    winner: {
+    finalOutcome: {
         type: String,
         required: true,
         max: 255,
