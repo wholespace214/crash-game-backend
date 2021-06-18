@@ -212,16 +212,16 @@ const pullOutBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, isOutcomeOne, maxOutcomeTokens} = req.body;
+        const {amount, isOutcomeOne, minReturnAmount} = req.body;
         const {id} = req.params;
 
         if (amount <= 0) {
             throw Error("Invalid input passed, please check it");
         }
 
-        let maxOutcomeTokensToSell = Number.MAX_SAFE_INTEGER;
-        if (maxOutcomeTokens) {
-            maxOutcomeTokensToSell = maxOutcomeTokens;
+        let requiredMinReturnAmount = 0;
+        if (minReturnAmount) {
+            requiredMinReturnAmount = minReturnAmount;
         }
 
         let outcome = 1;
@@ -234,7 +234,7 @@ const pullOutBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id);
-        await betContract.sell(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], maxOutcomeTokensToSell * EVNT.ONE);
+        await betContract.sellAmount(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], requiredMinReturnAmount * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
 
         res.status(200).json(bet);

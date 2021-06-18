@@ -280,7 +280,7 @@ Request:
 {
   "amount": 10,
   "isOutcomeOne": true,
-  "maxOutcomeTokens*": 400
+  "minReturnAmount*": 400
 }
 ```
 

@@ -60,7 +60,7 @@ router.post(
     [
         check("amount").isNumeric(),
         check("isOutcomeOne").isBoolean(),
-        check("maxOutcomeTokens").isNumeric().default(Number.MAX_SAFE_INTEGER).optional()
+        check("minReturnAmount").isNumeric().default(Number.MAX_SAFE_INTEGER).optional()
     ],
     eventController.pullOutBet
 );
