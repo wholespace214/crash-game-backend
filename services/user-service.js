@@ -46,6 +46,29 @@ exports.comparePassword = async (user, plainPassword ) => {
     return await bcrypt.compare(plainPassword, user.password);
 }
 
+exports.sellBet = async (userId, bet, sellAmount, outcome) => {
+    const user = await this.getUserById(userId);
+    const openBet = user.openBets.filter(item => item === bet.id).first();
+
+    if(openBet !== undefined) {
+        const betContract = new BetContract(openBetId);
+        const yesBalance  = await betContract.yesToken.balanceOf(userId);
+        const noBalance   = await betContract.noToken.balanceOf(userId);
+
+        //delete bet from openBets, if open bet amount > 0 yes & no
+        if(sellAmount === yesBalance && sellAmount === noBalance) {
+            user.openBets = user.openBets.filter(item => item !== bet.id);
+        }
+
+        user.closedBets.push({betId:            bet.id,
+            outcome:          outcome ,
+            sellAmount: sellAmount / EVNT.ONE});
+    }
+
+    await this.saveUser(user);
+}
+
+
 
 //TODO call function
 exports.createUser = async (user) => {

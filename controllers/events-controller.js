@@ -185,7 +185,9 @@ const placeBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Successfully bought Tokens');
 
-        user.openBets.push(bet.id);
+        if(user.openBets.indexOf(bet.id) === -1) {
+            user.openBets.push(bet.id);
+        }
 
         const outcomeValue = [bet.betOne, bet.betTwo][outcome];
 
@@ -231,11 +233,18 @@ const pullOutBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Pulling out Bet', id, req.user.id);
         const bet = await eventService.getBet(id);
+        const user = await userService.getUserById(userId);
+
+        const sellAmount = amount * EVNT.ONE;
+        const outcomeToken     = ['yes', 'no'][outcome];
+
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id);
-        await betContract.sellAmount(req.user.id, amount * EVNT.ONE, ["yes", "no"][outcome], requiredMinReturnAmount * EVNT.ONE);
+        await betContract.sellAmount(req.user.id, sellAmount, outcomeToken, requiredMinReturnAmount * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
+
+        await userService.sellBet(user.id, bet, sellAmount, outcome);
 
         res.status(200).json(bet);
     } catch (err) {
@@ -299,6 +308,7 @@ const payoutBet = async (req, res, next) => {
         await betContract.getPayout(req.user.id);
 
         console.debug(LOG_TAG, 'Payed out Bet');
+        //TODO store more information in closedBets
         user.openBets = user.openBets.filter(item => item !== bet.id);
         user.closedBets.push(bet.id);
 
