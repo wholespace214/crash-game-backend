@@ -78,7 +78,7 @@ router.post(
     [
         check("amount").isNumeric()
     ],
-    eventController.calculateSellutcome
+    eventController.calculateSellOutcome
 );
 
 router.get(
