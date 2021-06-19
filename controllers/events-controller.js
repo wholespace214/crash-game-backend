@@ -203,7 +203,7 @@ const placeBet = async (req, res, next) => {
 };
 
 const pullOutBet = async (req, res, next) => {
-    const LOG_TAG = '[PLACE-BET]';
+    const LOG_TAG = '[PULLOUT-BET]';
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -245,8 +245,8 @@ const pullOutBet = async (req, res, next) => {
     }
 };
 
-const calculateOutcome = async (req, res, next) => {
-    const LOG_TAG = '[CALCULATE-OUTCOME]';
+const calculateBuyOutcome = async (req, res, next) => {
+    const LOG_TAG = '[CALCULATE-BUY-OUTCOME]';
     // Validating User Inputs
     const errors  = validationResult(req);
     if (!errors.isEmpty()) {
@@ -262,16 +262,56 @@ const calculateOutcome = async (req, res, next) => {
             throw Error('Invalid input passed, please check it');
         }
 
-        console.debug(LOG_TAG, 'Calculating Outcomes');
+        console.debug(LOG_TAG, 'Calculating buy outcomes');
         const betContract = new BetContract(id);
-        const outcomeOne  = await betContract.calcBuy(amount * EVNT.ONE, 'yes');
-        const outcomeTwo  = await betContract.calcBuy(amount * EVNT.ONE, 'no');
+        const buyOutcomeOne  = await betContract.calcBuy(amount * EVNT.ONE, 'yes');
+        const buyOutcomeTwo  = await betContract.calcBuy(amount * EVNT.ONE, 'no');
 
-        console.debug(LOG_TAG, 'Outcomes successfully calculated',
-            { outcomeOne: outcomeOne / EVNT.ONE, outcomeTwo: outcomeTwo / EVNT.ONE },
-        );
+        const result = {
+            outcomeOne: buyOutcomeOne / EVNT.ONE,
+            outcomeTwo: buyOutcomeTwo / EVNT.ONE
+        };
 
-        res.status(200).json({ outcomeOne: outcomeOne / EVNT.ONE, outcomeTwo: outcomeTwo / EVNT.ONE });
+        console.debug(LOG_TAG, 'Buy outcomes successfully calculated', result);
+
+        res.status(200).json(result);
+    } catch (err) {
+        console.error(err.message);
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+};
+
+const calculateSellOutcome = async (req, res, next) => {
+    const LOG_TAG = '[CALCULATE-SELL-OUTCOME]';
+    // Validating User Inputs
+    const errors  = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send('Invalid input passed, please check it'));
+    }
+
+    try {
+        // Defining User Inputs
+        const { amount } = req.body;
+        const { id }     = req.params;
+
+        if (amount <= 0) {
+            throw Error('Invalid input passed, please check it');
+        }
+
+        console.debug(LOG_TAG, 'Calculating Sell Outcomes');
+        const betContract = new BetContract(id);
+        const sellOutcomeOne  = await betContract.calcSellFromAmount(amount * EVNT.ONE, 'yes');
+        const sellOutcomeTwo  = await betContract.calcSellFromAmount(amount * EVNT.ONE, 'no');
+
+        const result = {
+            outcomeOne: sellOutcomeOne / EVNT.ONE,
+            outcomeTwo: sellOutcomeTwo / EVNT.ONE,
+        };
+
+        console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
+
+        res.status(200).json(result);
     } catch (err) {
         console.error(err.message);
         let error = res.status(422).send(err.message);
@@ -318,5 +358,6 @@ exports.createEvent = createEvent;
 exports.createBet = createBet;
 exports.placeBet = placeBet;
 exports.pullOutBet = pullOutBet;
-exports.calculateOutcome = calculateOutcome;
+exports.calculateBuyOutcome = calculateBuyOutcome;
+exports.calculateSellOutcome = calculateSellOutcome;
 exports.payoutBet        = payoutBet;
