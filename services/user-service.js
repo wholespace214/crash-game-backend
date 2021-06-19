@@ -55,6 +55,8 @@ exports.sellBet = async (userId, bet, sellAmount, outcome) => {
         const noBalance   = await betContract.noToken.balanceOf(userId);
 
         //delete bet from openBets, if balance === 0 yes & no
+        console.debug(' yesBalance = ' + yesBalance);
+        console.debug(' noBalance = ' + noBalance);
         if(yesBalance === 0 && noBalance === 0) {
             user.openBets = user.openBets.filter(item => item !== bet.id);
         }
