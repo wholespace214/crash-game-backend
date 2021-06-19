@@ -301,19 +301,37 @@ Successful Result:
 }
 ```
 
-### POST http://localhost:8000/api/event/bet/:id/outcomes
+### POST http://localhost:8000/api/event/bet/:id/outcomes/buy
 Request:
 ```json
 {
   "amount": 10
 }
 ```
+Der "amount" ist in EVNT andgegeben
 
 Successful Result:
 ```json
 {
   "outcomeOne": 17.2049,
   "outcomeTwo": 20.78
+}
+```
+
+### POST http://localhost:8000/api/event/bet/:id/outcomes/sell
+Request:
+```json
+{
+  "amount": 10
+}
+```
+Der "amount" ist in Outcome-Token (Potential Winnings) andgegeben
+
+Successful Result:
+```json
+{
+  "outcomeOne": 9.10,
+  "outcomeTwo": 9.10
 }
 ```
 

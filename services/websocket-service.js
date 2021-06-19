@@ -33,18 +33,32 @@ exports.handleJoinRoom = function (socket, data, userId) {
     }
 };
 
-exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, investmentAmount, outcome) => {
+exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) => {
     const betPlacedData = getCopyWithBaseResponseData(
         {
             eventId,
             betId,
-            investmentAmount,
+            amount,
             outcome,
         },
         userId,
     );
 
     emitToAllByEventId(eventId, 'betPlaced', betPlacedData);
+};
+
+exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome) => {
+    const betPulledOutData = getCopyWithBaseResponseData(
+        {
+            eventId,
+            betId,
+            amount,
+            outcome,
+        },
+        userId,
+    );
+
+    emitToAllByEventId(eventId, 'betPulledOut', betPulledOutData);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {

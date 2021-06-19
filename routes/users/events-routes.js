@@ -66,11 +66,19 @@ router.post(
 );
 
 router.post(
-    "/bet/:id/outcomes",
+    "/bet/:id/outcomes/buy",
     [
         check("amount").isNumeric()
     ],
-    eventController.calculateOutcome
+    eventController.calculateBuyOutcome
+);
+
+router.post(
+    "/bet/:id/outcomes/sell",
+    [
+        check("amount").isNumeric()
+    ],
+    eventController.calculateSellOutcome
 );
 
 router.get(
