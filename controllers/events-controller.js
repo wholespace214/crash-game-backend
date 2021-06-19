@@ -243,6 +243,7 @@ const pullOutBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id);
+        console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcomeToken + ' ' + requiredMinReturnAmount * EVNT.ONE);
         await betContract.sellAmount(userId, sellAmount, outcomeToken, requiredMinReturnAmount * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
 

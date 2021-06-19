@@ -2,8 +2,7 @@
 const User = require("../models/User");
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
-
-const { Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 exports.getUserByPhone = async (phone) => {
@@ -48,15 +47,15 @@ exports.comparePassword = async (user, plainPassword ) => {
 
 exports.sellBet = async (userId, bet, sellAmount, outcome) => {
     const user = await this.getUserById(userId);
-    const openBet = user.openBets.filter(item => item === bet.id).first();
+    const openBet = user.openBets.find(item => item === bet.id);
 
     if(openBet !== undefined) {
-        const betContract = new BetContract(openBetId);
+        const betContract = new BetContract(openBet.id);
         const yesBalance  = await betContract.yesToken.balanceOf(userId);
         const noBalance   = await betContract.noToken.balanceOf(userId);
 
-        //delete bet from openBets, if open bet amount > 0 yes & no
-        if(sellAmount === yesBalance && sellAmount === noBalance) {
+        //delete bet from openBets, if balance === 0 yes & no
+        if(yesBalance === 0 && noBalance === 0) {
             user.openBets = user.openBets.filter(item => item !== bet.id);
         }
 

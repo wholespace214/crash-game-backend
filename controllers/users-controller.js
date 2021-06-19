@@ -184,6 +184,36 @@ const getRefList = async (req, res) => {
   }
 };
 
+const getClosedBetsList = async (request, response) => {
+    const user = request.user;
+
+    try {
+        if (user) {
+            const userId     = request.user.id;
+            const user = await userService.getUserById(userId);
+
+            const closedBets = user.closedBets;
+            response
+                .status(200)
+                .json({
+                    closedBets
+                })
+            ;
+        } else {
+            response
+                .status(404)
+                .send('User not found')
+            ;
+        }
+    } catch (error) {
+        console.error(error);
+        response
+            .status(500)
+            .send('An error occured loading closed bets list: ' + error.message)
+        ;
+    }
+};
+
 const getOpenBetsList = async (request, response) => {
     const user = request.user;
 
@@ -250,3 +280,4 @@ exports.getUsers                  = getUsers;
 exports.getUserInfo               = getUserInfo;
 exports.getRefList                = getRefList;
 exports.getOpenBetsList           = getOpenBetsList;
+exports.getClosedBetsList           = getClosedBetsList;

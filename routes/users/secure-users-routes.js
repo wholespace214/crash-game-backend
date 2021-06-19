@@ -29,6 +29,12 @@ router.get(
     userController.getOpenBetsList
 );
 
+router.get(
+    "/closed-bets",
+    userController.getClosedBetsList
+);
+
+
 router.get("/:userId", userController.getUserInfo);
 
 module.exports = router;
