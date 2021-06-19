@@ -26,6 +26,15 @@ exports.placeBet = async (userId, bet, investmentAmount, outcome) => {
     }
 };
 
+exports.pullOutBet = async (userId, bet, amount, outcome) => {
+    if (bet) {
+        const eventId = bet.event;
+        const betId   = bet._id;
+
+        websocketService.emitPullOutBetToAllByEventId(eventId, userId, betId, amount, outcome);
+    }
+};
+
 exports.saveEvent = async (event) => {
     return event.save();
 };
