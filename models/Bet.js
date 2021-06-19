@@ -20,6 +20,11 @@ const betSchema = new mongoose.Schema({
         required: true,
         max: 255,
     },
+    finalOutcome: {
+        type: String,
+        required: true,
+        max: 255,
+    },
     date: {
         type: Date,
         required: true,
@@ -34,5 +39,4 @@ const betSchema = new mongoose.Schema({
         ref: 'Event'
     }
 });
-
 module.exports = mongoose.model("Bet", betSchema);
