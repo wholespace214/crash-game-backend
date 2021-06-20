@@ -20,14 +20,14 @@ const SomeStats = (props) => {
         })
     };
 
-    const showBtn = (record.params.winner === undefined);
+    const showBtn = (record.params.finalOutcome === undefined);
 
     return (
         <Box variant="grey">
             <Box variant="white">
                 <H3>Resolve BET - {record.title}</H3>
                 <Box>
-                    <p>{showBtn ? 'This action cannot be reversed! Pick the winner to resolve the trade!' : 'The winner is: ' + record.params.winner} </p>
+                    <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: ' + record.params.finalOutcome} </p>
                     <br />
                     <p>
                         {showBtn &&(

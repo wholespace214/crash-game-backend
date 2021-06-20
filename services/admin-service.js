@@ -58,7 +58,7 @@ exports.initialize = function () {
                                 const id = context.record.params._id;
                                 const betContract = new BetContract(id);
                                 await betContract.resolveBet('Wallfair Admin User', 'yes');
-                                context.record.params.message = 'The winner is no';
+                                context.record.params.message = 'The final outcome is no';
                                 const bet = await Bet.findById(id);
                                 bet.finalOutcome = 'betOne';
                                 await bet.save();
@@ -75,7 +75,7 @@ exports.initialize = function () {
                                 const id = context.record.params._id;
                                  const betContract = new BetContract(id);
                                  await betContract.resolveBet('Wallfair Admin User', 'no');
-                                context.record.params.message = 'The winner is no';
+                                context.record.params.message = 'The final outcome is no';
                                 const bet = await Bet.findById(id);
                                 bet.finalOutcome = 'betTwo';
                                 await bet.save();
