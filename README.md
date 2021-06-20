@@ -63,6 +63,37 @@ Successful Result:
 }
 ```
 
+### GET http://localhost:8000/api/user/history
+
+Successful Result:
+```json
+[
+    {
+        "id": 1,
+        "buyer": "60cf4588bf102d5fc4c1b475",
+        "bet": "60cf46a61ef95168648364ab",
+        "outcome": "yes",
+        "direction": "BUY",
+        "investmentamount": "100000",
+        "feeamount": "1000",
+        "outcometokensbought": "197902",
+        "trx_timestamp": "2021-06-20T13:47:38.937Z"
+    },
+    {
+        "id": 2,
+        "buyer": "60cf4588bf102d5fc4c1b475",
+        "bet": "60cf46a61ef95168648364ab",
+        "outcome": "yes",
+        "direction": "SELL",
+        "investmentamount": "49541",
+        "feeamount": "1000",
+        "outcometokensbought": "100000",
+        "trx_timestamp": "2021-06-20T19:20:08.487Z"
+    }
+]
+```
+
+
 ### GET http://localhost:8000/api/user/refList
 
 Successful Result:

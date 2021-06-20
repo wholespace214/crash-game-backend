@@ -45,14 +45,13 @@ exports.comparePassword = async (user, plainPassword ) => {
     return await bcrypt.compare(plainPassword, user.password);
 }
 
-exports.sellBet = async (userId, bet, sellAmount, outcome) => {
+exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
     const user = await this.getUserById(userId);
     const openBet = user.openBets.find(item => item === bet.id);
 
     if(openBet !== undefined) {
-        const betContract = new BetContract(openBet.id);
-        const yesBalance  = await betContract.yesToken.balanceOf(userId);
-        const noBalance   = await betContract.noToken.balanceOf(userId);
+        const yesBalance  = newBalances.yes;
+        const noBalance   = newBalances.no;
 
         //delete bet from openBets, if balance === 0 yes & no
         console.debug(' yesBalance = ' + yesBalance);
