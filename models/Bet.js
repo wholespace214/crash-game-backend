@@ -22,7 +22,7 @@ const betSchema = new mongoose.Schema({
     },
     finalOutcome: {
         type: String,
-        required: true,
+        required: false,
         max: 255,
     },
     date: {
