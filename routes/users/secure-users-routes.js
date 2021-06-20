@@ -34,6 +34,16 @@ router.get(
     userController.getClosedBetsList
 );
 
+router.get(
+    "/transactions",
+    userController.getTransactions
+)
+
+router.get(
+    "/history",
+    userController.getAMMHistory
+)
+
 
 router.get("/:userId", userController.getUserInfo);
 

@@ -18,7 +18,7 @@ const eventService = require("../services/event-service");
 const User = require("../models/User");
 
 
-const { BetContract, Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20, Wallet } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 
@@ -226,25 +226,25 @@ const getOpenBetsList = async (request, response) => {
             const openBets   = [];
 
             for (const openBetId of openBetIds) {
-                const betContract = new BetContract(openBetId);
-                const yesBalance  = await betContract.yesToken.balanceOf(userId);
-                const noBalance   = await betContract.noToken.balanceOf(userId);
+                const wallet = new Wallet(userId);
+                const yesInvestment  = await wallet.investmentBet(openBetId, "yes");
+                const noInvestment  = await wallet.investmentBet(openBetId, "no");
 
-                if (yesBalance) {
+                if (yesInvestment) {
                     const openBetYes = {
                         betId:            openBetId,
                         outcome:          0,
-                        investmentAmount: yesBalance / EVNT.ONE,
+                        investmentAmount: yesInvestment / EVNT.ONE,
                     };
 
                     openBets.push(openBetYes);
                 }
 
-                if (noBalance) {
+                if (noInvestment) {
                     const openBetNo = {
                         betId:            openBetId,
                         outcome:          1,
-                        investmentAmount: noBalance / EVNT.ONE,
+                        investmentAmount: noInvestment / EVNT.ONE,
                     };
 
                     openBets.push(openBetNo);
@@ -272,6 +272,56 @@ const getOpenBetsList = async (request, response) => {
     }
 };
 
+const getTransactions = async (request, response) => {
+    const user = request.user;
+
+    try {
+        if (user) {
+            const userId     = user.id;
+            const wallet     = new Wallet(userId);
+            const trx        = await wallet.getTransactions();
+
+            response
+                .status(200)
+                .json(trx);
+        } else {
+            response
+                .status(404)
+                .send('User not found');
+        }
+    } catch (error) {
+        console.error(error);
+        response
+            .status(500)
+            .send('An error occured loading open bets list: ' + error.message);
+    }
+};
+
+const getAMMHistory = async (request, response) => {
+    const user = request.user;
+
+    try {
+        if (user) {
+            const userId       = user.id;
+            const wallet       = new Wallet(userId);
+            const interactions = await wallet.getAMMInteractions();
+
+            response
+                .status(200)
+                .json(interactions);
+        } else {
+            response
+                .status(404)
+                .send('User not found');
+        }
+    } catch (error) {
+        console.error(error);
+        response
+            .status(500)
+            .send('An error occured loading open bets list: ' + error.message);
+    }
+};
+
 exports.login                     = login;
 exports.verfiySms                 = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -280,4 +330,6 @@ exports.getUsers                  = getUsers;
 exports.getUserInfo               = getUserInfo;
 exports.getRefList                = getRefList;
 exports.getOpenBetsList           = getOpenBetsList;
-exports.getClosedBetsList           = getClosedBetsList;
+exports.getClosedBetsList         = getClosedBetsList;
+exports.getTransactions           = getTransactions;
+exports.getAMMHistory             = getAMMHistory;
