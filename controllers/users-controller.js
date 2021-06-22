@@ -310,10 +310,20 @@ const getAMMHistory = async (request, response) => {
             const userId       = user.id;
             const wallet       = new Wallet(userId);
             const interactions = await wallet.getAMMInteractions();
+            const transactions = [];
+
+            for (const interaction of interactions) {
+                transactions.push({
+                    ...interaction,
+                    investmentamount:    interaction.investmentamount / EVNT.ONE,
+                    feeamount:           interaction.feeamount / EVNT.ONE,
+                    outcometokensbought: interaction.outcometokensbought / EVNT.ONE,
+                });
+            }
 
             response
                 .status(200)
-                .json(interactions);
+                .json(transactions);
         } else {
             response
                 .status(404)
