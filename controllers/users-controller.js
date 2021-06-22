@@ -227,24 +227,29 @@ const getOpenBetsList = async (request, response) => {
 
             for (const openBetId of openBetIds) {
                 const wallet = new Wallet(userId);
+                const bet = new BetContract(openBetId);
                 const yesInvestment  = await wallet.investmentBet(openBetId, "yes");
+                const yesBalance  = await bet.yesToken.balanceOf(userId.toString());
                 const noInvestment  = await wallet.investmentBet(openBetId, "no");
+                const noBalance  = await bet.noToken.balanceOf(userId.toString());
 
-                if (yesInvestment) {
+                if (yesInvestment && yesBalance) {
                     const openBetYes = {
                         betId:            openBetId,
                         outcome:          0,
                         investmentAmount: yesInvestment / EVNT.ONE,
+                        outcomeAmount: yesBalance / EVNT.ONE
                     };
 
                     openBets.push(openBetYes);
                 }
 
-                if (noInvestment) {
+                if (noInvestment && noBalance) {
                     const openBetNo = {
                         betId:            openBetId,
                         outcome:          1,
                         investmentAmount: noInvestment / EVNT.ONE,
+                        outcomeAmount: noBalance / EVNT.ONE
                     };
 
                     openBets.push(openBetNo);
