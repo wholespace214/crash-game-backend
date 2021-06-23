@@ -35,6 +35,14 @@ exports.pullOutBet = async (userId, bet, amount, outcome) => {
     }
 };
 
+exports.isBetTradable = (bet) => {
+        if(bet.finalOutcome !== undefined) {
+            return false;
+        }
+
+        return bet.date.getTime() <= Date.now();
+};
+
 exports.saveEvent = async (event) => {
     return event.save();
 };

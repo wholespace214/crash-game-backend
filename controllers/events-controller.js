@@ -173,6 +173,12 @@ const placeBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Placing Bet', id, userId);
 
         const bet  = await eventService.getBet(id);
+
+        if(eventService.isBetTradable(bet)) {
+            res.status(405).json('No further action can be performed on an event that has ended!');
+            return;
+        }
+
         const user = await userService.getUserById(userId);
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
@@ -235,6 +241,12 @@ const pullOutBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Pulling out Bet', id, req.user.id);
         const bet = await eventService.getBet(id);
+
+        if(eventService.isBetTradable(bet)) {
+            res.status(405).json('No further action can be performed on an event that has ended!');
+            return;
+        }
+
         const user = await userService.getUserById(userId);
 
         const sellAmount = amount * EVNT.ONE;
