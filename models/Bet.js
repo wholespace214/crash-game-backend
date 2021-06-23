@@ -6,6 +6,11 @@ const betSchema = new mongoose.Schema({
         required: true,
         max: 255,
     },
+    description: {
+        type: String,
+        required: false,
+        max: 1200,
+    },
     hot: {
         type: Boolean,
         required: false

@@ -92,7 +92,7 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const { eventId, marketQuestion, hot, betOne, betTwo, endDate } = req.body;
+        const { eventId, marketQuestion, description, hot, betOne, betTwo, endDate } = req.body;
         const liquidityAmount                                           = 10000;
 
         let event = await eventService.getEvent(eventId);
@@ -105,6 +105,7 @@ const createBet = async (req, res, next) => {
 
         const createBet = new Bet({
             marketQuestion: marketQuestion,
+            description:    description,
             hot:            hot,
             betOne:         betOne,
             betTwo:         betTwo,
