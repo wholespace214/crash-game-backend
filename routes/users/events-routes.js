@@ -37,6 +37,7 @@ router.post(
     [
         check("eventId"),
         check("marketQuestion"),
+        check("description"),
         check("hot"),
         check("betOne"),
         check("betTwo"),
