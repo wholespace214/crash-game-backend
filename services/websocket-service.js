@@ -62,6 +62,19 @@ exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome,
     emitToAllByEventId(eventId, 'betPulledOut', betPulledOutData);
 };
 
+exports.emitBetCreatedByEventId = (eventId, userId, betId, title) => {
+    const betCreationData = getCopyWithBaseResponseData(
+        {
+            eventId,
+            betId,
+            title,
+        },
+        userId,
+    );
+
+    emitToAllByEventId(eventId, 'betCreated', betCreationData);
+};
+
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
     io.emit(emitEventName, data);

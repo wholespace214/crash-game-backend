@@ -133,6 +133,8 @@ const createBet = async (req, res, next) => {
         event.bets.push(createBet);
         event = await eventService.saveEvent(event);
 
+        await eventService.betCreated(createBet, req.user.id);
+
         res.status(201).json(event);
     } catch (err) {
         console.error(err.message);

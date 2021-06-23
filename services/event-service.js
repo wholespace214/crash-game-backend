@@ -43,6 +43,15 @@ exports.isBetTradable = (bet) => {
         return bet.date.getTime() <= Date.now();
 };
 
+exports.betCreated = async (bet, userId) => {
+    if (bet) {
+        const eventId = bet.event;
+        const betId   = bet._id;
+
+        websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
+    }
+};
+
 exports.saveEvent = async (event) => {
     return event.save();
 };
