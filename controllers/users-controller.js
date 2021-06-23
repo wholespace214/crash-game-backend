@@ -17,6 +17,8 @@ const eventService = require("../services/event-service");
 // Import User Model
 const User = require("../models/User");
 
+const Bet   = require('../models/Bet');
+
 
 const { BetContract, Erc20, Wallet } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
@@ -227,6 +229,12 @@ const getOpenBetsList = async (request, response) => {
 
             for (const openBetId of openBetIds) {
                 const wallet = new Wallet(userId);
+                const betEvent = await Bet.findById(openBetId);
+
+                if(betEvent.finalOutcome !== undefined) {
+                    continue;
+                }
+
                 const bet = new BetContract(openBetId);
                 const yesInvestment  = await wallet.investmentBet(openBetId, "yes");
                 const yesBalance  = await bet.yesToken.balanceOf(userId.toString());
