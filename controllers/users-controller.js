@@ -67,7 +67,7 @@ const verfiySms = async (req, res, next) => {
       phone: user.phone,
       name: user.name,
       email: user.email,
-      session: user.session,
+      session: await authService.generateJwt(user),
       confirmed: user.confirmed,
     });
   } catch (err) {
