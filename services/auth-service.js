@@ -63,9 +63,6 @@ exports.verifyLogin = async (phone, smsToken) => {
         throw new Error("sms verification timeout or token incorrect", 401);
     }
 
-    user.session = await this.generateJwt(user);
-    user = await userService.saveUser(user);
-
     return user;
 }
 
