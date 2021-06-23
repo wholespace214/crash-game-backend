@@ -47,13 +47,14 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) =
     emitToAllByEventId(eventId, 'betPlaced', betPlacedData);
 };
 
-exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome) => {
+exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome, currentPrice) => {
     const betPulledOutData = getCopyWithBaseResponseData(
         {
             eventId,
             betId,
             amount,
             outcome,
+            currentPrice,
         },
         userId,
     );

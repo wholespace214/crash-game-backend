@@ -241,8 +241,12 @@ const pullOutBet = async (req, res, next) => {
         const outcomeToken     = ['yes', 'no'][outcome];
 
 
+
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id);
+
+        const currentPrice = await betContract.calcBuy(sellAmount, outcomeToken);
+
         console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcomeToken + ' ' + requiredMinReturnAmount * EVNT.ONE);
         const newBalances = await betContract.sellAmount(userId, sellAmount, outcomeToken, requiredMinReturnAmount * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
@@ -251,7 +255,7 @@ const pullOutBet = async (req, res, next) => {
 
         const outcomeValue = [bet.betOne, bet.betTwo][outcome];
 
-        eventService.pullOutBet(userId, bet, amount, outcomeValue);
+        eventService.pullOutBet(userId, bet, amount, outcomeValue, currentPrice);
 
         res.status(200).json(bet);
     } catch (err) {
