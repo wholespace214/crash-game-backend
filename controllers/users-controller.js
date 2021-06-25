@@ -235,32 +235,27 @@ const getOpenBetsList = async (request, response) => {
                     continue;
                 }
 
+
+                //
                 const bet = new BetContract(openBetId, betEvent.outcomes.length);
-                const yesInvestment  = await wallet.investmentBet(openBetId, "yes");
-                const yesBalance  = await bet.yesToken.balanceOf(userId.toString());
-                const noInvestment  = await wallet.investmentBet(openBetId, "no");
-                const noBalance  = await bet.noToken.balanceOf(userId.toString());
 
-                if (yesInvestment && yesBalance) {
-                    const openBetYes = {
+
+                for(outcome of betEvent.outcomes) {
+                    const investment  = await wallet.investmentBet(openBetId, outcome.index);
+                    const balance  = await bet.getOutcomeToken(outcome.index).balanceOf(userId.toString());
+
+                    if(!investment  || !balance) {
+                        continue;
+                    }
+
+                    const openBet = {
                         betId:            openBetId,
-                        outcome:          0,
-                        investmentAmount: yesInvestment / EVNT.ONE,
-                        outcomeAmount: yesBalance / EVNT.ONE
+                        outcome:          outcome.index,
+                        investmentAmount: investment / EVNT.ONE,
+                        outcomeAmount: balance / EVNT.ONE
                     };
 
-                    openBets.push(openBetYes);
-                }
-
-                if (noInvestment && noBalance) {
-                    const openBetNo = {
-                        betId:            openBetId,
-                        outcome:          1,
-                        investmentAmount: noInvestment / EVNT.ONE,
-                        outcomeAmount: noBalance / EVNT.ONE
-                    };
-
-                    openBets.push(openBetNo);
+                    openBets.push(openBet);
                 }
             }
 
