@@ -285,7 +285,7 @@ const calculateBuyOutcome = async (req, res, next) => {
 
         const result = [];
 
-        for (outcome in bet.outcomes) {
+        for (outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index);
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
@@ -325,7 +325,7 @@ const calculateSellOutcome = async (req, res, next) => {
 
         const result = [];
 
-        for (outcome in bet.outcomes) {
+        for (outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index);
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
