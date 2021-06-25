@@ -235,8 +235,6 @@ const getOpenBetsList = async (request, response) => {
                     continue;
                 }
 
-
-                //
                 const bet = new BetContract(openBetId, betEvent.outcomes.length);
 
 
