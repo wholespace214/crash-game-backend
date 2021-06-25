@@ -249,7 +249,7 @@ const pullOutBet = async (req, res, next) => {
         const currentPrice = await betContract.calcBuy(sellAmount, outcome);
 
         console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
-        const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
+        const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE) / EVNT.ONE;
         console.debug(LOG_TAG, 'Successfully sold Tokens');
 
         await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
@@ -290,7 +290,7 @@ const calculateBuyOutcome = async (req, res, next) => {
         const result = [];
 
         for (const outcome of bet.outcomes) {
-            const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index);
+            const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index) / EVNT.ONE;
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
 
@@ -330,7 +330,7 @@ const calculateSellOutcome = async (req, res, next) => {
         const result = [];
 
         for (const outcome of bet.outcomes) {
-            const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index);
+            const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index) / EVNT.ONE;
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
 
