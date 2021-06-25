@@ -102,11 +102,15 @@ const createBet = async (req, res, next) => {
             marketQuestion: marketQuestion, hot: hot, outcomes: outcomes, endDate: endDate, event: eventId, creator: req.user.id,
         });
 
+        const outcomesDb = outcomes.map(outcome => {
+            return {index: outcomes.indexOf(outcome.value), name: outcome.value}
+        });
+
         const createBet = new Bet({
             marketQuestion: marketQuestion,
             description:    description,
             hot:            hot,
-            outcomes:       outcomes,
+            outcomes:       outcomesDb,
             endDate:        endDate,
             event:          eventId,
             creator:        req.user.id,
@@ -285,7 +289,7 @@ const calculateBuyOutcome = async (req, res, next) => {
 
         const result = [];
 
-        for (outcome of bet.outcomes) {
+        for (const outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index);
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
@@ -325,7 +329,7 @@ const calculateSellOutcome = async (req, res, next) => {
 
         const result = [];
 
-        for (outcome of bet.outcomes) {
+        for (const outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index);
             result.push({index: outcome.index, outcome: outcomeSellAmount});
         }
