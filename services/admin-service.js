@@ -55,6 +55,7 @@ exports.initialize = function () {
                             actionType: 'record',
                             isVisible: false,
                             handler: async (request, response, context) => {
+                                //TODO rewrite for multiple outcomes
                                 const id = context.record.params._id;
                                 const betContract = new BetContract(id);
                                 await betContract.resolveBet('Wallfair Admin User', 'yes');
@@ -72,6 +73,7 @@ exports.initialize = function () {
                             actionType: 'record',
                             isVisible: false,
                             handler: async (request, response, context) => {
+                                //TODO rewrite for multiple outcomes
                                 const id = context.record.params._id;
                                  const betContract = new BetContract(id);
                                  await betContract.resolveBet('Wallfair Admin User', 'no');

@@ -34,7 +34,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock",
+    "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock#feature/multiple_outcomes",
     "socket.io": "^4.1.2",
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.0",

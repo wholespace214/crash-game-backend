@@ -140,8 +140,16 @@ Successful Result:
         "_id": "60a7ff5364dee4f956660797",
         "marketQuestion": "Wer gewinnt Redbull",
         "hot": true,
-        "betOne": "Jonas",
-        "betTwo": "Jörn",
+        "outcomes": [
+          {
+            "index": 0, 
+            "name": "Jonas"
+          },
+          {
+            "index": 0, 
+            "name": "Jörn"
+          }
+        ],
         "event": "60a7f9bdc0a1a7f8913b4a23",
         "creator": "60a35b31bbb1f700155f2066",
         "date": "2021-05-21T18:43:31.908Z",
@@ -151,8 +159,16 @@ Successful Result:
         "_id": "60a7ffb464dee4f956660799",
         "marketQuestion": "Wer gewinnt Redbull2",
         "hot": true,
-        "betOne": "Jonas",
-        "betTwo": "Jörn",
+        "outcomes": [
+          {
+            "index": 0,
+            "name": "Jonas"
+          },
+          {
+            "index": 0,
+            "name": "Jörn"
+          }
+        ],
         "event": "60a7f9bdc0a1a7f8913b4a23",
         "creator": "60a35b31bbb1f700155f2066",
         "date": "2021-05-21T18:45:08.324Z",
@@ -226,8 +242,16 @@ Request:
   "eventId": "60a7f9bdc0a1a7f8913b4a23",
   "marketQuestion": "Wer gewinnt Redbull",
   "hot": true,
-  "betOne": "Jonas",
-  "betTwo": "Jörn",
+  "outcomes": [
+    {
+      "index": 0,
+      "name": "Jonas"
+    },
+    {
+      "index": 0,
+      "name": "Jörn"
+    }
+  ],
   "endDate": "1621622318001"
 }
 ```
@@ -240,8 +264,16 @@ Successful Result:
       "_id": "60a7ff5364dee4f956660797",
       "marketQuestion": "Wer gewinnt Redbull",
       "hot": true,
-      "betOne": "Jonas",
-      "betTwo": "Jörn",
+      "outcomes": [
+        {
+          "index": 0,
+          "name": "Jonas"
+        },
+        {
+          "index": 0,
+          "name": "Jörn"
+        }
+      ],
       "event": "60a7f9bdc0a1a7f8913b4a23",
       "creator": "60a35b31bbb1f700155f2066",
       "date": "2021-05-21T18:43:31.908Z",
@@ -251,8 +283,16 @@ Successful Result:
       "_id": "60a7ffb464dee4f956660799",
       "marketQuestion": "Wer gewinnt Redbull2",
       "hot": true,
-      "betOne": "Jonas",
-      "betTwo": "Jörn",
+      "outcomes": [
+        {
+          "index": 0,
+          "name": "Jonas"
+        },
+        {
+          "index": 0,
+          "name": "Jörn"
+        }
+      ],
       "event": "60a7f9bdc0a1a7f8913b4a23",
       "creator": "60a35b31bbb1f700155f2066",
       "date": "2021-05-21T18:45:08.324Z",
@@ -283,7 +323,7 @@ Request:
 ```json
 {
   "amount": 10,
-  "isOutcomeOne": true,
+  "outcome": 1,
   "minOutcomeTokens*": 400
 }
 ```
@@ -296,8 +336,16 @@ Successful Result:
   "_id": "60a7ff5364dee4f956660797",
   "marketQuestion": "Wer gewinnt Redbull",
   "hot": true,
-  "betOne": "Jonas",
-  "betTwo": "Jörn",
+  "outcomes": [
+    {
+      "index": 0,
+      "name": "Jonas"
+    },
+    {
+      "index": 0,
+      "name": "Jörn"
+    }
+  ],
   "event": "60a7f9bdc0a1a7f8913b4a23",
   "creator": "60a35b31bbb1f700155f2066",
   "date": "2021-05-21T18:43:31.908Z",
@@ -310,7 +358,7 @@ Request:
 ```json
 {
   "amount": 10,
-  "isOutcomeOne": true,
+  "outcome": 1,
   "minReturnAmount*": 400
 }
 ```
@@ -323,8 +371,16 @@ Successful Result:
   "_id": "60a7ff5364dee4f956660797",
   "marketQuestion": "Wer gewinnt Redbull",
   "hot": true,
-  "betOne": "Jonas",
-  "betTwo": "Jörn",
+  "outcomes": [
+    {
+      "index": 0,
+      "name": "Jonas"
+    },
+    {
+      "index": 0,
+      "name": "Jörn"
+    }
+  ],
   "event": "60a7f9bdc0a1a7f8913b4a23",
   "creator": "60a35b31bbb1f700155f2066",
   "date": "2021-05-21T18:43:31.908Z",
@@ -343,10 +399,16 @@ Der "amount" ist in EVNT andgegeben
 
 Successful Result:
 ```json
-{
-  "outcomeOne": 17.2049,
-  "outcomeTwo": 20.78
-}
+[
+  {
+    "index": 0,
+    "outcome": 9.10
+  },
+  {
+    "index": 1,
+    "outcome": 9.21
+  }
+]
 ```
 
 ### POST http://localhost:8000/api/event/bet/:id/outcomes/sell
@@ -360,10 +422,16 @@ Der "amount" ist in Outcome-Token (Potential Winnings) andgegeben
 
 Successful Result:
 ```json
-{
-  "outcomeOne": 9.10,
-  "outcomeTwo": 9.10
-}
+[
+  {
+    "index": 0,
+    "outcome": 9.10
+  },
+  {
+    "index": 1,
+    "outcome": 9.21
+  }
+]
 ```
 
 ### GET http://localhost:8000/api/event/bet/:id/payout
@@ -374,8 +442,16 @@ Successful Result:
   "_id": "60a7ff5364dee4f956660797",
   "marketQuestion": "Wer gewinnt Redbull",
   "hot": true,
-  "betOne": "Jonas",
-  "betTwo": "Jörn",
+  "outcomes": [
+    {
+      "index": 0,
+      "name": "Jonas"
+    },
+    {
+      "index": 0,
+      "name": "Jörn"
+    }
+  ],
   "event": "60a7f9bdc0a1a7f8913b4a23",
   "creator": "60a35b31bbb1f700155f2066",
   "date": "2021-05-21T18:43:31.908Z",

@@ -15,16 +15,12 @@ const betSchema = new mongoose.Schema({
         type: Boolean,
         required: false
     },
-    betOne: {
-        type: String,
-        required: true,
-        max: 255,
-    },
-    betTwo: {
-        type: String,
-        required: true,
-        max: 255,
-    },
+    outcomes: [
+        {
+            index: Number,
+            name: String
+        }
+    ],
     finalOutcome: {
         type: String,
         required: false,
