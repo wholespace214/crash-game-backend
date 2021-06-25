@@ -102,9 +102,9 @@ const createBet = async (req, res, next) => {
             marketQuestion: marketQuestion, hot: hot, outcomes: outcomes, endDate: endDate, event: eventId, creator: req.user.id,
         });
 
-        const outcomesDb = outcomes.map(outcome => {
-            return {index: outcomes.indexOf(outcome.value), name: outcome.value}
-        });
+        const outcomesDb = outcomes.map((outcome, index) =>
+            ({ index, name: outcome.value })
+        );
 
         const createBet = new Bet({
             marketQuestion: marketQuestion,
