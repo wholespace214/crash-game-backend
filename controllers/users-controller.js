@@ -238,7 +238,7 @@ const getOpenBetsList = async (request, response) => {
                 const bet = new BetContract(openBetId, betEvent.outcomes.length);
 
 
-                for(outcome of betEvent.outcomes) {
+                for(const outcome of betEvent.outcomes) {
                     const investment  = await wallet.investmentBet(openBetId, outcome.index);
                     const balance  = await bet.getOutcomeToken(outcome.index).balanceOf(userId.toString());
 
