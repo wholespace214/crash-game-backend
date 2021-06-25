@@ -448,7 +448,7 @@ Successful Result:
       "name": "Jonas"
     },
     {
-      "index": 0,
+      "index": 1,
       "name": "Jörn"
     }
   ],

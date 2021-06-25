@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+const Outcome = new mongoose.Schema({
+    index: Number,
+    name: String,
+});
+
 const betSchema = new mongoose.Schema({
     marketQuestion: {
         type: String,
@@ -15,12 +20,9 @@ const betSchema = new mongoose.Schema({
         type: Boolean,
         required: false
     },
-    outcomes: [
-        {
-            index: Number,
-            name: String
-        }
-    ],
+    outcomes: [{
+        type: Outcome
+    }],
     finalOutcome: {
         type: String,
         required: false,
