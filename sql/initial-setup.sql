@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS token_transactions (ID SERIAL PRIMARY KEY, sender varchar(255) not null, receiver varchar(255) not null, amount int8 not null, symbol varchar(255) not null, trx_timestamp timestamp not null);
+CREATE TABLE IF NOT EXISTS token_balances (owner varchar(255) not null, balance int8 not null, symbol varchar(255) not null, last_update timestamp not null, PRIMARY KEY(owner, symbol));
+CREATE TABLE IF NOT EXISTS bet_reports (bet_id varchar(255) not null PRIMARY KEY, reporter varchar(255) not null, outcome int not null, report_timestamp timestamp not null);
+CREATE TABLE IF NOT EXISTS amm_interactions (ID SERIAL PRIMARY KEY, buyer varchar(255) NOT NULL, bet varchar(255) NOT NULL, outcome int NOT NULL, direction varchar(10) NOT NULL, investmentAmount int8 NOT NULL, feeAmount int8 NOT NULL, outcomeTokensBought int8 NOT NULL, trx_timestamp timestamp NOT NULL);

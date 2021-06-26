@@ -111,7 +111,7 @@ const createBet = async (req, res, next) => {
             description:    description,
             hot:            hot,
             outcomes:       outcomesDb,
-            endDate:        endDate,
+            date:        endDate,
             event:          eventId,
             creator:        req.user.id,
         });
