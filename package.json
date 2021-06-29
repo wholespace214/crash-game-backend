@@ -30,7 +30,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
-    "mongoose": "^5.12.15",
+    "mongoose": "^5.13.0",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -39,9 +39,9 @@
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.0",
     "twilio": "^3.64.0",
-    "ws": "^7.5.0"
+    "ws": "^7.5.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.8"
   }
 }

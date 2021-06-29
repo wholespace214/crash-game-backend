@@ -69,6 +69,28 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
 }
 
 
+exports.getRankByUserId = async (userId) => {
+    let users = await User.find({}, { name: 1 });
+    const usersWithBalance = [];
+
+    for (const user of users) {
+        const balance = await EVNT.balanceOf(user.id);
+        usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
+    }
+
+    usersWithBalance.sort(function (a, b) {
+        return b.balance - a.balance;
+    });
+
+    let counter = 1;
+    for (const user of usersWithBalance) {
+        if(user.userId === userId) {
+            return counter;
+        }
+        counter += 1;
+    }
+}
+
 
 //TODO call function
 exports.createUser = async (user) => {

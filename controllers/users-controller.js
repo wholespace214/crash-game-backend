@@ -172,13 +172,16 @@ const getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
         const balance = await EVNT.balanceOf(req.params.userId);
+        const rank = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
             profilePictureUrl: user.profilePictureUrl,
             balance: balance / EVNT.ONE,
+            rank: rank
         });
     } catch (err) {
+        console.error(err);
         res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
     }
 };
