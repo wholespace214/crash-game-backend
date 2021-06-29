@@ -24,14 +24,16 @@ const SomeStats = (props) => {
 
     const showBtn = (record.params.finalOutcome === undefined);
 
-    const finalOutcome = record.params.outcomes !== undefined ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
+/*
+    const finalOutcome = record.params.outcomes !== undefined && record.params.finalOutcome !== null ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
+*/
 
     return (
         <Box variant="grey">
             <Box variant="white">
                 <H3>Resolve BET - {record.params.marketQuestion}</H3>
                 <Box>
-                    <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: ' + finalOutcome} </p>
+                    <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: '} </p>
                     <br />
                     {console.log(record.params.outcomes)}
                     <p>

@@ -154,6 +154,16 @@ const getUsers = async (req, res, next) => {
     usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
   }
 
+    usersWithBalance.sort(function (a, b) {
+        return b.balance - a.balance;
+    });
+
+  let counter = 1;
+    for (const user of usersWithBalance) {
+        user['index'] = counter;
+        counter += 1;
+    }
+
   res.json({ users: usersWithBalance });
 };
 
