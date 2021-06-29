@@ -28,8 +28,6 @@ exports.doLogin = async (phone, ref) => {
             ref: ref
         });
 
-        await userService.rewardRefUser(ref);
-
         try {
             await userService.saveUser(createdUser);
             createdUser = await userService.getUserByPhone(phone);

@@ -97,6 +97,27 @@ const saveAdditionalInformation = async (req, res, next) => {
   try {
     let user = await userService.getUserById(req.user.id);
 
+    let emailUser = await User.findOne({email: email});
+    let usernameUser = await User.findOne({username: username});
+
+    if(emailUser !== undefined) {
+        res
+            .status(409)
+            .send(
+                "The mail address already exists"
+            )
+        return;
+    }
+
+    if(usernameUser !== undefined) {
+          res
+              .status(409)
+              .send(
+                  "The username already exists"
+              )
+          return;
+      }
+
     user.name = name;
     user.email = email;
     user.username = username;
@@ -105,7 +126,7 @@ const saveAdditionalInformation = async (req, res, next) => {
     res.status(201).json({
       userId: user.id,
       phone: user.phone,
-      name: user.name,
+      name: user.username,
       email: user.email,
     });
   } catch (err) {
@@ -123,6 +144,11 @@ const saveAcceptConditions = async (req, res, next) => {
 
   try {
     let user = await userService.getUserById(req.user.id);
+
+    if(!user.confirmed) {
+        await userService.rewardRefUser(ref);
+    }
+
     user.confirmed = true;
     user = await userService.saveUser(user);
 
