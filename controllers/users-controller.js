@@ -100,7 +100,7 @@ const saveAdditionalInformation = async (req, res, next) => {
     let emailUser = await User.findOne({email: email});
     let usernameUser = await User.findOne({username: username});
 
-    if(emailUser !== undefined) {
+    if(emailUser !== null) {
         res
             .status(409)
             .send(
@@ -109,7 +109,7 @@ const saveAdditionalInformation = async (req, res, next) => {
         return;
     }
 
-    if(usernameUser !== undefined) {
+    if(usernameUser !== null) {
           res
               .status(409)
               .send(
@@ -177,7 +177,7 @@ const getUsers = async (req, res, next) => {
 
   for (const user of users) {
     const balance = await EVNT.balanceOf(user.id);
-    usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
+    usersWithBalance.push({userId: user.id, name: user.username, balance: balance / EVNT.ONE});
   }
 
     usersWithBalance.sort(function (a, b) {

@@ -2,6 +2,7 @@
 const User = require("../models/User");
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
+const Mailchimp = require('mailchimp-api-v3');
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
@@ -91,9 +92,8 @@ exports.getRankByUserId = async (userId) => {
     }
 }
 
-
+/*exports.createUser = async (user) => {
+    var mailchimp = new Mailchimp(process.env.MAILCHIMP_API_KEY);
 //TODO call function
-exports.createUser = async (user) => {
-    //TODO push user in marketing tools
     return user.save();
-}
+}*/
