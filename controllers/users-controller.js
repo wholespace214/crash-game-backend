@@ -147,6 +147,7 @@ const saveAcceptConditions = async (req, res, next) => {
 
     if(!user.confirmed) {
         await userService.rewardRefUser(user.ref);
+        await userService.createUser(user);
     }
 
     user.confirmed = true;

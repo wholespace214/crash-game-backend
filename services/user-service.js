@@ -2,7 +2,7 @@
 const User = require("../models/User");
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
-const Mailchimp = require('mailchimp-api-v3');
+const axios = require('axios')
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
@@ -32,7 +32,7 @@ exports.rewardRefUser= async (ref) => {
     }
     console.debug('try to reward ref');
 
-    await EVNT.mint(ref, 500 * EVNT.ONE);
+    await EVNT.mint(ref, 50 * EVNT.ONE);
 }
 
 exports.securePassword = async (user, password ) => {
@@ -92,10 +92,17 @@ exports.getRankByUserId = async (userId) => {
     }
 }
 
-/*
 exports.createUser = async (user) => {
-    var mailchimp = new Mailchimp(process.env.MAILCHIMP_API_KEY);
-
-    return user.save();
+    axios
+        .post('https://hooks.zapier.com/hooks/catch/10448019/b3155io/', {
+            name: user.name,
+            email: user.email
+        })
+        .then(res => {
+            console.log(`statusCode: ${res.statusCode}`)
+            console.log(res)
+        })
+        .catch(error => {
+            console.error(error)
+        })
 }
-*/
