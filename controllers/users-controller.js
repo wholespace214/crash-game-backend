@@ -146,7 +146,7 @@ const saveAcceptConditions = async (req, res, next) => {
     let user = await userService.getUserById(req.user.id);
 
     if(!user.confirmed) {
-        await userService.rewardRefUser(ref);
+        await userService.rewardRefUser(user.ref);
     }
 
     user.confirmed = true;
@@ -165,7 +165,7 @@ const saveAcceptConditions = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   let users;
   try {
-    users = await User.find({}, { name: 1 });
+    users = await User.find({}, { name: 1, username: 1 });
   } catch (err) {
     const error = new Error(
       "Fetching users failed, please try again later.",

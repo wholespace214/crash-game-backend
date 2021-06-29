@@ -92,8 +92,10 @@ exports.getRankByUserId = async (userId) => {
     }
 }
 
-/*exports.createUser = async (user) => {
+/*
+exports.createUser = async (user) => {
     var mailchimp = new Mailchimp(process.env.MAILCHIMP_API_KEY);
-//TODO call function
+
     return user.save();
-}*/
+}
+*/
