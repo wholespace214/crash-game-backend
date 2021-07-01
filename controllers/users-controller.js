@@ -118,9 +118,18 @@ const saveAdditionalInformation = async (req, res, next) => {
           return;
       }
 
+    if(username.length < 3) {
+        res
+            .status(409)
+            .send(
+                "The username must have at least 3 characters"
+            )
+        return;
+    }
+
     user.name = name;
-    user.email = email;
-    user.username = username;
+    user.email = email.replace(" ", "");
+    user.username = username.replace(" ", "");
     user = await userService.saveUser(user);
 
     res.status(201).json({
@@ -178,6 +187,9 @@ const getUsers = async (req, res, next) => {
 
   for (const user of users) {
     const balance = await EVNT.balanceOf(user.id);
+      if(user.username === undefined || user.username === null) {
+          continue;
+      }
     usersWithBalance.push({userId: user.id, name: user.username, balance: balance / EVNT.ONE});
   }
 
