@@ -215,6 +215,7 @@ const getUserInfo = async (req, res) => {
         res.status(200).json({
             userId: user.id,
             name: user.name,
+            username: user.username,
             profilePictureUrl: user.profilePictureUrl,
             balance: balance / EVNT.ONE,
             rank: rank
