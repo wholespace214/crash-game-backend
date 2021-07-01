@@ -160,16 +160,18 @@ const getUsers = async (req, res, next) => {
 // Receive specific user information
 const getUserInfo = async (req, res) => {
     try {
-        const user = await User.findById(req.params.userId);
-        const balance = await EVNT.balanceOf(req.params.userId);
+        const user    = await User.findById(req.params.userId);
+        const balance = await EVNT.balanceOf(req.params.userId) / EVNT.ONE;
+
         res.status(200).json({
-            userId: user.id,
-            name: user.name,
+            userId:            user.id,
+            name:              user.name,
+            username:          user.username,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance / EVNT.ONE,
+            balance:           balance,
         });
     } catch (err) {
-        res.status(400).send( "Es ist ein Fehler beim laden deiner Account Informationen aufgetreten" );
+        res.status(400).send('Es ist ein Fehler beim laden deiner Account Informationen aufgetreten');
     }
 };
 
