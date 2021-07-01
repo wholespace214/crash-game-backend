@@ -92,30 +92,32 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const { eventId, marketQuestion, description, hot, betOne, betTwo, endDate } = req.body;
+        const { eventId, marketQuestion, description, hot, outcomes, endDate } = req.body;
         const liquidityAmount                                           = 10000;
 
         let event = await eventService.getEvent(eventId);
 
         console.debug(LOG_TAG, event);
         console.debug(LOG_TAG, {
-            marketQuestion: marketQuestion, hot: hot, betOne: betOne,
-            betTwo:         betTwo, endDate: endDate, event: eventId, creator: req.user.id,
+            marketQuestion: marketQuestion, hot: hot, outcomes: outcomes, endDate: endDate, event: eventId, creator: req.user.id,
         });
+
+        const outcomesDb = outcomes.map((outcome, index) =>
+            ({ index, name: outcome.value })
+        );
 
         const createBet = new Bet({
             marketQuestion: marketQuestion,
             description:    description,
             hot:            hot,
-            betOne:         betOne,
-            betTwo:         betTwo,
-            endDate:        endDate,
+            outcomes:       outcomesDb,
+            date:        endDate,
             event:          eventId,
             creator:        req.user.id,
         });
 
         const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
-        const betContract             = new BetContract(createBet.id);
+        const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
 
         console.debug(LOG_TAG, 'Minting new Tokens');
         await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
@@ -153,7 +155,7 @@ const placeBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, isOutcomeOne, minOutcomeTokens} = req.body;
+        const {amount, outcome, minOutcomeTokens} = req.body;
         const {id} = req.params;
 
         if (amount <= 0) {
@@ -163,12 +165,6 @@ const placeBet = async (req, res, next) => {
         let minOutcomeTokensToBuy = 1;
         if (minOutcomeTokens > 1) {
             minOutcomeTokensToBuy = minOutcomeTokens;
-        }
-
-        let outcome = 1;
-
-        if (isOutcomeOne) {
-            outcome = 0;
         }
 
         const userId = req.user.id;
@@ -186,11 +182,10 @@ const placeBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
 
-        const betContract      = new BetContract(id);
+        const betContract      = new BetContract(id, bet.outcomes.length);
         const investmentAmount = amount * EVNT.ONE;
-        const outcomeToken     = ['yes', 'no'][outcome];
 
-        await betContract.buy(userId, investmentAmount, outcomeToken, minOutcomeTokensToBuy * EVNT.ONE);
+        await betContract.buy(userId, investmentAmount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
 
         console.debug(LOG_TAG, 'Successfully bought Tokens');
 
@@ -198,9 +193,7 @@ const placeBet = async (req, res, next) => {
             user.openBets.push(bet.id);
         }
 
-        const outcomeValue = [bet.betOne, bet.betTwo][outcome];
-
-        eventService.placeBet(userId, bet, amount, outcomeValue);
+        eventService.placeBet(userId, bet, amount, outcome);
 
         await userService.saveUser(user);
         console.debug(LOG_TAG, 'Saved user');
@@ -223,7 +216,7 @@ const pullOutBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, isOutcomeOne, minReturnAmount} = req.body;
+        const {amount, outcome, minReturnAmount} = req.body;
         const {id} = req.params;
 
         if (amount <= 0) {
@@ -235,10 +228,6 @@ const pullOutBet = async (req, res, next) => {
             requiredMinReturnAmount = minReturnAmount;
         }
 
-        let outcome = 1;
-        if (isOutcomeOne) {
-            outcome = 0;
-        }
 
         const userId = req.user.id;
 
@@ -253,24 +242,19 @@ const pullOutBet = async (req, res, next) => {
         const user = await userService.getUserById(userId);
 
         const sellAmount = amount * EVNT.ONE;
-        const outcomeToken     = ['yes', 'no'][outcome];
-
-
 
         console.debug(LOG_TAG, 'Interacting with the AMM');
-        const betContract = new BetContract(id);
+        const betContract = new BetContract(id, bet.outcomes.length);
 
-        const currentPrice = await betContract.calcBuy(sellAmount, outcomeToken);
+        const currentPrice = await betContract.calcBuy(sellAmount, outcome);
 
-        console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcomeToken + ' ' + requiredMinReturnAmount * EVNT.ONE);
-        const newBalances = await betContract.sellAmount(userId, sellAmount, outcomeToken, requiredMinReturnAmount * EVNT.ONE);
+        console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
+        const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE) / EVNT.ONE;
         console.debug(LOG_TAG, 'Successfully sold Tokens');
 
         await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
 
-        const outcomeValue = [bet.betOne, bet.betTwo][outcome];
-
-        eventService.pullOutBet(userId, bet, amount, outcomeValue, currentPrice);
+        eventService.pullOutBet(userId, bet, amount, outcome, currentPrice);
 
         res.status(200).json(bet);
     } catch (err) {
@@ -297,15 +281,18 @@ const calculateBuyOutcome = async (req, res, next) => {
             throw Error('Invalid input passed, please check it');
         }
 
-        console.debug(LOG_TAG, 'Calculating buy outcomes');
-        const betContract = new BetContract(id);
-        const buyOutcomeOne  = await betContract.calcBuy(amount * EVNT.ONE, 'yes');
-        const buyOutcomeTwo  = await betContract.calcBuy(amount * EVNT.ONE, 'no');
+        const bet = await Bet.findById(id);
 
-        const result = {
-            outcomeOne: buyOutcomeOne / EVNT.ONE,
-            outcomeTwo: buyOutcomeTwo / EVNT.ONE
-        };
+        console.debug(LOG_TAG, 'Calculating buy outcomes');
+        const betContract = new BetContract(id, bet.outcomes.length);
+        const buyAmount = amount * EVNT.ONE;
+
+        const result = [];
+
+        for (const outcome of bet.outcomes) {
+            const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index) / EVNT.ONE;
+            result.push({index: outcome.index, outcome: outcomeSellAmount});
+        }
 
         console.debug(LOG_TAG, 'Buy outcomes successfully calculated', result);
 
@@ -334,15 +321,18 @@ const calculateSellOutcome = async (req, res, next) => {
             throw Error('Invalid input passed, please check it');
         }
 
-        console.debug(LOG_TAG, 'Calculating Sell Outcomes');
-        const betContract = new BetContract(id);
-        const sellOutcomeOne  = await betContract.calcSellFromAmount(amount * EVNT.ONE, 'yes');
-        const sellOutcomeTwo  = await betContract.calcSellFromAmount(amount * EVNT.ONE, 'no');
+        const bet = await Bet.findById(id);
 
-        const result = {
-            outcomeOne: sellOutcomeOne / EVNT.ONE,
-            outcomeTwo: sellOutcomeTwo / EVNT.ONE,
-        };
+        console.debug(LOG_TAG, 'Calculating Sell Outcomes');
+        const betContract = new BetContract(id, bet.outcomes.length);
+        const sellAmount = amount * EVNT.ONE;
+
+        const result = [];
+
+        for (const outcome of bet.outcomes) {
+            const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index) / EVNT.ONE;
+            result.push({index: outcome.index, outcome: outcomeSellAmount});
+        }
 
         console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
 
@@ -370,7 +360,7 @@ const payoutBet = async (req, res, next) => {
         const user = await userService.getUserById(req.user.id);
 
         console.debug(LOG_TAG, 'Requesting Bet Payout');
-        const betContract = new BetContract(id);
+        const betContract = new BetContract(id, bet.outcomes.length);
         await betContract.getPayout(req.user.id);
 
         console.debug(LOG_TAG, 'Payed out Bet');

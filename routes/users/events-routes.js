@@ -39,8 +39,7 @@ router.post(
         check("marketQuestion"),
         check("description"),
         check("hot"),
-        check("betOne"),
-        check("betTwo"),
+        check("outcomes"),
         check("endDate")
     ],
     eventController.createBet
@@ -50,7 +49,7 @@ router.post(
     "/bet/:id/place",
     [
         check("amount").isNumeric(),
-        check("isOutcomeOne").isBoolean(),
+        check("outcome").isNumeric(),
         check("minOutcomeTokens").isNumeric().default(0).optional()
     ],
     eventController.placeBet
@@ -60,7 +59,7 @@ router.post(
     "/bet/:id/pullout",
     [
         check("amount").isNumeric(),
-        check("isOutcomeOne").isBoolean(),
+        check("outcome").isNumeric(),
         check("minReturnAmount").isNumeric().default(Number.MAX_SAFE_INTEGER).optional()
     ],
     eventController.pullOutBet

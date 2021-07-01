@@ -16,6 +16,7 @@
     "@admin-bro/express": "^3.1.0",
     "@admin-bro/mongoose": "^1.1.0",
     "admin-bro": "^4.0.1",
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -30,18 +31,19 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
-    "mongoose": "^5.12.14",
+    "mailchimp-api-v3": "^1.15.0",
+    "mongoose": "^5.13.0",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock",
+    "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock#feature/multiple_outcomes",
     "socket.io": "^4.1.2",
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.0",
-    "twilio": "^3.64.0",
-    "ws": "^7.5.0"
+    "twilio": "^3.65.0",
+    "ws": "^7.5.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.9"
   }
 }

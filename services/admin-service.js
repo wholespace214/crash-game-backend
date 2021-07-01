@@ -44,41 +44,33 @@ exports.initialize = function () {
                             icon: 'Receipt',
                             isVisible: true,
                             handler: async (request, response, context) => {
+                                const id = context.record.params._id;
+                                const record = context.record;
+                                record.params = await Bet.findById(id);
+                                console.log(record);
                                 return {
-                                    record: context.record.toJSON(context.currentAdmin),
+                                    record: record.toJSON(),
                                 }
                             },
                             component: AdminBro.bundle('./components/resolve'),
                         },
-                        'yes-resolve': {
+                        'do-resolve': {
                             // create a totally new action
                             actionType: 'record',
                             isVisible: false,
                             handler: async (request, response, context) => {
-                                const id = context.record.params._id;
-                                const betContract = new BetContract(id);
-                                await betContract.resolveBet('Wallfair Admin User', 'yes');
-                                context.record.params.message = 'The final outcome is no';
-                                const bet = await Bet.findById(id);
-                                bet.finalOutcome = 'betOne';
-                                await bet.save();
-                                return {
-                                    record: context.record.toJSON(context.currentAdmin),
+                                try {
+                                    const id = context.record.params._id;
+                                    const bet = await Bet.findById(id);
+                                    const indexOutcome = request.fields.index;
+                                    const betContract = new BetContract(id);
+                                    await betContract.resolveBet('Wallfair Admin User', indexOutcome);
+                                    context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
+                                    bet.finalOutcome = indexOutcome;
+                                    await bet.save();
+                                } catch (error) {
+                                    console.error(error);
                                 }
-                            },
-                        },
-                        'no-resolve': {
-                            // create a totally new action
-                            actionType: 'record',
-                            isVisible: false,
-                            handler: async (request, response, context) => {
-                                const id = context.record.params._id;
-                                 const betContract = new BetContract(id);
-                                 await betContract.resolveBet('Wallfair Admin User', 'no');
-                                context.record.params.message = 'The final outcome is no';
-                                const bet = await Bet.findById(id);
-                                bet.finalOutcome = 'betTwo';
-                                await bet.save();
                                 return {
                                     record: context.record.toJSON(context.currentAdmin),
                                 }

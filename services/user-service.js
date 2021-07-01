@@ -2,6 +2,7 @@
 const User = require("../models/User");
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
+const axios = require('axios')
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
@@ -31,7 +32,7 @@ exports.rewardRefUser= async (ref) => {
     }
     console.debug('try to reward ref');
 
-    await EVNT.mint(ref, 500 * EVNT.ONE);
+    await EVNT.mint(ref, 50 * EVNT.ONE);
 }
 
 exports.securePassword = async (user, password ) => {
@@ -69,9 +70,39 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
 }
 
 
+exports.getRankByUserId = async (userId) => {
+    let users = await User.find({}, { name: 1 });
+    const usersWithBalance = [];
 
-//TODO call function
+    for (const user of users) {
+        const balance = await EVNT.balanceOf(user.id);
+        usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
+    }
+
+    usersWithBalance.sort(function (a, b) {
+        return b.balance - a.balance;
+    });
+
+    let counter = 1;
+    for (const user of usersWithBalance) {
+        if(user.userId === userId) {
+            return counter;
+        }
+        counter += 1;
+    }
+}
+
 exports.createUser = async (user) => {
-    //TODO push user in marketing tools
-    return user.save();
+    axios
+        .post('https://hooks.zapier.com/hooks/catch/10448019/b3155io/', {
+            name: user.name,
+            email: user.email
+        })
+        .then(res => {
+            console.log(`statusCode: ${res.statusCode}`)
+            console.log(res)
+        })
+        .catch(error => {
+            console.error(error)
+        })
 }
