@@ -12,17 +12,22 @@ const adminService = require('./services/admin-service');
 // Import mongoose to connect to Database
 const mongoose = require('mongoose');
 
+let mongoURL = process.env.DB_CONNECTION;
+if(process.env.ENVIRONMENT === 'STAGING') {
+    mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/staging.crt';
+}
+
 // Connection to Database
 mongoose
-    .connect(process.env.DB_CONNECTION, {
+    .connect(mongoURL, {
         useUnifiedTopology: true,
-        useNewUrlParser:    true,
+        useNewUrlParser:    true
     })
     .then(
         async () => console.log('Connection to Mongo-DB successful'),
     )
     .catch(
-        (error) => console.log(error.message),
+        (error) => console.log(error),
     );
 
 adminService.setMongoose(mongoose);
