@@ -218,6 +218,7 @@ const getUserInfo = async (req, res) => {
             username: user.username,
             profilePictureUrl: user.profilePictureUrl,
             balance: balance / EVNT.ONE,
+            admin: user.admin,
             rank: rank
         });
     } catch (err) {
