@@ -1,8 +1,14 @@
-// Import User model
+const {Wallet} = require('smart_contract_mock');
+
+// Import models
 const User = require("../models/User");
+const Bet = require("../models/Bet");
+
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios')
+
+//Import sc mock
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
@@ -51,22 +57,26 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
     const openBet = user.openBets.find(item => item === bet.id);
 
     if(openBet !== undefined) {
-        const yesBalance  = newBalances.yes;
-        const noBalance   = newBalances.no;
+        user.openBets = filterClosedTrades(user, bet, newBalances);
 
-        //delete bet from openBets, if balance === 0 yes & no
-        console.debug(' yesBalance = ' + yesBalance);
-        console.debug(' noBalance = ' + noBalance);
-        if(yesBalance === 0 && noBalance === 0) {
-            user.openBets = user.openBets.filter(item => item !== bet.id);
-        }
-
-        user.closedBets.push({betId:            bet.id,
-            outcome:          outcome ,
-            sellAmount: sellAmount / EVNT.ONE});
+        user.closedBets.push(
+            {
+                betId:            bet.id,
+                outcome:          outcome ,
+                sellAmount: sellAmount / EVNT.ONE,
+                earnedTokens: newBalances.earnedTokens / EVNT.ONE,
+            });
     }
 
     await this.saveUser(user);
+}
+
+function filterClosedTrades(user, openBet, newBalances) {
+    //delete trade from openBets, if all trade closed and payed out
+    if (!newBalances.isInvested) {
+        return user.openBets.filter(item => item !== openBet.id);
+    }
+    return user.openBets;
 }
 
 

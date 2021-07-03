@@ -246,11 +246,12 @@ const pullOutBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Interacting with the AMM');
         const betContract = new BetContract(id, bet.outcomes.length);
 
-        const currentPrice = await betContract.calcBuy(sellAmount, outcome);
-
         console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
-        const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE) / EVNT.ONE;
+
+        const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
         console.debug(LOG_TAG, 'Successfully sold Tokens');
+
+        const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
 
         await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
 

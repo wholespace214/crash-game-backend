@@ -285,6 +285,7 @@ const getOpenBetsList = async (request, response) => {
                 const wallet = new Wallet(userId);
                 const betEvent = await Bet.findById(openBetId);
 
+                //TODO For the payout function, the bet may have to be displayed as an open bet!
                 if(betEvent.finalOutcome !== undefined) {
                     continue;
                 }
