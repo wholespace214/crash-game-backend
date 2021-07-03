@@ -15,7 +15,7 @@ const persist = async (data) => {
 
 const sendAllMessagesFor = async (eventId, userId) => {
   //const array = memoryDB[eventId]
-  const array = await ChatMessageService.getChatMessagesByEvent(eventId)
+  const array = await ChatMessageService.getNewestChatMessagesByEvent(eventId, 100)
   for(const message of array || []) {
     io.emit('chatMessageUser' + userId, message)
   }
