@@ -1,9 +1,29 @@
+const ChatMessageService = require('./chat-message-service');
+
 const LOG_TAG = '[SOCKET] ';
 let io        = null;
 
+//const memoryDB = {};
+
+const persist = async (data) => {
+  //memoryDB[data.eventId] = memoryDB[data.eventId] || [];
+  //memoryDB[data.eventId].push(data);
+
+  const chatMessage = await ChatMessageService.createChatMessage(data)
+  await ChatMessageService.saveChatMessage(chatMessage)
+}
+
+const sendAllMessagesFor = async (eventId, userId) => {
+  //const array = memoryDB[eventId]
+  const array = await ChatMessageService.getNewestChatMessagesByEvent(eventId, 100)
+  for(const message of array || []) {
+    io.emit('chatMessageUser' + userId, message)
+  }
+};
+
 exports.setIO = (newIo) => io = newIo;
 
-exports.handleChatMessage = function (socket, data, userId) {
+exports.handleChatMessage = async function (socket, data, userId) {
     try {
         const responseData = getCopyWithBaseResponseData(data, userId);
         const eventId      = data.eventId;
@@ -11,21 +31,27 @@ exports.handleChatMessage = function (socket, data, userId) {
 
         console.debug(LOG_TAG, 'user ' + userId + ' sends message "' + message + '"');
 
-        emitToAllByEventId(eventId, 'chatMessage', responseData);
+        await persist(data)
+
+        emitToAllByEventId(eventId, 'chatMessageEvent' + eventId, responseData);
     } catch (error) {
         console.error(error);
         console.log(LOG_TAG, 'failed to handle message', data);
     }
 };
 
-exports.handleJoinRoom = function (socket, data, userId) {
+exports.handleJoinRoom = async function (socket, data, userId) {
     try {
         const eventId = data.eventId;
+        const userId = data.userId;
 
-        if (eventId) {
+        if (eventId && userId) {
             socket.join(eventId);
+            socket.join(userId);
+
+            await sendAllMessagesFor(eventId, userId);
         } else {
-            console.debug(LOG_TAG, 'no event id in handle join data', data);
+            console.debug(LOG_TAG, 'no event or user id in handle join data', data);
         }
     } catch (error) {
         console.error(error);
