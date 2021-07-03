@@ -251,6 +251,10 @@ const pullOutBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
         const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE) / EVNT.ONE;
         console.debug(LOG_TAG, 'Successfully sold Tokens');
+        /*
+        soldOutcomeTokens
+        earnedTokens
+         */
 
         await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
 
