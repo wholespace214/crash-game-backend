@@ -1,5 +1,5 @@
 import React, { } from 'react'
-import { Box, H3, Placeholder, Button} from '@admin-bro/design-system'
+import { Box, H3, Button} from '@admin-bro/design-system'
 import { ApiClient, useNotice} from 'admin-bro'
 import * as qs from "qs";
 const api = new ApiClient()

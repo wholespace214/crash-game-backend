@@ -47,7 +47,6 @@ exports.initialize = function () {
                                 const id = context.record.params._id;
                                 const record = context.record;
                                 record.params = await Bet.findById(id);
-                                console.log(record);
                                 return {
                                     record: record.toJSON(),
                                 }

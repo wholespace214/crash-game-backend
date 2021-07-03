@@ -57,36 +57,26 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
     const openBet = user.openBets.find(item => item === bet.id);
 
     if(openBet !== undefined) {
-        await removeClosedTrades(user, bet);
+        user.openBets = filterClosedTrades(user, bet, newBalances);
 
-        user.closedBets.push({betId:            bet.id,
-            outcome:          outcome ,
-            sellAmount: sellAmount / EVNT.ONE});
+        user.closedBets.push(
+            {
+                betId:            bet.id,
+                outcome:          outcome ,
+                sellAmount: sellAmount / EVNT.ONE,
+                earnedTokens: newBalances.earnedTokens / EVNT.ONE,
+            });
     }
 
     await this.saveUser(user);
 }
 
-async function removeClosedTrades(user, openBet) {
-    const userId = user.id;
-    let allTradesAreClosed = true;
-
-    const bet = new BetContract(openBet.id, openBet.outcomes.length);
-
-    const wallet = new Wallet(userId);
-    for (const outcome of openBet.outcomes) {
-        const investment = await wallet.investmentBet(openBet.id, outcome.index);
-        const balance = await bet.getOutcomeToken(outcome.index).balanceOf(userId.toString());
-
-        if (investment || balance) {
-            allTradesAreClosed = false;
-        }
-    }
-
+function filterClosedTrades(user, openBet, newBalances) {
     //delete trade from openBets, if all trade closed and payed out
-    if (allTradesAreClosed) {
-        user.openBets = user.openBets.filter(item => item !== openBet.id);
+    if (!newBalances.isInvested) {
+        return user.openBets.filter(item => item !== openBet.id);
     }
+    return user.openBets;
 }
 
 
