@@ -106,7 +106,7 @@ Successful Result:
       "name": "Nicholas",
       "email": "nicholas@wallfair.io"
     }
-  ],
+  ]
 }
 ```
 
@@ -457,4 +457,46 @@ Successful Result:
   "date": "2021-05-21T18:43:31.908Z",
   "__v": 0
 }
+```
+
+
+### GET http://localhost:8000/api/user/confirm-email/?userId=${userId}&code=${code}
+
+Successful Result:
+```json
+{"status":"OK"}
+```
+Error Results:
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid value",
+      "param": "userId",
+      "location": "body"
+    },
+    {
+      "msg": "Invalid value",
+      "param": "code",
+      "location": "body"
+    }
+  ]
+}
+```
+```json
+{
+  "error": "EMAIL_ALREADY_CONFIRMED",
+  "message": "The email has already been confirmed!"
+}
+```
+```json
+{
+  "error": "INVALID_EMAIL_CODE",
+  "message": "The email code is invalid!"
+}
+```
+### GET http://localhost:8000/api/user/resend-confirm/
+Successful Result:
+```json
+{"status":"OK"}
 ```

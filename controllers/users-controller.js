@@ -14,6 +14,9 @@ const userService = require("../services/user-service");
 // Import Event Service
 const eventService = require("../services/event-service");
 
+// Import Mail Service
+const mailService = require("../services/mail-service");
+
 // Import User Model
 const User = require("../models/User");
 
@@ -132,6 +135,8 @@ const saveAdditionalInformation = async (req, res, next) => {
     user.username = username.replace(" ", "");
     user = await userService.saveUser(user);
 
+    await mailService.sendConfirmMail(user);
+
     res.status(201).json({
       userId: user.id,
       phone: user.phone,
@@ -139,6 +144,7 @@ const saveAdditionalInformation = async (req, res, next) => {
       email: user.email,
     });
   } catch (err) {
+      console.log(err);
     let error = res.status(422).send(err.message);
     next(error);
   }
@@ -218,6 +224,7 @@ const getUserInfo = async (req, res) => {
             username: user.username,
             profilePictureUrl: user.profilePictureUrl,
             balance: balance / EVNT.ONE,
+            emailConfirmed: user.emailConfirmed,
             rank: rank
         });
     } catch (err) {
@@ -391,6 +398,63 @@ const getAMMHistory = async (request, response) => {
     }
 };
 
+const confirmEmail = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(
+            res
+                .status(400)
+                .send(
+                    errors
+                )
+        );
+    }
+
+    // Defining User Inputs
+    const { code, userId } = req.query;
+
+    const user = await userService.getUserById(userId);
+
+    if(user.emailConfirmed) {
+        return next(res
+            .status(403)
+            .send(
+                {error: 'EMAIL_ALREADY_CONFIRMED', message: 'The email has already been confirmed!' }
+            ));
+    }
+
+    if(user.emailCode === code) {
+        user.emailConfirmed = true;
+        await user.save();
+        res
+            .status(200)
+            .send(
+                {status: 'OK'}
+            );
+    } else {
+        res
+            .status(403)
+            .send(
+                {error: 'INVALID_EMAIL_CODE', message: 'The email code is invalid!' }
+            );
+    }
+}
+
+const resendConfirmEmail = async (req, res) => {
+    const userId = req.user.id;
+
+    const user = await userService.getUserById(userId);
+
+    await mailService.sendConfirmMail(user);
+
+    res
+        .status(200)
+        .send(
+            {status: 'OK'}
+        );
+}
+
 exports.login                     = login;
 exports.verfiySms                 = verfiySms;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -402,3 +466,5 @@ exports.getOpenBetsList           = getOpenBetsList;
 exports.getClosedBetsList         = getClosedBetsList;
 exports.getTransactions           = getTransactions;
 exports.getAMMHistory             = getAMMHistory;
+exports.confirmEmail              = confirmEmail;
+exports.resendConfirmEmail        = resendConfirmEmail;
