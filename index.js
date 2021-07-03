@@ -99,6 +99,10 @@ io.on('connection', (socket) => {
         'joinRoom',
         (data) => websocketService.handleJoinRoom(socket, data, userId),
     );
+    socket.on(
+        'leaveRoom',
+        (data) => websocketService.handleLeaveRoom(socket, data, userId),
+    );
 });
 
 // Let server run and listen
