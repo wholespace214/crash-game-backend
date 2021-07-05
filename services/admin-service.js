@@ -58,17 +58,22 @@ exports.initialize = function () {
                             actionType: 'record',
                             isVisible: false,
                             handler: async (request, response, context) => {
+                                const id = context.record.params._id;
+                                const bet = await Bet.findById(id);
+                                const indexOutcome = request.fields.index;
+
+                                const session = await Bet.startSession();
                                 try {
-                                    const id = context.record.params._id;
-                                    const bet = await Bet.findById(id);
-                                    const indexOutcome = request.fields.index;
-                                    const betContract = new BetContract(id);
-                                    await betContract.resolveBet('Wallfair Admin User', indexOutcome);
-                                    context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
-                                    bet.finalOutcome = indexOutcome;
-                                    await bet.save();
-                                } catch (error) {
-                                    console.error(error);
+                                    await session.withTransaction(async () => {
+                                        context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
+                                        bet.finalOutcome = indexOutcome;
+                                        await bet.save();
+
+                                        const betContract = new BetContract(id);
+                                        await betContract.resolveBet('Wallfair Admin User', indexOutcome);
+                                    });
+                                } finally {
+                                    await session.endSession();
                                 }
                                 return {
                                     record: context.record.toJSON(context.currentAdmin),

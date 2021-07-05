@@ -40,12 +40,18 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
     }
 };
 
-exports.isBetTradable = (bet) => {
+exports.isBetTradable = async (bet) => {
         if(bet.finalOutcome !== undefined) {
             return false;
         }
 
-        return bet.date.getTime() <= Date.now();
+        const event = await Event.findById(bet.event);
+
+        if(event.date !== undefined) {
+            return event.date <= Date.now();
+        }
+
+    return bet.date.getTime() <= Date.now();
 };
 
 exports.betCreated = async (bet, userId) => {

@@ -29,11 +29,19 @@ exports.doLogin = async (phone, ref) => {
         });
 
         try {
-            await userService.saveUser(createdUser);
-            createdUser = await userService.getUserByPhone(phone);
-            console.debug('createdUser ' + createdUser.id);
-            await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
+            const session = await User.startSession();
+            try {
+                await session.withTransaction(async () => {
+                    await userService.saveUser(createdUser);
+                    createdUser = await userService.getUserByPhone(phone);
+                    console.debug('createdUser ' + createdUser.id);
+                    await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
+                });
+            } finally {
+                await session.endSession();
+            }
         } catch (err) {
+            console.debug(err);
             throw new Error("Signing up/in failed, please try again later.", 500);
         }
     }
