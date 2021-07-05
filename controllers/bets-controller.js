@@ -203,12 +203,12 @@ const pullOutBet = async (req, res, next) => {
 
                 newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
                 console.debug(LOG_TAG, 'Successfully sold Tokens');
+
+
+                await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
             });
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
-
-            await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
-
             eventService.pullOutBet(userId, bet, amount, outcome, currentPrice);
         } finally {
             await session.endSession();
