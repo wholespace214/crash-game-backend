@@ -2,12 +2,12 @@
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 
 exports.notifyPlacedBet = async (user, bet, amount, outcome) => {
-    const message = `Your trade "${bet.marketQuestion}" on ${bet.outcomes[outcome].name} was successfully placed with ${amount}EVNT`;
+    const message = `Your trade "${bet.marketQuestion}" on ${bet.outcomes[outcome].name} was successfully placed with ${amount} EVNT`;
     await this.sendSms(user.phone, message);
 }
 
 exports.notifyPullOutBet = async (user, bet, amount, outcome) => {
-    const message = `Your trade '${bet.marketQuestion}' on ${bet.outcomes[outcome].name} was successfully sold for ${amount}EVNT`;
+    const message = `Your trade '${bet.marketQuestion}' on ${bet.outcomes[outcome].name} was successfully sold for ${amount} EVNT`;
     await this.sendSms(user.phone, message);
 }
 
