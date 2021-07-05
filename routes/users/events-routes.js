@@ -4,8 +4,9 @@ const router = require("express").Router();
 // Imports from express validator to validate user input
 const { check } = require("express-validator");
 
-// Import User Controller
+// Import controllers
 const eventController = require("../../controllers/events-controller");
+const betController = require("../../controllers/bets-controller");
 
 //Login does register & login
 router.get(
@@ -28,6 +29,7 @@ router.post(
         check("tags"),
         check("streamUrl"),
         check("previewImageUrl"),
+        check("date"),
     ],
     eventController.createEvent
 );
@@ -35,14 +37,14 @@ router.post(
 router.post(
     "/bet/create",
     [
-        check("eventId"),
-        check("marketQuestion"),
+        check("eventId").notEmpty(),
+        check("marketQuestion").notEmpty(),
         check("description"),
         check("hot"),
-        check("outcomes"),
+        check("outcomes").isArray(),
         check("endDate")
     ],
-    eventController.createBet
+    betController.createBet
 );
 
 router.post(
@@ -52,7 +54,7 @@ router.post(
         check("outcome").isNumeric(),
         check("minOutcomeTokens").isNumeric().default(0).optional()
     ],
-    eventController.placeBet
+    betController.placeBet
 );
 
 router.post(
@@ -62,7 +64,7 @@ router.post(
         check("outcome").isNumeric(),
         check("minReturnAmount").isNumeric().default(Number.MAX_SAFE_INTEGER).optional()
     ],
-    eventController.pullOutBet
+    betController.pullOutBet
 );
 
 router.post(
@@ -70,7 +72,7 @@ router.post(
     [
         check("amount").isNumeric()
     ],
-    eventController.calculateBuyOutcome
+    betController.calculateBuyOutcome
 );
 
 router.post(
@@ -78,12 +80,12 @@ router.post(
     [
         check("amount").isNumeric()
     ],
-    eventController.calculateSellOutcome
+    betController.calculateSellOutcome
 );
 
 router.get(
     "/bet/:id/payout",
-    eventController.payoutBet
+    betController.payoutBet
 );
 
 module.exports = router;
