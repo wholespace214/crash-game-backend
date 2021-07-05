@@ -35,8 +35,35 @@ exports.initialize = function () {
                     'name',
                     'phone',
                     'profilePictureUrl',
-                ]
-            }
+                ],
+                actions: {
+                    mint: {
+                        actionType: 'record',
+                        icon: 'Cash',
+                        isVisible: true,
+                        handler: async (request, response, context) => {
+                            const record = context.record;
+                            record.params.balance = await userService.getBalanceOf(record.params._id);
+                            return {
+                                record: record.toJSON(),
+                            }
+                        },
+                        component: AdminBro.bundle('./components/user-mint'),
+                    },
+                    'do-mint': {
+                        // create a totally new action
+                        actionType: 'record',
+                        isVisible: false,
+                        handler: async (request, response, context) => {
+                            const addBalance = request.fields.add;
+                            await userService.mintUser(context.record.params._id, addBalance);
+                            return {
+                                record: context.record.toJSON(context.currentAdmin),
+                            }
+                        },
+                    },
+                }
+            },
         }, {
             resource: Bet,
             options: {

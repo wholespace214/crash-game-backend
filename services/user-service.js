@@ -116,3 +116,11 @@ exports.createUser = async (user) => {
             console.error(error)
         })
 }
+
+exports.getBalanceOf = async (userId) => {
+    return (await EVNT.balanceOf(userId)) / EVNT.ONE;
+}
+
+exports.mintUser  = async (userId, amount) => {
+    await EVNT.mint(userId, amount * EVNT.ONE);
+}
