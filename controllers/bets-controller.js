@@ -50,30 +50,34 @@ const createBet = async (req, res, next) => {
         });
 
         const session = await Bet.startSession();
-        await session.withTransaction(async () => {
-            console.debug(LOG_TAG, 'Save Bet to MongoDB');
-            await eventService.saveBet(createBet);
+        try {
+            await session.withTransaction(async () => {
+                console.debug(LOG_TAG, 'Save Bet to MongoDB');
+                await eventService.saveBet(createBet);
 
-            if (event.bets === undefined) {
-                event.bets = [];
-            }
+                if (event.bets === undefined) {
+                    event.bets = [];
+                }
 
-            console.debug(LOG_TAG, 'Save Bet to Event');
-            event.bets.push(createBet);
-            event = await eventService.saveEvent(event);
+                console.debug(LOG_TAG, 'Save Bet to Event');
+                event.bets.push(createBet);
+                event = await eventService.saveEvent(event);
 
-            const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
-            const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
+                const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
+                const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
 
-            console.debug(LOG_TAG, 'Minting new Tokens');
-            await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
-            console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-            await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+                console.debug(LOG_TAG, 'Minting new Tokens');
+                await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+                console.debug(LOG_TAG, 'Adding Liquidity to the Event');
+                await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+            });
 
             await eventService.betCreated(createBet, req.user.id);
-        });
+        } finally {
+            await session.endSession();
+        }
 
-        await session.endSession();
+
 
         res.status(201).json(event);
     } catch (err) {
@@ -119,26 +123,29 @@ const placeBet = async (req, res, next) => {
         const user = await userService.getUserById(userId);
 
         const session = await Bet.startSession();
-        await session.withTransaction(async () => {
+        try {
+            await session.withTransaction(async () => {
 
-            const betContract      = new BetContract(id, bet.outcomes.length);
-            const investmentAmount = amount * EVNT.ONE;
+                const betContract      = new BetContract(id, bet.outcomes.length);
+                const investmentAmount = amount * EVNT.ONE;
 
-            console.debug(LOG_TAG, 'Successfully bought Tokens');
+                console.debug(LOG_TAG, 'Successfully bought Tokens');
 
-            if(user.openBets.indexOf(bet.id) === -1) {
-                user.openBets.push(bet.id);
-            }
+                if(user.openBets.indexOf(bet.id) === -1) {
+                    user.openBets.push(bet.id);
+                }
+
+                await userService.saveUser(user);
+                console.debug(LOG_TAG, 'Saved user');
+
+                console.debug(LOG_TAG, 'Interacting with the AMM');
+                await betContract.buy(userId, investmentAmount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
+            });
 
             eventService.placeBet(userId, bet, amount, outcome);
-
-            await userService.saveUser(user);
-            console.debug(LOG_TAG, 'Saved user');
-
-            console.debug(LOG_TAG, 'Interacting with the AMM');
-            await betContract.buy(userId, investmentAmount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
-        });
-        await session.endSession();
+        } finally {
+            await session.endSession();
+        }
 
         res.status(200).json(bet);
     } catch (err) {
@@ -186,23 +193,26 @@ const pullOutBet = async (req, res, next) => {
         const sellAmount = amount * EVNT.ONE;
 
         const session = await User.startSession();
-        await session.withTransaction(async () => {
-            console.debug(LOG_TAG, 'Interacting with the AMM');
-            const betContract = new BetContract(id, bet.outcomes.length);
+        try {
+            let newBalances = undefined;
+            await session.withTransaction(async () => {
+                console.debug(LOG_TAG, 'Interacting with the AMM');
+                const betContract = new BetContract(id, bet.outcomes.length);
 
-            console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
+                console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
 
-            const newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
-            console.debug(LOG_TAG, 'Successfully sold Tokens');
+                newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
+                console.debug(LOG_TAG, 'Successfully sold Tokens');
+            });
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
 
             await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
 
             eventService.pullOutBet(userId, bet, amount, outcome, currentPrice);
-        });
-
-        await session.endSession();
+        } finally {
+            await session.endSession();
+        }
 
         res.status(200).json(bet);
     } catch (err) {
@@ -303,21 +313,28 @@ const payoutBet = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        console.debug(LOG_TAG, 'Payout Bet', id, req.user.id);
-        const bet  = await eventService.getBet(id);
-        const user = await userService.getUserById(req.user.id);
+        const session = await User.startSession();
+        try {
+            await session.withTransaction(async () => {
+                console.debug(LOG_TAG, 'Payout Bet', id, req.user.id);
+                const bet  = await eventService.getBet(id);
+                const user = await userService.getUserById(req.user.id);
 
-        console.debug(LOG_TAG, 'Requesting Bet Payout');
-        const betContract = new BetContract(id, bet.outcomes.length);
-        await betContract.getPayout(req.user.id);
+                console.debug(LOG_TAG, 'Payed out Bet');
+                //TODO store more information in closedBets
+                user.openBets = user.openBets.filter(item => item !== bet.id);
+                user.closedBets.push(bet.id);
 
-        console.debug(LOG_TAG, 'Payed out Bet');
-        //TODO store more information in closedBets
-        user.openBets = user.openBets.filter(item => item !== bet.id);
-        user.closedBets.push(bet.id);
+                await userService.saveUser(user);
 
-        await userService.saveUser(user);
+                console.debug(LOG_TAG, 'Requesting Bet Payout');
+                const betContract = new BetContract(id, bet.outcomes.length);
+                await betContract.getPayout(req.user.id);
+            });
 
+        } finally {
+            await session.endSession();
+        }
         res.status(201).json(bet);
     } catch (err) {
         console.error(err.message);
