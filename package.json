@@ -8,7 +8,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "share": "ngrok http 8000 -host-header=\"localhost:8000\"",
     "server": "nodemon index.js"
   },
   "author": "",
@@ -33,7 +32,9 @@
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
     "mailchimp-api-v3": "^1.15.0",
-    "mongoose": "^5.13.1",
+    "mongoose": "^5.13.0",
+    "nodemailer": "^6.6.2",
+    "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

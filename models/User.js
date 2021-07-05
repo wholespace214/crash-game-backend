@@ -60,6 +60,17 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  emailConfirmed: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  emailCode: {
+    type: String,
+    required: false,
+    max: 6,
+    min: 6,
+  },
   date: {
     type: Date,
     required: true,

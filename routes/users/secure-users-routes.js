@@ -44,6 +44,11 @@ router.get(
     userController.getAMMHistory
 )
 
+router.get(
+    "/resend-confirm",
+    userController.resendConfirmEmail
+)
+
 
 router.get("/:userId", userController.getUserInfo);
 

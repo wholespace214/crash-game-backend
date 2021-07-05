@@ -21,4 +21,10 @@ router.post(
 
 router.get("/getUsers", userController.getUsers);
 
+router.get("/confirm-email",
+    [
+    check("userId").isString(),
+    check("code").isLength({ min: 6, max: 6 }),
+], userController.confirmEmail);
+
 module.exports = router;
