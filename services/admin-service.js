@@ -62,11 +62,17 @@ exports.initialize = function () {
                                     const id = context.record.params._id;
                                     const bet = await Bet.findById(id);
                                     const indexOutcome = request.fields.index;
-                                    const betContract = new BetContract(id);
-                                    await betContract.resolveBet('Wallfair Admin User', indexOutcome);
-                                    context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
-                                    bet.finalOutcome = indexOutcome;
-                                    await bet.save();
+
+                                    const session = await Bet.startSession();
+                                    await session.withTransaction(async () => {
+                                        const betContract = new BetContract(id);
+                                        await betContract.resolveBet('Wallfair Admin User', indexOutcome);
+                                        context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
+                                        bet.finalOutcome = indexOutcome;
+                                        return await bet.save();
+                                    });
+
+                                    await session.endSession();
                                 } catch (error) {
                                     console.error(error);
                                 }
