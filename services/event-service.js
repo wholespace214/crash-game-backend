@@ -2,8 +2,9 @@
 const Event = require('../models/Event');
 const Bet   = require('../models/Bet');
 
-//Import websocket service
+//Import services
 const websocketService = require('./websocket-service');
+const smsService = require('./sms-notificaiton-service');
 
 exports.listEvent = async (linkedTo) => {
     return Event.find().populate('bets');
@@ -17,21 +18,25 @@ exports.getBet = async (id) => {
     return Bet.findOne({ _id: id });
 };
 
-exports.placeBet = async (userId, bet, investmentAmount, outcome) => {
+exports.placeBet = async (user, bet, investmentAmount, outcome) => {
     if (bet) {
+        const userId = user.id;
         const eventId = bet.event;
         const betId   = bet._id;
 
         websocketService.emitPlaceBetToAllByEventId(eventId, userId, betId, investmentAmount, outcome);
+        await smsService.notifyPlacedBet(user, bet, investmentAmount, outcome);
     }
 };
 
-exports.pullOutBet = async (userId, bet, amount, outcome, currentPrice) => {
+exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
     if (bet) {
+        const userId = user.id;
         const eventId = bet.event;
         const betId   = bet._id;
 
         websocketService.emitPullOutBetToAllByEventId(eventId, userId, betId, amount, outcome, currentPrice);
+        await smsService.notifyPullOutBet(user, bet, amount, outcome);
     }
 };
 

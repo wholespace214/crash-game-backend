@@ -9,7 +9,7 @@ const { validationResult } = require('express-validator');
 const Event = require('../models/Event');
 const Bet   = require('../models/Bet');
 
-// Import Auth Service
+// Import Services
 const eventService           = require('../services/event-service');
 const userService            = require('../services/user-service');
 const { BetContract, Erc20 } = require('smart_contract_mock');
@@ -93,7 +93,7 @@ const createBet = async (req, res, next) => {
     try {
         // Defining User Inputs
         const { eventId, marketQuestion, description, hot, outcomes, endDate } = req.body;
-        const liquidityAmount                                           = 10000;
+        const liquidityAmount                                           = 214748;
 
         let event = await eventService.getEvent(eventId);
 
@@ -193,7 +193,7 @@ const placeBet = async (req, res, next) => {
             user.openBets.push(bet.id);
         }
 
-        eventService.placeBet(userId, bet, amount, outcome);
+        eventService.placeBet(user, bet, amount, outcome);
 
         await userService.saveUser(user);
         console.debug(LOG_TAG, 'Saved user');
@@ -255,7 +255,7 @@ const pullOutBet = async (req, res, next) => {
 
         await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
 
-        eventService.pullOutBet(userId, bet, amount, outcome, currentPrice);
+        eventService.pullOutBet(user, bet, amount, outcome, currentPrice);
 
         res.status(200).json(bet);
     } catch (err) {
