@@ -3,10 +3,13 @@ const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
-// Import User Service
+// Import services
 const userService = require("../services/user-service");
+const eventService = require("../services/event-service");
 
 const generator = require('generate-password');
+
+const flatten = require('flat');
 
 const AdminBro = require('admin-bro');
 const AdminBroExpress = require('@admin-bro/express');
@@ -38,6 +41,39 @@ exports.initialize = function () {
             resource: Bet,
             options: {
                 actions: {
+                        new: {
+                            after: async (request) => {
+                                const bet = flatten.unflatten(request.record.params, {
+                                    safe: true
+                                });
+
+                                const session = await Event.startSession();
+                                await session.withTransaction(async () => {
+                                    bet.id = bet._id;
+                                    await eventService.provideLiquidityToBet(bet);
+                                    const event = await Event.findById(bet.event);
+                                    event.bets.push(bet.id);
+                                    await event.save();
+                                });
+                                return request
+                            }
+                        },
+                        delete: {
+                            after: async (request) => {
+                                const bet = flatten.unflatten(request.record.params, {
+                                    safe: true
+                                });
+
+                                const session = await Event.startSession();
+                                await session.withTransaction(async () => {
+                                    //TODO maybe remove from mock -> rollback/refund user!
+                                    const event = await Event.findById(bet.event);
+                                    event.bets = event.bets.filter(item => item !== bet.id);
+                                    await event.save();
+                                });
+                                return request
+                            }
+                        },
                         resolve: {
                             // create a totally new action
                             actionType: 'record',

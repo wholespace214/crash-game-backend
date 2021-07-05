@@ -6,6 +6,9 @@ const Bet   = require('../models/Bet');
 const websocketService = require('./websocket-service');
 const smsService = require('./sms-notificaiton-service');
 
+const { BetContract, Erc20 } = require('smart_contract_mock');
+const EVNT                   = new Erc20('EVNT');
+
 exports.listEvent = async (linkedTo) => {
     return Event.find().populate('bets');
 };
@@ -62,6 +65,19 @@ exports.betCreated = async (bet, userId) => {
         websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
     }
 };
+
+
+exports.provideLiquidityToBet = async (createBet) => {
+    const LOG_TAG = '[CREATE-BET]';
+    const liquidityAmount                                           = 214748;
+    const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
+    const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
+
+    console.debug(LOG_TAG, 'Minting new Tokens');
+    await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+    console.debug(LOG_TAG, 'Adding Liquidity to the Event');
+    await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+}
 
 exports.saveEvent = async (event) => {
     return event.save();

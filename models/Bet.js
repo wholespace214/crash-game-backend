@@ -35,11 +35,13 @@ const betSchema = new mongoose.Schema({
     },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true,
     },
     event: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event'
+        ref: 'Event',
+        required: true,
     }
 });
 module.exports = mongoose.model("Bet", betSchema);
