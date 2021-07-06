@@ -33,7 +33,7 @@
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
     "mailchimp-api-v3": "^1.15.0",
-    "mongoose": "^5.13.0",
+    "mongoose": "^5.13.2",
     "nodemailer": "^6.6.2",
     "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.1",
@@ -44,7 +44,7 @@
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.0",
     "twilio": "^3.65.0",
-    "ws": "^7.5.1"
+    "ws": "^7.5.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.9"

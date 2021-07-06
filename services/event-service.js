@@ -17,8 +17,8 @@ exports.getEvent = async (id) => {
     return Event.findOne({ _id: id }).populate('bets');
 };
 
-exports.getBet = async (id) => {
-    return Bet.findOne({ _id: id });
+exports.getBet = async (id, session) => {
+    return Bet.findOne({ _id: id }).session(session);
 };
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
@@ -79,10 +79,10 @@ exports.provideLiquidityToBet = async (createBet) => {
     await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
 }
 
-exports.saveEvent = async (event) => {
-    return event.save();
+exports.saveEvent = async (event, session) => {
+    return event.save({session});
 };
 
-exports.saveBet = async (bet) => {
-    return bet.save();
+exports.saveBet = async (bet, session) => {
+    return bet.save({session});
 };

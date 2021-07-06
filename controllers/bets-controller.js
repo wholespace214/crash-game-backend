@@ -54,7 +54,7 @@ const createBet = async (req, res, next) => {
         try {
             await session.withTransaction(async () => {
                 console.debug(LOG_TAG, 'Save Bet to MongoDB');
-                await eventService.saveBet(createBet);
+                await eventService.saveBet(createBet, session);
 
                 if (event.bets === undefined) {
                     event.bets = [];
@@ -62,7 +62,7 @@ const createBet = async (req, res, next) => {
 
                 console.debug(LOG_TAG, 'Save Bet to Event');
                 event.bets.push(createBet);
-                event = await eventService.saveEvent(event);
+                event = await eventService.saveEvent(event, session);
 
                 await eventService.provideLiquidityToBet(createBet);
             });
@@ -130,7 +130,7 @@ const placeBet = async (req, res, next) => {
                     user.openBets.push(bet.id);
                 }
 
-                await userService.saveUser(user);
+                await userService.saveUser(user, session);
                 console.debug(LOG_TAG, 'Saved user');
 
                 console.debug(LOG_TAG, 'Interacting with the AMM');
@@ -199,8 +199,7 @@ const pullOutBet = async (req, res, next) => {
                 newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
                 console.debug(LOG_TAG, 'Successfully sold Tokens');
 
-
-                await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances);
+                await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances, session);
             });
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
@@ -312,15 +311,15 @@ const payoutBet = async (req, res, next) => {
         try {
             await session.withTransaction(async () => {
                 console.debug(LOG_TAG, 'Payout Bet', id, req.user.id);
-                const bet  = await eventService.getBet(id);
-                const user = await userService.getUserById(req.user.id);
+                const bet  = await eventService.getBet(id, session);
+                const user = await userService.getUserById(req.user.id, session);
 
                 console.debug(LOG_TAG, 'Payed out Bet');
                 //TODO store more information in closedBets
                 user.openBets = user.openBets.filter(item => item !== bet.id);
                 user.closedBets.push(bet.id);
 
-                await userService.saveUser(user);
+                await userService.saveUser(user, session);
 
                 console.debug(LOG_TAG, 'Requesting Bet Payout');
                 const betContract = new BetContract(id, bet.outcomes.length);
