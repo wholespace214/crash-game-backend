@@ -127,5 +127,5 @@ exports.mintUser  = async (userId, amount) => {
 }
 
 exports.getTotalWin = (balance) => {
-    return Math.max(0, balance - initialLiquidity);
+    return Math.max(0, balance - INITIAL_LIQUIDITY);
 }
