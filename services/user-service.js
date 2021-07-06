@@ -37,8 +37,7 @@ exports.rewardRefUser= async (ref) => {
         return;
     }
     console.debug('try to reward ref');
-
-    await EVNT.mint(ref, 50 * EVNT.ONE);
+    await this.mintUser(ref, 50);
 }
 
 exports.securePassword = async (user, password ) => {
@@ -121,6 +120,12 @@ exports.getBalanceOf = async (userId) => {
     return (await EVNT.balanceOf(userId)) / EVNT.ONE;
 }
 
+const INITIAL_LIQUIDITY = 1000;
+
 exports.mintUser  = async (userId, amount) => {
-    await EVNT.mint(userId, amount * EVNT.ONE);
+    await EVNT.mint(userId, amount ? amount  * EVNT.ONE : INITIAL_LIQUIDITY * EVNT.ONE);
+}
+
+exports.getTotalWin = (balance) => {
+    return Math.max(0, balance - initialLiquidity);
 }
