@@ -28,7 +28,7 @@ const Resolve = (props) => {
     const finalOutcome = record.params.finalOutcome !== undefined
             && record.params.finalOutcome.length > 0
             && record.params.outcomes[record.params.finalOutcome].name !== undefined
-            && record.params.finalOutcome > 0 ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
+            && record.params.finalOutcome.length > 0 ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
 
     return (
         <Box variant="grey">

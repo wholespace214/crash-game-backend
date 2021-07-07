@@ -132,15 +132,19 @@ exports.payoutUser = async (user, bet, session) => {
     const betContract = new BetContract(betId, bet.outcomes.length);
     const outcomeTokens = await betContract.getPayout(user.id);
 
-    user.openBets = user.openBets.filter(item => item !== betId);
+    this.clearOpenBetAndAddToClosed(user, bet, outcomeTokens);
+
+    await this.saveUser(user, session);
+}
+
+exports.clearOpenBetAndAddToClosed = (user, bet, outcomeTokens) => {
+    user.openBets = user.openBets.filter(item => item !== bet.id);
     user.closedBets.push({
         betId:            bet.id,
         outcome:          bet.finalOutcome,
         sellAmount: outcomeTokens / EVNT.ONE,
         earnedTokens: outcomeTokens / EVNT.ONE,
     });
-
-    await this.saveUser(user, session);
 }
 
 exports.getBalanceOf = async (userId) => {
