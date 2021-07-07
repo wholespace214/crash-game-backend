@@ -3,18 +3,12 @@ const ChatMessageService = require('./chat-message-service');
 const LOG_TAG = '[SOCKET] ';
 let io        = null;
 
-//const memoryDB = {};
-
 const persist = async (data) => {
-  //memoryDB[data.eventId] = memoryDB[data.eventId] || [];
-  //memoryDB[data.eventId].push(data);
-
   const chatMessage = await ChatMessageService.createChatMessage(data)
   await ChatMessageService.saveChatMessage(chatMessage)
 }
 
 const sendAllMessagesFor = async (eventId, userId) => {
-  //const array = memoryDB[eventId]
   const array = await ChatMessageService.getNewestChatMessagesByEvent(eventId, 100)
   for(const message of array || []) {
     io.to(userId).emit('chatMessage', message)
@@ -40,18 +34,15 @@ exports.handleChatMessage = async function (socket, data, userId) {
     }
 };
 
-exports.handleJoinRoom = async function (socket, data, userId) {
+exports.handleJoinRoom = async function (socket, data) {
+
     try {
         const eventId = data.eventId;
-        const userId = data.userId;
 
-        if (eventId && userId) {
+        if (eventId) {
             socket.join(eventId);
-            socket.join(userId);
-
-            await sendAllMessagesFor(eventId, userId);
         } else {
-            console.debug(LOG_TAG, 'no event or user id in handle join data', data);
+            console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
     } catch (error) {
         console.error(error);
@@ -59,16 +50,16 @@ exports.handleJoinRoom = async function (socket, data, userId) {
     }
 };
 
-exports.handleLeaveRoom = async function (socket, data, userId) {
+exports.handleLeaveRoom = async function (socket, data) {
+    console.info('------------------------------------------ leave room')
     try {
         const eventId = data.eventId;
-        const userId = data.userId;
 
-        if (eventId && userId) {
+        if (eventId) {
             socket.leave(eventId);
-            socket.leave(userId);
+
         } else {
-            console.debug(LOG_TAG, 'no event or user id in handle leave data', data);
+            console.debug(LOG_TAG, 'no event id in handle leave data', data);
         }
     } catch (error) {
         console.error(error);
