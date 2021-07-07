@@ -9,16 +9,63 @@ const smsService = require('./sms-notificaiton-service');
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
+const calculateBetStatus = (bet) => {
+    let status = 'active';
+
+    const {
+        date=undefined,
+        endDate=undefined,
+        evidenceActual='',
+        evidenceDescription='',
+        resolved=false,
+        canceled=false
+    } = bet;
+
+    const now = new Date();
+    if(date && endDate && endDate <= now) {
+        status = 'closed';
+    }
+
+    if(evidenceDescription && evidenceActual && resolved) {
+        status = 'resolved';
+    } else if (canceled) {
+        status = 'canceled'
+    }
+
+    bet.status = status;
+    console.log({bet})
+    return bet;
+}
+exports.calculateBetStatus = calculateBetStatus;
+
+const calculateEventAllBetsStatus = (event) => {
+    for(const bet of event.bets || []) {
+        calculateBetStatus(bet)
+    }
+    return event;
+}
+
+const calculateAllBetsStatus = (eventOrArray) => {
+    const array = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
+
+    array.forEach((event) => calculateEventAllBetsStatus(event))
+
+    console.log({eventOrArray})
+    return eventOrArray
+}
+exports.calculateAllBetsStatus = calculateAllBetsStatus;
+
 exports.listEvent = async (linkedTo) => {
-    return Event.find().populate('bets');
+ return Event.find().populate('bets').map(calculateAllBetsStatus);
 };
 
+
 exports.getEvent = async (id) => {
-    return Event.findOne({ _id: id }).populate('bets');
+    return Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus);
 };
 
 exports.getBet = async (id, session) => {
-    return Bet.findOne({ _id: id }).session(session);
+    return Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
 };
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
