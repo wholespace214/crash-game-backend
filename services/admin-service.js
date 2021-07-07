@@ -123,8 +123,15 @@ exports.initialize = function () {
                             isVisible: false,
                             handler: async (request, response, context) => {
                                 const id = context.record.params._id;
-                                const bet = await Bet.findById(id);
+                                const bet = await eventService.getBet(id);
                                 const indexOutcome = request.fields.index;
+
+                                if(bet.status !== 'active' && bet.status !== 'closed') {
+                                    context.record.params.message = 'Event can only be resolved if it is active or closed';
+                                    return {
+                                        record: context.record.toJSON(context.currentAdmin),
+                                    }
+                                }
 
                                 const session = await Bet.startSession();
                                 try {
