@@ -309,10 +309,12 @@ const payoutBet = async (req, res, next) => {
         const { id } = req.params;
 
         const session = await User.startSession();
+        let bet = {};
+
         try {
             await session.withTransaction(async () => {
                 console.debug(LOG_TAG, 'Payout Bet', id, req.user.id);
-                const bet  = await eventService.getBet(id);
+                bet  = await eventService.getBet(id);
                 const user = await userService.getUserById(req.user.id);
 
                 console.debug(LOG_TAG, 'Payed out Bet');
