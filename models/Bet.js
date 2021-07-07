@@ -28,10 +28,39 @@ const betSchema = new mongoose.Schema({
         required: false,
         max: 255,
     },
+    reasonOfCancellation : {
+        type: String,
+        required: false,
+        max: 1200,
+    },
+    evidenceDescription: {
+        type: String,
+        required: false,
+        max: 1200,
+    },
+    evidenceActual: {
+        type: String,
+        required: false,
+        max: 255,
+    },
     date: {
         type: Date,
         required: true,
         default: Date.now,
+    },
+    endDate: {
+        type: Date,
+        required: false,
+    },
+    resolved: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
+    canceled: {
+        type: Boolean,
+        required: false,
+        default: false,
     },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +71,11 @@ const betSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Event',
         required: true,
+    },
+    status: {
+        type: String,
+        required: false,
+        max: 255,
     }
 });
 module.exports = mongoose.model("Bet", betSchema);
