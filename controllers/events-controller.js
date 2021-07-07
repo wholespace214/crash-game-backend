@@ -10,6 +10,7 @@ const Event = require('../models/Event');
 
 // Import service
 const eventService           = require('../services/event-service');
+const { calculateAllBetsStatus } = require("../services/event-service");
 
 // Controller to sign up a new user
 const listEvents = async (req, res) => {
@@ -25,7 +26,7 @@ const listEvents = async (req, res) => {
 
     res
         .status(201)
-        .json(eventList);
+        .json(calculateAllBetsStatus(eventList));
 };
 
 const getEvent = async (req, res, next) => {
@@ -40,7 +41,7 @@ const getEvent = async (req, res, next) => {
 
     res
         .status(200)
-        .json(await eventService.getEvent(id));
+        .json(calculateAllBetsStatus(await eventService.getEvent(id)));
 };
 
 const createEvent = async (req, res, next) => {
