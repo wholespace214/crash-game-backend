@@ -123,27 +123,23 @@ exports.findAllUserInvestedInBet = async (betId) => {
     return User.find({openBets: {$contains: betId}});
 }
 
-exports.payoutUser = async (user, bet, session) => {
+exports.payoutUser = async (userId, bet) => {
     const betId = bet.id;
     const LOG_TAG = '[PAYOUT-BET]';
-    console.debug(LOG_TAG, 'Payed out Bet', betId, user.id);
+    console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
 
     console.debug(LOG_TAG, 'Requesting Bet Payout');
     const betContract = new BetContract(betId, bet.outcomes.length);
-    const outcomeTokens = await betContract.getPayout(user.id);
-
-    this.clearOpenBetAndAddToClosed(user, bet, outcomeTokens);
-
-    await this.saveUser(user, session);
+    await betContract.getPayout(userId);
 }
 
-exports.clearOpenBetAndAddToClosed = (user, bet, outcomeTokens) => {
+exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
     user.openBets = user.openBets.filter(item => item !== bet.id);
     user.closedBets.push({
         betId:            bet.id,
         outcome:          bet.finalOutcome,
-        sellAmount: outcomeTokens / EVNT.ONE,
-        earnedTokens: outcomeTokens / EVNT.ONE,
+        sellAmount: sellAmount / EVNT.ONE,
+        earnedTokens: earnedTokens / EVNT.ONE,
     });
 }
 

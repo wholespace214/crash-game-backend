@@ -131,12 +131,12 @@ exports.initialize = function () {
                                     await session.withTransaction(async () => {
                                         context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
                                         bet.finalOutcome = indexOutcome;
-                                        await bet.save({session});
 
+                                        const winningUsers = await betService.clearOpenBets(bet, session);
+                                        await bet.save({session});
                                         const betContract = new BetContract(id);
                                         await betContract.resolveBet('Wallfair Admin User', indexOutcome);
-
-                                        await betService.automaticPayout(bet, session);
+                                        await betService.automaticPayout(winningUsers, session);
                                     })
                                 } catch (err){
                                     console.debug(err);
