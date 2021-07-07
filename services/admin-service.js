@@ -131,6 +131,7 @@ exports.initialize = function () {
                                     await session.withTransaction(async () => {
                                         context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
                                         bet.finalOutcome = indexOutcome;
+                                        bet.resolved = true;
 
                                         const winningUsers = await betService.clearOpenBets(bet, session);
                                         await bet.save({session});
