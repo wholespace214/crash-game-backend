@@ -62,6 +62,11 @@ const betSchema = new mongoose.Schema({
         required: false,
         default: false,
     },
+    activeNotificationSend: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
