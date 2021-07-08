@@ -88,4 +88,12 @@ router.get(
     betController.payoutBet
 );
 
+router.get(
+    "/chat-messages/:id",
+    [
+        check("id").notEmpty()
+    ],
+    eventController.getChatMessagesByEventId
+);
+
 module.exports = router;

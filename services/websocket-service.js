@@ -3,23 +3,10 @@ const ChatMessageService = require('./chat-message-service');
 const LOG_TAG = '[SOCKET] ';
 let io        = null;
 
-//const memoryDB = {};
-
 const persist = async (data) => {
-  //memoryDB[data.eventId] = memoryDB[data.eventId] || [];
-  //memoryDB[data.eventId].push(data);
-
   const chatMessage = await ChatMessageService.createChatMessage(data)
   await ChatMessageService.saveChatMessage(chatMessage)
 }
-
-const sendAllMessagesFor = async (eventId, userId) => {
-  //const array = memoryDB[eventId]
-  const array = await ChatMessageService.getNewestChatMessagesByEvent(eventId, 100)
-  for(const message of array || []) {
-    io.emit('chatMessageUser' + userId, message)
-  }
-};
 
 exports.setIO = (newIo) => io = newIo;
 
@@ -33,29 +20,43 @@ exports.handleChatMessage = async function (socket, data, userId) {
 
         await persist(data)
 
-        emitToAllByEventId(eventId, 'chatMessageEvent' + eventId, responseData);
+        emitToAllByEventId(eventId, 'chatMessage', responseData);
     } catch (error) {
         console.error(error);
         console.log(LOG_TAG, 'failed to handle message', data);
     }
 };
 
-exports.handleJoinRoom = async function (socket, data, userId) {
+exports.handleJoinRoom = async function (socket, data) {
+
     try {
         const eventId = data.eventId;
-        const userId = data.userId;
 
-        if (eventId && userId) {
+        if (eventId) {
             socket.join(eventId);
-            socket.join(userId);
-
-            await sendAllMessagesFor(eventId, userId);
         } else {
-            console.debug(LOG_TAG, 'no event or user id in handle join data', data);
+            console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
     } catch (error) {
         console.error(error);
         console.log(LOG_TAG, 'failed to handle join room', data);
+    }
+};
+
+exports.handleLeaveRoom = async function (socket, data) {
+    console.info('------------------------------------------ leave room')
+    try {
+        const eventId = data.eventId;
+
+        if (eventId) {
+            socket.leave(eventId);
+
+        } else {
+            console.debug(LOG_TAG, 'no event id in handle leave data', data);
+        }
+    } catch (error) {
+        console.error(error);
+        console.log(LOG_TAG, 'failed to handle leave room', data);
     }
 };
 
@@ -103,7 +104,7 @@ exports.emitBetCreatedByEventId = (eventId, userId, betId, title) => {
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
-    io.emit(emitEventName, data);
+    io.to(eventId).emit(emitEventName, data);
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;

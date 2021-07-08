@@ -10,6 +10,7 @@ const Event = require('../models/Event');
 
 // Import service
 const eventService           = require('../services/event-service');
+const chatMessageService           = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require("../services/event-service");
 
 // Controller to sign up a new user
@@ -80,6 +81,20 @@ const createEvent = async (req, res, next) => {
     }
 };
 
+const getChatMessagesByEventId = async (req, res, next) => {
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send('Invalid input passed, please check it'));
+    }
+
+    // Defining User Inputs
+    const { id } = req.params;
+    res
+        .status(200)
+        .json(await chatMessageService.getNewestChatMessagesByEvent(id));
+};
 exports.listEvents = listEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.getChatMessagesByEventId = getChatMessagesByEventId;
