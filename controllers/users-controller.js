@@ -216,14 +216,15 @@ const getUsers = async (req, res, next) => {
 const getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
-        const balance = await EVNT.balanceOf(req.params.userId);
+        const balance = await EVNT.balanceOf(req.params.userId) / EVNT.ONE;
         const rank = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
             username: user.username,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance / EVNT.ONE,
+            balance: balance,
+            totalWin: userService.getTotalWin(balance),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
             rank: rank

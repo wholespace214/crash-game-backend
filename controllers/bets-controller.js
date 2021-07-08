@@ -12,6 +12,7 @@ const User   = require('../models/User');
 // Import Auth Service
 const eventService           = require('../services/event-service');
 const userService            = require('../services/user-service');
+
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
@@ -26,7 +27,7 @@ const createBet = async (req, res, next) => {
     try {
         // Defining User Inputs
         const { eventId, marketQuestion, description, hot, outcomes, endDate } = req.body;
-        const liquidityAmount                                           = 10000;
+
 
         let event = await eventService.getEvent(eventId);
 
@@ -63,13 +64,7 @@ const createBet = async (req, res, next) => {
                 event.bets.push(createBet);
                 event = await eventService.saveEvent(event);
 
-                const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
-                const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
-
-                console.debug(LOG_TAG, 'Minting new Tokens');
-                await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
-                console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-                await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+                await eventService.provideLiquidityToBet(createBet);
             });
 
             await eventService.betCreated(createBet, req.user.id);
@@ -314,10 +309,12 @@ const payoutBet = async (req, res, next) => {
         const { id } = req.params;
 
         const session = await User.startSession();
+        let bet = {};
+
         try {
             await session.withTransaction(async () => {
                 console.debug(LOG_TAG, 'Payout Bet', id, req.user.id);
-                const bet  = await eventService.getBet(id);
+                bet  = await eventService.getBet(id);
                 const user = await userService.getUserById(req.user.id);
 
                 console.debug(LOG_TAG, 'Payed out Bet');

@@ -6,16 +6,66 @@ const Bet   = require('../models/Bet');
 const websocketService = require('./websocket-service');
 const smsService = require('./sms-notificaiton-service');
 
+const { BetContract, Erc20 } = require('smart_contract_mock');
+const EVNT                   = new Erc20('EVNT');
+
+const calculateBetStatus = (bet) => {
+    let status = 'active';
+
+    const {
+        date=undefined,
+        endDate=undefined,
+        evidenceActual='',
+        evidenceDescription='',
+        resolved=false,
+        canceled=false
+    } = bet;
+
+    const now = new Date();
+    if(date && endDate && endDate <= now) {
+        status = 'closed';
+    }
+
+    if(evidenceDescription && evidenceActual && resolved) {
+        status = 'resolved';
+    } else if (canceled) {
+        status = 'canceled'
+    }
+
+    bet.status = status;
+    console.log({bet})
+    return bet;
+}
+exports.calculateBetStatus = calculateBetStatus;
+
+const calculateEventAllBetsStatus = (event) => {
+    for(const bet of event.bets || []) {
+        calculateBetStatus(bet)
+    }
+    return event;
+}
+
+const calculateAllBetsStatus = (eventOrArray) => {
+    const array = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
+
+    array.forEach((event) => calculateEventAllBetsStatus(event))
+
+    console.log({eventOrArray})
+    return eventOrArray
+}
+exports.calculateAllBetsStatus = calculateAllBetsStatus;
+
 exports.listEvent = async (linkedTo) => {
-    return Event.find().populate('bets');
+ return Event.find().populate('bets').map(calculateAllBetsStatus);
 };
 
+
 exports.getEvent = async (id) => {
-    return Event.findOne({ _id: id }).populate('bets');
+    return Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus);
 };
 
 exports.getBet = async (id) => {
-    return Bet.findOne({ _id: id });
+    return Bet.findOne({ _id: id }).map(calculateBetStatus);
 };
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
@@ -62,6 +112,19 @@ exports.betCreated = async (bet, userId) => {
         websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
     }
 };
+
+
+exports.provideLiquidityToBet = async (createBet) => {
+    const LOG_TAG = '[CREATE-BET]';
+    const liquidityAmount                                           = 214748;
+    const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
+    const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
+
+    console.debug(LOG_TAG, 'Minting new Tokens');
+    await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+    console.debug(LOG_TAG, 'Adding Liquidity to the Event');
+    await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+}
 
 exports.saveEvent = async (event) => {
     return event.save();

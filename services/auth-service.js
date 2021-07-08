@@ -35,7 +35,7 @@ exports.doLogin = async (phone, ref) => {
                     await userService.saveUser(createdUser);
                     createdUser = await userService.getUserByPhone(phone);
                     console.debug('createdUser ' + createdUser.id);
-                    await EVNT.mint(createdUser.id.toString(), 1000 * EVNT.ONE);
+                    await userService.mintUser(createdUser.id.toString());
                 });
             } finally {
                 await session.endSession();
