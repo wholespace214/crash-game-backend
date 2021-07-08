@@ -8,13 +8,6 @@ const persist = async (data) => {
   await ChatMessageService.saveChatMessage(chatMessage)
 }
 
-const sendAllMessagesFor = async (eventId, userId) => {
-  const array = await ChatMessageService.getNewestChatMessagesByEvent(eventId, 100)
-  for(const message of array || []) {
-    io.to(userId).emit('chatMessage', message)
-  }
-};
-
 exports.setIO = (newIo) => io = newIo;
 
 exports.handleChatMessage = async function (socket, data, userId) {
