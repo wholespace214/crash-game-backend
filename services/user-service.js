@@ -8,16 +8,19 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios')
 
+//Import services
+const eventService = require("./event-service");
+
 //Import sc mock
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
-exports.getUserByPhone = async (phone) => {
-    return User.findOne({phone: phone});
+exports.getUserByPhone = async (phone, session) => {
+    return User.findOne({phone: phone}).session(session);
 };
 
-exports.getUserById = async (id) => {
-    return User.findOne({_id: id});
+exports.getUserById = async (id, session) => {
+    return User.findOne({_id: id}).session(session);
 }
 
 exports.getRefByUserId = async (id) => {
@@ -28,8 +31,8 @@ exports.getRefByUserId = async (id) => {
     return result;
 }
 
-exports.saveUser = async (user) => {
-    return user.save();
+exports.saveUser = async (user, session) => {
+    return user.save({session});
 }
 
 exports.rewardRefUser= async (ref) => {
@@ -51,8 +54,8 @@ exports.comparePassword = async (user, plainPassword ) => {
     return await bcrypt.compare(plainPassword, user.password);
 }
 
-exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
-    const user = await this.getUserById(userId);
+exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session) => {
+    const user = await this.getUserById(userId, session);
     const openBet = user.openBets.find(item => item === bet.id);
 
     if(openBet !== undefined) {
@@ -67,7 +70,7 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances) => {
             });
     }
 
-    await this.saveUser(user);
+    await this.saveUser(user, session);
 }
 
 function filterClosedTrades(user, openBet, newBalances) {
@@ -114,6 +117,30 @@ exports.createUser = async (user) => {
         .catch(error => {
             console.error(error)
         })
+}
+
+exports.findAllUserInvestedInBet = async (betId) => {
+    return User.find({openBets: {$contains: betId}});
+}
+
+exports.payoutUser = async (userId, bet) => {
+    const betId = bet.id;
+    const LOG_TAG = '[PAYOUT-BET]';
+    console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
+
+    console.debug(LOG_TAG, 'Requesting Bet Payout');
+    const betContract = new BetContract(betId, bet.outcomes.length);
+    await betContract.getPayout(userId);
+}
+
+exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
+    user.openBets = user.openBets.filter(item => item !== bet.id);
+    user.closedBets.push({
+        betId:            bet.id,
+        outcome:          bet.finalOutcome,
+        sellAmount: sellAmount / EVNT.ONE,
+        earnedTokens: earnedTokens / EVNT.ONE,
+    });
 }
 
 exports.getBalanceOf = async (userId) => {

@@ -21,7 +21,7 @@ if(process.env.ENVIRONMENT === 'STAGING') {
 mongoose
     .connect(mongoURL, {
         useUnifiedTopology: true,
-        useNewUrlParser:    true
+        useNewUrlParser:    true,
     })
     .then(
         async () => console.log('Connection to Mongo-DB successful'),

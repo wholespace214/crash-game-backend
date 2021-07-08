@@ -9,7 +9,7 @@ const NOTICE_MESSAGE = {
 }
 
 
-const SomeStats = (props) => {
+const Resolve = (props) => {
     const { record } = props;
 
     const addNotice = useNotice()
@@ -23,9 +23,12 @@ const SomeStats = (props) => {
         })
     };
 
-    const showBtn = (record.params.finalOutcome === undefined);
+    const showBtn = (record.params.finalOutcome === undefined || record.params.finalOutcome.length === 0);
 
-    const finalOutcome = record.params.finalOutcome !== undefined&& record.params.outcomes[record.params.finalOutcome].name !== undefined && record.params.finalOutcome !== null ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
+    const finalOutcome = record.params.finalOutcome !== undefined
+            && record.params.finalOutcome.length > 0
+            && record.params.outcomes[record.params.finalOutcome].name !== undefined
+            && record.params.finalOutcome.length > 0 ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
 
     return (
         <Box variant="grey">
@@ -46,4 +49,4 @@ const SomeStats = (props) => {
     )
 }
 
-export default SomeStats
+export default Resolve

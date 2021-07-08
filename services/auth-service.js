@@ -32,8 +32,8 @@ exports.doLogin = async (phone, ref) => {
             const session = await User.startSession();
             try {
                 await session.withTransaction(async () => {
-                    await userService.saveUser(createdUser);
-                    createdUser = await userService.getUserByPhone(phone);
+                    await userService.saveUser(createdUser, session);
+                    createdUser = await userService.getUserByPhone(phone, session);
                     console.debug('createdUser ' + createdUser.id);
                     await userService.mintUser(createdUser.id.toString());
                 });

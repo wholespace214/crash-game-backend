@@ -6,6 +6,7 @@ const Event = require("../models/Event");
 // Import services
 const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
+const betService = require("../services/bet-service");
 
 const generator = require('generate-password');
 
@@ -78,9 +79,9 @@ exports.initialize = function () {
                                 await session.withTransaction(async () => {
                                     bet.id = bet._id;
                                     await eventService.provideLiquidityToBet(bet);
-                                    const event = await Event.findById(bet.event);
+                                    const event = await Event.findById(bet.event).session(session);
                                     event.bets.push(bet.id);
-                                    await event.save();
+                                    await event.save({session});
                                 });
                                 return request
                             }
@@ -94,9 +95,9 @@ exports.initialize = function () {
                                 const session = await Event.startSession();
                                 await session.withTransaction(async () => {
                                     //TODO maybe remove from mock -> rollback/refund user!
-                                    const event = await Event.findById(bet.event);
+                                    const event = await Event.findById(bet.event).session(session);
                                     event.bets = event.bets.filter(item => item !== bet.id);
-                                    await event.save();
+                                    await event.save({session});
                                 });
                                 return request
                             }
@@ -122,19 +123,31 @@ exports.initialize = function () {
                             isVisible: false,
                             handler: async (request, response, context) => {
                                 const id = context.record.params._id;
-                                const bet = await Bet.findById(id);
+                                const bet = await eventService.getBet(id);
                                 const indexOutcome = request.fields.index;
+
+                                if(bet.status !== 'active' && bet.status !== 'closed') {
+                                    context.record.params.message = 'Event can only be resolved if it is active or closed';
+                                    return {
+                                        record: context.record.toJSON(context.currentAdmin),
+                                    }
+                                }
 
                                 const session = await Bet.startSession();
                                 try {
                                     await session.withTransaction(async () => {
                                         context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
                                         bet.finalOutcome = indexOutcome;
-                                        await bet.save();
+                                        bet.resolved = true;
 
+                                        const winningUsers = await betService.clearOpenBets(bet, session);
+                                        await bet.save({session});
                                         const betContract = new BetContract(id);
                                         await betContract.resolveBet('Wallfair Admin User', indexOutcome);
-                                    });
+                                        await betService.automaticPayout(winningUsers, session);
+                                    })
+                                } catch (err){
+                                    console.debug(err);
                                 } finally {
                                     await session.endSession();
                                 }

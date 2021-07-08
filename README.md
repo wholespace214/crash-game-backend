@@ -1,6 +1,14 @@
 # Wallfair. Playmoney V1 Server-Side
 
-### server-side
+# server-side setup
+```
+git clone ...
+cd docker
+docker-compose up -d
+
+# open mongo shell and execute following for setting up cluster
+rs.initiate();
+```
 
 # Api-Endpoints
 

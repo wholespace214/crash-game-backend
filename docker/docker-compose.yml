@@ -2,7 +2,8 @@ version: '3.6'
 
 services:
   mongodb:
-    image: mongo:4.2.3-bionic
+    image: mongo:latest
+    command: --replSet rs0
     container_name: mongodb-wall
     ports:
       - 27017:27017
