@@ -33,7 +33,6 @@ const calculateBetStatus = (bet) => {
     }
 
     bet.status = status;
-    console.log({bet})
     return bet;
 }
 exports.calculateBetStatus = calculateBetStatus;
@@ -50,7 +49,6 @@ const calculateAllBetsStatus = (eventOrArray) => {
 
     array.forEach((event) => calculateEventAllBetsStatus(event))
 
-    console.log({eventOrArray})
     return eventOrArray
 }
 exports.calculateAllBetsStatus = calculateAllBetsStatus;
