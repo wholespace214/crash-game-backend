@@ -146,7 +146,7 @@ exports.emitEventStartNotification = emitEventStartNotification;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
-  io.to(userId).emit(emitEventName, data);
+  io.to(userId).emit(emitEventName, {date: new Date(), ...data});
 };
 
 function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {
