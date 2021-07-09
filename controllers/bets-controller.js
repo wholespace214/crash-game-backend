@@ -92,16 +92,18 @@ const placeBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, outcome, minOutcomeTokens} = req.body;
+        let {amount, outcome, minOutcomeTokens} = req.body;
         const {id} = req.params;
 
         if (amount <= 0) {
             throw Error('Invalid input passed, please check it');
         }
 
-        let minOutcomeTokensToBuy = 1;
+        amount = BigInt(amount);
+
+        let minOutcomeTokensToBuy = 1n;
         if (minOutcomeTokens > 1) {
-            minOutcomeTokensToBuy = minOutcomeTokens;
+            minOutcomeTokensToBuy = BigInt(minOutcomeTokens);
         }
 
         const userId = req.user.id;
@@ -137,14 +139,14 @@ const placeBet = async (req, res, next) => {
                 await betContract.buy(userId, investmentAmount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
             });
 
-            eventService.placeBet(userId, bet, amount, outcome);
+            eventService.placeBet(user, bet, amount, outcome);
         } finally {
             await session.endSession();
         }
 
         res.status(200).json(bet);
     } catch (err) {
-        console.error(err.message);
+        console.error(err);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -160,18 +162,13 @@ const pullOutBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const {amount, outcome, minReturnAmount} = req.body;
+        let {outcome, minReturnAmount} = req.body;
         const {id} = req.params;
 
-        if (amount <= 0) {
-            throw Error("Invalid input passed, please check it");
-        }
-
-        let requiredMinReturnAmount = 0;
+        let requiredMinReturnAmount = 0n;
         if (minReturnAmount) {
-            requiredMinReturnAmount = minReturnAmount;
+            requiredMinReturnAmount = BigInt(minReturnAmount);
         }
-
 
         const userId = req.user.id;
 
@@ -185,7 +182,7 @@ const pullOutBet = async (req, res, next) => {
 
         const user = await userService.getUserById(userId);
 
-        const sellAmount = amount * EVNT.ONE;
+        let sellAmount = undefined;
 
         const session = await User.startSession();
         try {
@@ -194,6 +191,7 @@ const pullOutBet = async (req, res, next) => {
                 console.debug(LOG_TAG, 'Interacting with the AMM');
                 const betContract = new BetContract(id, bet.outcomes.length);
 
+                sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
                 console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
 
                 newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
@@ -203,14 +201,14 @@ const pullOutBet = async (req, res, next) => {
             });
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
-            eventService.pullOutBet(userId, bet, amount, outcome, currentPrice);
+            eventService.pullOutBet(user, bet, sellAmount, outcome, currentPrice);
         } finally {
             await session.endSession();
         }
 
         res.status(200).json(bet);
     } catch (err) {
-        console.error(err.message);
+        console.error(err);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -237,20 +235,20 @@ const calculateBuyOutcome = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Calculating buy outcomes');
         const betContract = new BetContract(id, bet.outcomes.length);
-        const buyAmount = amount * EVNT.ONE;
+        const buyAmount = BigInt(amount) * EVNT.ONE;
 
         const result = [];
 
         for (const outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index) / EVNT.ONE;
-            result.push({index: outcome.index, outcome: outcomeSellAmount});
+            result.push({index: outcome.index, outcome: outcomeSellAmount.toString()});
         }
 
         console.debug(LOG_TAG, 'Buy outcomes successfully calculated', result);
 
         res.status(200).json(result);
     } catch (err) {
-        console.error(err.message);
+        console.error(err);
         let error = res.status(422).send(err.message);
         next(error);
     }
@@ -277,13 +275,13 @@ const calculateSellOutcome = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Calculating Sell Outcomes');
         const betContract = new BetContract(id, bet.outcomes.length);
-        const sellAmount = amount * EVNT.ONE;
+        const sellAmount = BigInt(amount) * EVNT.ONE;
 
         const result = [];
 
         for (const outcome of bet.outcomes) {
             const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index) / EVNT.ONE;
-            result.push({index: outcome.index, outcome: outcomeSellAmount});
+            result.push({index: outcome.index, outcome: outcomeSellAmount.toString()});
         }
 
         console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
