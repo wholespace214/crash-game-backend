@@ -149,23 +149,13 @@ exports.initialize = function () {
                                       await betContract.resolveBet('Wallfair Admin User', indexOutcome);
                                       await betService.automaticPayout(winningUsers, session);
 
-                                      /*
-                                      // sketch of notification call
-                                      // viewUserInvestment is not exported by mock!
-                                      // I don't know how to get result of actual bets at resolve point of time
-
-                                      const users = await User.find({}, { id: 1 });
+                                      const users = await User.find({openBets: id}, { id: 1 });
 
                                       for (const user of users) {
-                                          const { buyer, amount } = await viewUserInvestment(user.id, id, indexOutcome)
-                                          if (amount > 0 && buyer === user.id) {
-                                              websocketService.emitBetResolveNotification(
-                                                user.id, id, bet.marketQuestion, outcome.marketQuestion, outcome.name
-                                              );
-                                          }
+                                          websocketService.emitBetResolveNotification(
+                                            user.id, id, bet.marketQuestion, outcome.marketQuestion, outcome.name
+                                          );
                                       }
-                                      */
-
                                     })
                                 } catch (err){
                                     console.debug(err);
