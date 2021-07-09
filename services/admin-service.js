@@ -6,7 +6,11 @@ const Event = require("../models/Event");
 // Import services
 const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
+<<<<<<< HEAD
 const betService = require("../services/bet-service");
+=======
+const websocketService = require("../services/websocket-service");
+>>>>>>> cce10cb (notifications via websockets, trigger on active bets, sketch for resolve of event)
 
 const generator = require('generate-password');
 
@@ -136,7 +140,9 @@ exports.initialize = function () {
                                 const session = await Bet.startSession();
                                 try {
                                     await session.withTransaction(async () => {
-                                        context.record.params.message = 'The final outcome is ' + bet.outcomes[indexOutcome].marketQuestion;
+                                        const outcome = bet.outcomes[indexOutcome];
+
+                                        context.record.params.message = 'The final outcome is ' + outcome.marketQuestion;
                                         bet.finalOutcome = indexOutcome;
                                         bet.resolved = true;
 
@@ -145,6 +151,25 @@ exports.initialize = function () {
                                         const betContract = new BetContract(id);
                                         await betContract.resolveBet('Wallfair Admin User', indexOutcome);
                                         await betService.automaticPayout(winningUsers, session);
+
+                                        /*
+                                        // sketch of notification call
+                                        // viewUserInvestment is not exported by mock!
+                                        // I don't know how to get result of actual bets at resolve point of time
+
+                                        const users = await User.find({}, { id: 1 });
+
+                                        for (const user of users) {
+                                            const { buyer, amount } = await viewUserInvestment(user.id, id, indexOutcome)
+                                            if (amount > 0 && buyer === user.id) {
+                                                websocketService.emitBetResolveNotification(
+                                                  user.id, id, bet.marketQuestion, outcome.marketQuestion, outcome.name
+                                                );
+                                            }
+                                        }
+                                        */
+
+
                                     })
                                 } catch (err){
                                     console.debug(err);

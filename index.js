@@ -9,6 +9,8 @@ const http    = require('http');
 //Import admin service
 const adminService = require('./services/admin-service');
 
+const { initBetsJobs } = require("./jobs/bets-jobs");
+
 // Import mongoose to connect to Database
 const mongoose = require('mongoose');
 
@@ -28,7 +30,7 @@ mongoose
     )
     .catch(
         (error) => console.log(error),
-    );
+    ).then(initBetsJobs);
 
 adminService.setMongoose(mongoose);
 adminService.initialize();

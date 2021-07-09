@@ -30,12 +30,18 @@ exports.handleChatMessage = async function (socket, data, userId) {
 exports.handleJoinRoom = async function (socket, data) {
 
     try {
-        const eventId = data.eventId;
+        const {eventId, userId} = data;
 
         if (eventId) {
             socket.join(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle join data', data);
+        }
+
+        if (userId) {
+            socket.join(userId);
+        } else {
+            console.debug(LOG_TAG, 'no user id in handle join data', data);
         }
     } catch (error) {
         console.error(error);
@@ -46,13 +52,18 @@ exports.handleJoinRoom = async function (socket, data) {
 exports.handleLeaveRoom = async function (socket, data) {
     console.info('------------------------------------------ leave room')
     try {
-        const eventId = data.eventId;
+        const {eventId, userId} = data;
 
         if (eventId) {
             socket.leave(eventId);
-
         } else {
             console.debug(LOG_TAG, 'no event id in handle leave data', data);
+        }
+
+        if (userId) {
+            socket.leave(userId);
+        } else {
+            console.debug(LOG_TAG, 'no user id in handle leave data', data);
         }
     } catch (error) {
         console.error(error);
@@ -108,6 +119,35 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
+
+const notificationTypes = {
+  EVENT_START: 'Notification/EVENT_START',
+  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
+  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
+}
+
+const emitEventStartNotification = (userId, eventId, eventName) => {
+  const message = `The event ${eventName} begins in 60s. Place your token.`;
+  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
+}
+exports.emitEventStartNotification = emitEventStartNotification;
+
+const emitBetResolveNotification = (userId, betId, betQuestion, betOutcome, winToken) => {
+  const message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You won/lost ${winToken}.`;
+  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_RESOLVE, betId, message });
+}
+exports.emitBetResolveNotification = emitBetResolveNotification;
+
+const emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
+  const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
+  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
+}
+exports.emitEventStartNotification = emitEventStartNotification;
+
+const emitToAllByUserId = (userId, emitEventName, data) => {
+  console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
+  io.to(userId).emit(emitEventName, data);
+};
 
 function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {
     return {
