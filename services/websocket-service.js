@@ -65,7 +65,7 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) =
         {
             eventId,
             betId,
-            amount,
+            amount: amount.toString(),
             outcome,
         },
         userId,
@@ -79,9 +79,9 @@ exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome,
         {
             eventId,
             betId,
-            amount,
+            amount: amount.toString(),
             outcome,
-            currentPrice,
+            currentPrice: currentPrice.toString(),
         },
         userId,
     );

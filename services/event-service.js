@@ -33,7 +33,6 @@ const calculateBetStatus = (bet) => {
     }
 
     bet.status = status;
-    console.log({bet})
     return bet;
 }
 exports.calculateBetStatus = calculateBetStatus;
@@ -50,7 +49,6 @@ const calculateAllBetsStatus = (eventOrArray) => {
 
     array.forEach((event) => calculateEventAllBetsStatus(event))
 
-    console.log({eventOrArray})
     return eventOrArray
 }
 exports.calculateAllBetsStatus = calculateAllBetsStatus;
@@ -116,7 +114,7 @@ exports.betCreated = async (bet, userId) => {
 
 exports.provideLiquidityToBet = async (createBet) => {
     const LOG_TAG = '[CREATE-BET]';
-    const liquidityAmount                                           = 214748;
+    const liquidityAmount                                           = 214748n;
     const liquidityProviderWallet = 'LIQUIDITY_' + createBet.id;
     const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
 

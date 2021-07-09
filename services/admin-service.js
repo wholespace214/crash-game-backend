@@ -1,4 +1,4 @@
-const {BetContract} = require('smart_contract_mock');
+const {BetContract, Wallet} = require('smart_contract_mock');
 const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
@@ -86,22 +86,41 @@ exports.initialize = function () {
                                 return request
                             }
                         },
-                        delete: {
-                            after: async (request) => {
-                                const bet = flatten.unflatten(request.record.params, {
-                                    safe: true
-                                });
+                        cancel: {
+                            // create a totally new action
+                            actionType: 'record',
+                            icon: 'Cancel',
+                            isVisible: true,
+                            handler: async (request, response, context) => {
+                                return {
+                                    record: context.record.toJSON(),
+                                }
+                            },
+                            component: AdminBro.bundle('./components/bet-cancel'),
+                        },
+                    'do-cancel': {
+                        // create a totally new action
+                        actionType: 'record',
+                        isVisible: false,
+                        handler: async (request, response, context) => {
+                            const session = await Bet.startSession();
+                            await session.withTransaction(async () => {
+                                const dbBet = await eventService.getBet(request.params.recordId, session);
+                                dbBet.canceled = true;
+                                dbBet.reasonOfCancellation = request.fields.reason;
 
-                                const session = await Event.startSession();
-                                await session.withTransaction(async () => {
-                                    //TODO maybe remove from mock -> rollback/refund user!
-                                    const event = await Event.findById(bet.event).session(session);
-                                    event.bets = event.bets.filter(item => item !== bet.id);
-                                    await event.save({session});
-                                });
-                                return request
+                                await betService.refundUserHistory(dbBet, session);
+                                await eventService.saveBet(dbBet, session);
+
+                                const betContract = new BetContract(dbBet.id);
+                                await betContract.refund();
+                            });
+                            return {
+                                record: context.record.toJSON(),
                             }
                         },
+                        component: AdminBro.bundle('./components/bet-cancel'),
+                    },
                         resolve: {
                             // create a totally new action
                             actionType: 'record',
@@ -140,14 +159,12 @@ exports.initialize = function () {
                                         bet.finalOutcome = indexOutcome;
                                         bet.resolved = true;
 
-                                        const winningUsers = await betService.clearOpenBets(bet, session);
+
+                                        await betService.clearOpenBets(bet, session);
                                         await bet.save({session});
                                         const betContract = new BetContract(id);
-                                        await betContract.resolveBet('Wallfair Admin User', indexOutcome);
-                                        await betService.automaticPayout(winningUsers, session);
+                                        await betContract.resolveAndPayout('Wallfair Admin User', indexOutcome);
                                     })
-                                } catch (err){
-                                    console.debug(err);
                                 } finally {
                                     await session.endSession();
                                 }

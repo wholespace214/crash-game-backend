@@ -216,15 +216,15 @@ const getUsers = async (req, res, next) => {
 const getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
-        const balance = await EVNT.balanceOf(req.params.userId) / EVNT.ONE;
+        const balance = await EVNT.balanceOf(req.params.userId) / BigInt(EVNT.ONE);
         const rank = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
             username: user.username,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance,
-            totalWin: userService.getTotalWin(balance),
+            balance: balance.toString(),
+            totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
             rank: rank
@@ -294,7 +294,7 @@ const getOpenBetsList = async (request, response) => {
                 const betEvent = await Bet.findById(openBetId);
 
                 //TODO For the payout function, the bet may have to be displayed as an open bet!
-                if(betEvent.finalOutcome !== undefined) {
+                if(betEvent.finalOutcome !== undefined && betEvent.finalOutcome.length > 0) {
                     continue;
                 }
 
@@ -312,8 +312,8 @@ const getOpenBetsList = async (request, response) => {
                     const openBet = {
                         betId:            openBetId,
                         outcome:          outcome.index,
-                        investmentAmount: investment / EVNT.ONE,
-                        outcomeAmount: balance / EVNT.ONE
+                        investmentAmount: (investment / EVNT.ONE).toString(),
+                        outcomeAmount: (balance / EVNT.ONE).toString()
                     };
 
                     openBets.push(openBet);
@@ -379,9 +379,9 @@ const getAMMHistory = async (request, response) => {
             for (const interaction of interactions) {
                 transactions.push({
                     ...interaction,
-                    investmentamount:    interaction.investmentamount / EVNT.ONE,
-                    feeamount:           interaction.feeamount / EVNT.ONE,
-                    outcometokensbought: interaction.outcometokensbought / EVNT.ONE,
+                    investmentamount:    (BigInt(interaction.investmentamount) / EVNT.ONE).toString(),
+                    feeamount:           (BigInt(interaction.feeamount) / EVNT.ONE).toString(),
+                    outcometokensbought: (BigInt(interaction.outcometokensbought) / EVNT.ONE).toString(),
                 });
             }
 
