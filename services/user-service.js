@@ -88,7 +88,7 @@ exports.getRankByUserId = async (userId) => {
 
     for (const user of users) {
         const balance = await EVNT.balanceOf(user.id);
-        usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
+        usersWithBalance.push({userId: user.id, name: user.name, balance: (balance / EVNT.ONE).toString()});
     }
 
     usersWithBalance.sort(function (a, b) {

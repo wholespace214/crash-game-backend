@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 
 let mongoURL = process.env.DB_CONNECTION;
 if(process.env.ENVIRONMENT === 'STAGING') {
+    mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
     mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/staging.crt';
 }
 

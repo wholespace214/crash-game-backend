@@ -196,7 +196,7 @@ const getUsers = async (req, res, next) => {
       if(user.username === undefined || user.username === null) {
           continue;
       }
-    usersWithBalance.push({userId: user.id, name: user.username, balance: balance / EVNT.ONE});
+    usersWithBalance.push({userId: user.id, name: user.username, balance: (balance / EVNT.ONE).toString()});
   }
 
     usersWithBalance.sort(function (a, b) {
