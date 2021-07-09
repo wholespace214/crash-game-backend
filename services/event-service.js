@@ -50,18 +50,28 @@ const calculateAllBetsStatus = (eventOrArray) => {
 
     array.forEach((event) => calculateEventAllBetsStatus(event))
 
-    console.log({eventOrArray})
     return eventOrArray
 }
 exports.calculateAllBetsStatus = calculateAllBetsStatus;
 
+const filterPublishedBets = (eventOrArray) => {
+    const array = Array.isArray(eventOrArray) ? eventOrArray : [eventOrArray];
+
+    array.forEach((event) => {
+        event.bets = (event.bets || []).filter((bet) => bet.published)
+    })
+
+    return eventOrArray
+}
+exports.filterPublishedBets = filterPublishedBets;
+
 exports.listEvent = async (linkedTo) => {
- return Event.find().populate('bets').map(calculateAllBetsStatus);
+ return Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 };
 
 
 exports.getEvent = async (id) => {
-    return Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus);
+    return Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 };
 
 exports.getBet = async (id, session) => {
