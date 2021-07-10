@@ -173,6 +173,7 @@ exports.initialize = function () {
                                               user.id, id, bet.marketQuestion, outcome.marketQuestion, outcome.name
                                             );
                                         }
+                                        
                                       })
                                 } finally {
                                     await session.endSession();
