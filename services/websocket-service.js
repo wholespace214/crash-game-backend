@@ -4,9 +4,9 @@ const LOG_TAG = '[SOCKET] ';
 let io        = null;
 
 const persist = async (data) => {
-  const chatMessage = await ChatMessageService.createChatMessage(data)
-  await ChatMessageService.saveChatMessage(chatMessage)
-}
+    const chatMessage = await ChatMessageService.createChatMessage(data);
+    await ChatMessageService.saveChatMessage(chatMessage);
+};
 
 exports.setIO = (newIo) => io = newIo;
 
@@ -18,7 +18,7 @@ exports.handleChatMessage = async function (socket, data, userId) {
 
         console.debug(LOG_TAG, 'user ' + userId + ' sends message "' + message + '"');
 
-        await persist(data)
+        await persist(data);
 
         emitToAllByEventId(eventId, 'chatMessage', responseData);
     } catch (error) {
@@ -33,7 +33,7 @@ exports.handleJoinRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
-            socket.join(eventId);
+            await socket.join(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
@@ -50,7 +50,7 @@ exports.handleJoinRoom = async function (socket, data) {
 };
 
 exports.handleLeaveRoom = async function (socket, data) {
-    console.info('------------------------------------------ leave room')
+    console.info('------------------------------------------ leave room');
     try {
         const {eventId, userId} = data;
 
@@ -76,7 +76,7 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) =
         {
             eventId,
             betId,
-            amount,
+            amount: amount.toString(),
             outcome,
         },
         userId,
@@ -90,9 +90,9 @@ exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome,
         {
             eventId,
             betId,
-            amount,
+            amount:       amount.toString(),
             outcome,
-            currentPrice,
+            currentPrice: currentPrice.toString(),
         },
         userId,
     );

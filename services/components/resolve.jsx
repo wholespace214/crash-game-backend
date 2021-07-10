@@ -23,7 +23,7 @@ const Resolve = (props) => {
         })
     };
 
-    const showBtn = (record.params.finalOutcome === undefined || record.params.finalOutcome.length === 0);
+    const showBtn = (record.params.finalOutcome === undefined || record.params.finalOutcome.length === 0) && !record.params.canceled;
 
     const finalOutcome = record.params.finalOutcome !== undefined
             && record.params.finalOutcome.length > 0
@@ -34,16 +34,20 @@ const Resolve = (props) => {
         <Box variant="grey">
             <Box variant="white">
                 <H3>Resolve BET - {record.params.marketQuestion}</H3>
-                <Box>
-                    <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: ' + finalOutcome} </p>
-                    <br />
-                    {console.log(record.params.outcomes)}
-                    <p>
-                        { showBtn && record.params.outcomes !== undefined &&
+                    <Box>
+                        <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: ' + finalOutcome} </p>
+                        <br />
+
+                        <p>
+                            { showBtn && record.params.outcomes !== undefined &&
                             record.params.outcomes.map(obj => <Button onClick={() => {callAction(record, obj.index);}}>{obj.name}</Button>)
-                        }
-                    </p>
-                </Box>
+                            }
+                        </p>
+                    </Box>
+                { record.params.canceled &&
+                    <p>Bet already cancelled</p>
+                }
+
             </Box>
         </Box>
     )

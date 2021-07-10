@@ -65,8 +65,8 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session)
             {
                 betId:            bet.id,
                 outcome:          outcome ,
-                sellAmount: sellAmount / EVNT.ONE,
-                earnedTokens: newBalances.earnedTokens / EVNT.ONE,
+                sellAmount: (sellAmount / EVNT.ONE).toString(),
+                earnedTokens: (newBalances.earnedTokens / EVNT.ONE).toString(),
             });
     }
 
@@ -88,7 +88,7 @@ exports.getRankByUserId = async (userId) => {
 
     for (const user of users) {
         const balance = await EVNT.balanceOf(user.id);
-        usersWithBalance.push({userId: user.id, name: user.name, balance: balance / EVNT.ONE});
+        usersWithBalance.push({userId: user.id, name: user.name, balance: (balance / EVNT.ONE).toString()});
     }
 
     usersWithBalance.sort(function (a, b) {
@@ -138,8 +138,8 @@ exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
     user.closedBets.push({
         betId:            bet.id,
         outcome:          bet.finalOutcome,
-        sellAmount: sellAmount / EVNT.ONE,
-        earnedTokens: earnedTokens / EVNT.ONE,
+        sellAmount: (sellAmount / EVNT.ONE).toString(),
+        earnedTokens: (earnedTokens / EVNT.ONE).toString(),
     });
 }
 
@@ -147,12 +147,13 @@ exports.getBalanceOf = async (userId) => {
     return (await EVNT.balanceOf(userId)) / EVNT.ONE;
 }
 
-const INITIAL_LIQUIDITY = 1000;
+const INITIAL_LIQUIDITY = 1000n;
 
 exports.mintUser  = async (userId, amount) => {
     await EVNT.mint(userId, amount ? amount  * EVNT.ONE : INITIAL_LIQUIDITY * EVNT.ONE);
 }
 
 exports.getTotalWin = (balance) => {
-    return Math.max(0, balance - INITIAL_LIQUIDITY);
+    const value = balance - INITIAL_LIQUIDITY;
+    return value < 0n ? 0n : value;
 }

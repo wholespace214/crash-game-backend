@@ -52,6 +52,11 @@ const betSchema = new mongoose.Schema({
         type: Date,
         required: false,
     },
+    published: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
     resolved: {
         type: Boolean,
         required: false,
