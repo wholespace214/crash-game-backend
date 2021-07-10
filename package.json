@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "server": "nodemon index.js"
+    "server": "nodemon index.js",
+    "share": "ngrok http 8000 -host-header=\"localhost:8000\""
   },
   "author": "",
   "license": "ISC",

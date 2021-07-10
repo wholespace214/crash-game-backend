@@ -55,7 +55,7 @@ exports.handleLeaveRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
-            socket.leave(eventId);
+            await socket.leave(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle leave data', data);
         }
