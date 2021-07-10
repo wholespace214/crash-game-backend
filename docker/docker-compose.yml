@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:4.4.3
     command: --replSet rs0
     container_name: mongodb-wall
     ports:
@@ -17,8 +17,6 @@ services:
       # named volumes
       - mongodb:/data/db
       - mongoconfig:/data/configdb
-    networks:
-      - mongo_net
   postgres:
     image: postgres
     hostname: postgres
@@ -35,7 +33,3 @@ volumes:
   mongodb:
   mongoconfig:
   postgres-data:
-
-networks:
-  mongo_net:
-    driver: bridge
