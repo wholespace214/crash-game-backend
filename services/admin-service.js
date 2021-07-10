@@ -7,6 +7,7 @@ const Event = require("../models/Event");
 const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
 const betService = require("../services/bet-service");
+const websocketService = require("../services/websocket-service");
 
 const generator = require('generate-password');
 
@@ -164,7 +165,16 @@ exports.initialize = function () {
                                         await bet.save({session});
                                         const betContract = new BetContract(id);
                                         await betContract.resolveAndPayout('Wallfair Admin User', indexOutcome);
-                                    })
+
+                                        const users = await User.find({openBets: id}, { id: 1 });
+
+                                        for (const user of users) {
+                                            websocketService.emitBetResolveNotification(
+                                              user.id, id, bet.marketQuestion, outcome.marketQuestion, outcome.name
+                                            );
+                                        }
+                                        
+                                      })
                                 } finally {
                                     await session.endSession();
                                 }
