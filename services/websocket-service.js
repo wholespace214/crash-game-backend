@@ -115,7 +115,7 @@ exports.emitBetCreatedByEventId = (eventId, userId, betId, title) => {
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
-    io.to(eventId).emit(emitEventName, data);
+    io.to(eventId.toString()).emit(emitEventName, data);
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
@@ -146,7 +146,7 @@ exports.emitEventStartNotification = emitEventStartNotification;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
-  io.to(userId).emit(emitEventName, {date: new Date(), ...data});
+  io.to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
 };
 
 function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {
