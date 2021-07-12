@@ -150,7 +150,7 @@ exports.getBalanceOf = async (userId) => {
 const INITIAL_LIQUIDITY = 1000n;
 
 exports.mintUser  = async (userId, amount) => {
-    await EVNT.mint(userId, amount ? amount  * EVNT.ONE : INITIAL_LIQUIDITY * EVNT.ONE);
+    await EVNT.mint(userId, amount ? BigInt(amount)  * EVNT.ONE : INITIAL_LIQUIDITY * EVNT.ONE);
 }
 
 exports.getTotalWin = (balance) => {

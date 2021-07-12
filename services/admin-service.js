@@ -48,7 +48,7 @@ exports.initialize = function () {
                 const record = context.record;
                 record.params.balance = await userService.getBalanceOf(
                   record.params._id
-                );
+                ).toString();
                 return {
                   record: record.toJSON(),
                 };
