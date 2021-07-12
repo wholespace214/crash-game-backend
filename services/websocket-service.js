@@ -71,7 +71,7 @@ exports.handleLeaveRoom = async function (socket, data) {
     }
 };
 
-exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) => {
+exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outcome) => {
     const betPlacedData = getCopyWithBaseResponseData(
         {
             eventId,
@@ -82,10 +82,10 @@ exports.emitPlaceBetToAllByEventId = (eventId, userId, betId, amount, outcome) =
         userId,
     );
 
-    emitToAllByEventId(eventId, 'betPlaced', betPlacedData);
+    await handleBetMessage(eventId, 'betPlaced', betPlacedData);
 };
 
-exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome, currentPrice) => {
+exports.emitPullOutBetToAllByEventId = async (eventId, userId, betId, amount, outcome, currentPrice) => {
     const betPulledOutData = getCopyWithBaseResponseData(
         {
             eventId,
@@ -97,10 +97,10 @@ exports.emitPullOutBetToAllByEventId = (eventId, userId, betId, amount, outcome,
         userId,
     );
 
-    emitToAllByEventId(eventId, 'betPulledOut', betPulledOutData);
+    await handleBetMessage(eventId, 'betPulledOut', betPulledOutData);
 };
 
-exports.emitBetCreatedByEventId = (eventId, userId, betId, title) => {
+exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
     const betCreationData = getCopyWithBaseResponseData(
         {
             eventId,
@@ -110,7 +110,12 @@ exports.emitBetCreatedByEventId = (eventId, userId, betId, title) => {
         userId,
     );
 
-    emitToAllByEventId(eventId, 'betCreated', betCreationData);
+    await handleBetMessage(eventId, 'betCreated', betCreationData);
+};
+
+const handleBetMessage = async (eventId, emitEventName, data) => {
+  await persist(data);
+  emitToAllByEventId(eventId, emitEventName, data);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
