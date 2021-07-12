@@ -9,8 +9,16 @@ const smsService = require('./sms-notificaiton-service');
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
+const BET_STATUS = {
+    active: 'active',
+    closed: 'closed',
+    resolved: 'resolved',
+    canceled: 'canceled',
+};
+exports.BET_STATUS = BET_STATUS;
+
 const calculateBetStatus = (bet) => {
-    let status = 'active';
+    let status = BET_STATUS.active;
 
     const {
         date=undefined,
@@ -23,13 +31,13 @@ const calculateBetStatus = (bet) => {
 
     const now = new Date();
     if(date && endDate && endDate <= now) {
-        status = 'closed';
+        status = BET_STATUS.closed;
     }
 
     if(evidenceDescription && evidenceActual && resolved) {
-        status = 'resolved';
+        status = BET_STATUS.resolved;
     } else if (canceled) {
-        status = 'canceled'
+        status = BET_STATUS.canceled
     }
 
     bet.status = status;
@@ -100,6 +108,10 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 };
 
 exports.isBetTradable = async (bet) => {
+        if(bet.status !== BET_STATUS.active) {
+            return false;
+        }
+
         if(bet.finalOutcome !== undefined) {
             return false;
         }
