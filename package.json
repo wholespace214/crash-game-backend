@@ -16,6 +16,7 @@
   "dependencies": {
     "@admin-bro/express": "^3.1.0",
     "@admin-bro/mongoose": "^1.1.0",
+    "@socket.io/redis-adapter": "7.0.0",
     "admin-bro": "^4.0.1",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
@@ -40,6 +41,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "redis": "3.1.2",
     "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock",
     "socket.io": "^4.1.2",
     "socketio-jwt": "^4.6.2",

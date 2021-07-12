@@ -52,6 +52,8 @@ const httpServer  = http.createServer(server);
 
 const socketioJwt = require('socketio-jwt');
 const { Server }  = require('socket.io');
+const { createAdapter } = require("@socket.io/redis-adapter");
+const { createClient } = require("redis");
 const io          = new Server(httpServer, {
     cors: {
         origin:         '*',
@@ -60,6 +62,11 @@ const io          = new Server(httpServer, {
         credentials:    true,
     },
 });
+
+const pubClient = createClient({ host: "localhost", port: 6379 });
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
 
 websocketService.setIO(io);
 
