@@ -1,5 +1,34 @@
 const mongoose = require("mongoose");
 
+const Outcome = new mongoose.Schema({
+    index: Number,
+    name: String,
+});
+
+exports.BetTemplate = new mongoose.Schema({
+    betDuration: {
+        type: Number,
+    },
+    creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    marketQuestion: {
+        type: String,
+        max: 255,
+    },
+    description: {
+        type: String,
+        max: 1200,
+    },
+    hot: {
+        type: Boolean,
+    },
+    outcomes: [{
+        type: Outcome
+    }],
+});
+
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -11,6 +40,7 @@ const eventSchema = new mongoose.Schema({
             required: true,
             max: 255,
     },
+    betTemplate: this.BetTemplate,
     streamUrl: {
         type: String,
         required: true,
