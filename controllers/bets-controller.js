@@ -198,10 +198,12 @@ const pullOutBet = async (req, res, next) => {
                 console.debug(LOG_TAG, 'Successfully sold Tokens');
 
                 await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances, session);
-            });
+            }).catch(err => console.debug(err));
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
             eventService.pullOutBet(user, bet, sellAmount, outcome, currentPrice);
+        } catch (err) {
+            console.error(err);
         } finally {
             await session.endSession();
         }

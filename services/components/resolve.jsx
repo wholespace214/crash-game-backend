@@ -1,5 +1,5 @@
 import React, { } from 'react'
-import { Box, H3, Button} from '@admin-bro/design-system'
+import {Box, H3, Button, Input, Label} from '@admin-bro/design-system'
 import { ApiClient, useNotice} from 'admin-bro'
 import * as qs from "qs";
 const api = new ApiClient()
@@ -11,16 +11,25 @@ const NOTICE_MESSAGE = {
 
 const Resolve = (props) => {
     const { record } = props;
+    let evidenceDescription = '';
+    let evidenceActual = '';
 
     const addNotice = useNotice()
 
-    const callAction = (record, index) => {
+    const callAction = (record, index, evidenceDescription, evidenceActual) => {
         api.recordAction({ recordId: record.id, actionName: 'do-resolve', resourceId: 'Bet',
-            data: qs.stringify({index})}).then(res => {
+            data: qs.stringify({index, evidenceDescription, evidenceActual})}).then(res => {
             addNotice(NOTICE_MESSAGE);
 
             window.location.reload(true);
-        })
+        });
+    };
+
+    const handleChangeDes = (e) => {
+        evidenceDescription = e.target.value;
+    };
+    const handleChangeEvidence = (e) => {
+        evidenceActual = e.target.value;
     };
 
     const showBtn = (record.params.finalOutcome === undefined || record.params.finalOutcome.length === 0) && !record.params.canceled;
@@ -38,9 +47,27 @@ const Resolve = (props) => {
                         <p>{showBtn ? 'This action cannot be reversed! Pick the final outcome to resolve the trade!' : 'The final outcome is: ' + finalOutcome} </p>
                         <br />
 
+                        { showBtn &&
+                            <div>
+                                <Label>Evidence Description</Label>
+                                <Input onChange={handleChangeDes} type="text"></Input>
+
+                                <br/>
+                                <br/>
+                                <br/>
+
+                                <Label>Evidence Actual</Label>
+                                <Input onChange={handleChangeEvidence} type="text"></Input>
+                            </div>
+                        }
+
+                        <br/>
+                        <br/>
+
                         <p>
                             { showBtn && record.params.outcomes !== undefined &&
-                            record.params.outcomes.map(obj => <Button onClick={() => {callAction(record, obj.index);}}>{obj.name}</Button>)
+                            record.params.outcomes.map(obj =>
+                                <Button onClick={() => {callAction(record, obj.index, evidenceDescription, evidenceActual);}} style={{margin: "0px 15px 0px 0px"}}>{obj.name}</Button>)
                             }
                         </p>
                     </Box>

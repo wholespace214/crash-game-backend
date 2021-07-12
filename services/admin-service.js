@@ -46,9 +46,9 @@ exports.initialize = function () {
               isVisible: true,
               handler: async (request, response, context) => {
                 const record = context.record;
-                record.params.balance = await userService.getBalanceOf(
-                  record.params._id
-                ).toString();
+                record.params.balance = await userService
+                  .getBalanceOf(record.params._id)
+                  .toString();
                 return {
                   record: record.toJSON(),
                 };
@@ -157,6 +157,8 @@ exports.initialize = function () {
                 const id = context.record.params._id;
                 const bet = await eventService.getBet(id);
                 const indexOutcome = request.fields.index;
+                const evidenceActual = request.fields.evidenceActual;
+                const evidenceDescription = request.fields.evidenceDescription;
 
                 if (bet.status !== "active" && bet.status !== "closed") {
                   context.record.params.message =
@@ -169,11 +171,10 @@ exports.initialize = function () {
                 const session = await Bet.startSession();
                 try {
                   await session.withTransaction(async () => {
-                    context.record.params.message =
-                      "The final outcome is " +
-                      bet.outcomes[indexOutcome].marketQuestion;
                     bet.finalOutcome = indexOutcome;
                     bet.resolved = true;
+                    bet.evidenceDescription = evidenceDescription;
+                    bet.evidenceActual = evidenceActual;
 
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
@@ -182,21 +183,22 @@ exports.initialize = function () {
                       "Wallfair Admin User",
                       indexOutcome
                     );
-
-                    const users = await User.find({ openBets: id }, { id: 1 });
-
-                    for (const user of users) {
-                      websocketService.emitBetResolveNotification(
-                        user.id,
-                        id,
-                        bet.marketQuestion,
-                        outcome.marketQuestion,
-                        outcome.name
-                      );
-                    }
                   });
+                } catch (err) {
+                  console.debug(err);
                 } finally {
                   await session.endSession();
+
+                  const users = await User.find({ openBets: id }, { id: 1 });
+
+                  for (const user of users) {
+                    websocketService.emitBetResolveNotification(
+                      user.id,
+                      id,
+                      bet.marketQuestion,
+                      bet.outcomes[indexOutcome].name
+                    );
+                  }
                 }
                 return {
                   record: context.record.toJSON(context.currentAdmin),
@@ -249,7 +251,9 @@ exports.initialize = function () {
                   await session.withTransaction(async () => {
                     createBet = await eventService.saveBet(createBet, session);
 
-                    createBet.endDate = new Date(createBet.date.getTime() + bet.betDuration*1000*60*60);
+                    createBet.endDate = new Date(
+                      createBet.date.getTime() + bet.betDuration * 1000 * 60
+                    );
 
                     createBet = await eventService.saveBet(createBet, session);
 

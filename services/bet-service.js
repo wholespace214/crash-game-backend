@@ -15,7 +15,7 @@ exports.clearOpenBets = async (bet, session) => {
                 continue;
             }
 
-            const balance = wallet.balance/EVNT.ONE;
+            const balance = BigInt(wallet.balance)/EVNT.ONE;
 
             const user = await userService.getUserById(userId, session);
             userService.clearOpenBetAndAddToClosed(user, bet, balance, winning ? balance : 0 );

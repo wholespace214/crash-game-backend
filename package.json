@@ -41,14 +41,14 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "smart_contract_mock": "github:wallfair-organization/smart-contract-js-mock",
-    "socket.io": "^4.1.2",
+    "socket.io": "^4.1.3",
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.0",
     "twilio": "^3.65.0",
-    "ws": "^7.5.2"
+    "ws": "^7.5.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.11",
+    "nodemon": "^2.0.12",
     "prettier": "2.3.2"
   }
 }

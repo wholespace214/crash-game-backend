@@ -138,8 +138,8 @@ exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
     user.closedBets.push({
         betId:            bet.id,
         outcome:          bet.finalOutcome,
-        sellAmount: (sellAmount / EVNT.ONE).toString(),
-        earnedTokens: (earnedTokens / EVNT.ONE).toString(),
+        sellAmount: (BigInt(sellAmount) / EVNT.ONE).toString(),
+        earnedTokens: (BigInt(earnedTokens) / EVNT.ONE).toString(),
     });
 }
 
