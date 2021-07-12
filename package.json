@@ -31,6 +31,7 @@
     "generate-password": "^1.6.0",
     "helmet": "^4.5.0",
     "http": "0.0.1-security",
+    "js-big-decimal": "^1.3.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
