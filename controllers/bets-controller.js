@@ -295,17 +295,18 @@ const calculateSellOutcome = async (req, res, next) => {
         let sellAmount = parseFloat(amount).toFixed(4);
 
         const bigAmount = new bigDecimal(sellAmount.toString().replace('.', ''));
+        sellAmount = BigInt(bigAmount.getValue());
         console.debug(LOG_TAG, 'Calculating Sell Outcomes2');
 
         const result = [];
 
         for (const outcome of bet.outcomes) {
             console.log('sell 1 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
-            const outcomeSellAmount  = await betContract.calcSellFromAmount(BigInt(bigAmount.getValue()), outcome.index);
+            const outcomeSellAmount  = await betContract.calcSellFromAmount(sellAmount, outcome.index);
             console.log('sell 2 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
-            const bigOutcome = new bigDecimal(outcomeSellAmount);
+            const bigAmount = new bigDecimal(outcomeSellAmount);
             console.log('sell 3 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
-            result.push({index: outcome.index, outcome: bigOutcome.getPrettyValue(4, '.')});
+            result.push({index: outcome.index, outcome: bigAmount.getPrettyValue(4, '.')});
         }
 
         console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
