@@ -114,20 +114,33 @@ exports.initialize = function () {
               isVisible: false,
               handler: async (request, response, context) => {
                 const session = await Bet.startSession();
+
+                let dbBet = undefined;
+                let userIds = [];
+
                 await session.withTransaction(async () => {
-                  const dbBet = await eventService.getBet(
+                  dbBet = await eventService.getBet(
                     request.params.recordId,
                     session
                   );
                   dbBet.canceled = true;
                   dbBet.reasonOfCancellation = request.fields.reason;
 
-                  await betService.refundUserHistory(dbBet, session);
+                  userIds = await betService.refundUserHistory(dbBet, session);
                   await eventService.saveBet(dbBet, session);
 
                   const betContract = new BetContract(dbBet.id);
                   await betContract.refund();
                 });
+
+                if(dbBet) {
+                  const event = await eventService.getEvent(dbBet.event);
+
+                  for(const userId of userIds) {
+                    websocketService.emitEventCancelNotification(userId, dbBet.event, event.name, dbBet.reasonOfCancellation)
+                  }
+                }
+
                 return {
                   record: context.record.toJSON(),
                 };

@@ -27,12 +27,18 @@ exports.clearOpenBets = async (bet, session) => {
     }
 }
 exports.refundUserHistory = async (bet, session) => {
+    const userIds = [];
     const betContract = new BetContract(bet.id, bet.outcomes.length);
     for(const outcome of bet.outcomes) {
         const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
 
         for(const wallet of wallets) {
             const userId = wallet.owner;
+
+            if(!userIds.includes(userId)) {
+                userIds.push(userId)
+            }
+
             const konstiWallet = new Wallet(userId);
 
             if(userId.startsWith('BET')) {
@@ -45,12 +51,10 @@ exports.refundUserHistory = async (bet, session) => {
             userService.clearOpenBetAndAddToClosed(user, bet, balance, await konstiWallet.investmentBet(bet.id, outcome.index));
 
             await userService.saveUser(user, session);
-
-            const event = await eventService.getEvent(bet.event);
-
-            websocketService.emitEventCancelNotification(userId, bet.event, event.name, bet.reasonOfCancellation)
         }
     }
+
+    return userIds;
 }
 
 exports.automaticPayout = async (winningUsers, bet) => {
