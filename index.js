@@ -52,6 +52,8 @@ const httpServer  = http.createServer(server);
 
 const socketioJwt = require('socketio-jwt');
 const { Server }  = require('socket.io');
+const { createAdapter } = require("@socket.io/redis-adapter");
+const { createClient } = require("redis");
 const io          = new Server(httpServer, {
     cors: {
         origin:         '*',
@@ -60,6 +62,14 @@ const io          = new Server(httpServer, {
         credentials:    true,
     },
 });
+
+const pubClient = createClient({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT });
+const subClient = pubClient.duplicate();
+
+pubClient.on_connect = () => console.log('Connection to Redis successful');
+pubClient.on_error = (error) => console.log('Error on connection to Redis:', error);
+
+io.adapter(createAdapter(pubClient, subClient));
 
 websocketService.setIO(io);
 
