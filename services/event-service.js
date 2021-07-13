@@ -91,7 +91,7 @@ exports.placeBet = async (user, bet, investmentAmount, outcome) => {
         const eventId = bet.event;
         const betId   = bet._id;
 
-        websocketService.emitPlaceBetToAllByEventId(eventId, userId, betId, investmentAmount, outcome);
+        await websocketService.emitPlaceBetToAllByEventId(eventId, userId, betId, investmentAmount, outcome);
         await smsService.notifyPlacedBet(user, bet, investmentAmount, outcome);
     }
 };
@@ -102,7 +102,7 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
         const eventId = bet.event;
         const betId   = bet._id;
 
-        websocketService.emitPullOutBetToAllByEventId(eventId, userId, betId, amount, outcome, currentPrice);
+        await websocketService.emitPullOutBetToAllByEventId(eventId, userId, betId, amount, outcome, currentPrice);
         await smsService.notifyPullOutBet(user, bet, amount, outcome);
     }
 };
@@ -130,7 +130,7 @@ exports.betCreated = async (bet, userId) => {
         const eventId = bet.event;
         const betId   = bet._id;
 
-        websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
+        await websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
     }
 };
 
