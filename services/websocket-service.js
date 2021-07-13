@@ -4,8 +4,10 @@ const LOG_TAG = '[SOCKET] ';
 let io        = null;
 
 const persist = async (data) => {
-    const chatMessage = await ChatMessageService.createChatMessage(data);
-    await ChatMessageService.saveChatMessage(chatMessage);
+  if(data && data.message) {
+      const chatMessage = await ChatMessageService.createChatMessage(data);
+      await ChatMessageService.saveChatMessage(chatMessage);
+    }
 };
 
 exports.setIO = (newIo) => io = newIo;
