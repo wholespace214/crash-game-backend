@@ -10,6 +10,7 @@ const axios = require('axios')
 
 //Import services
 const eventService = require("./event-service");
+const { BET_STATUS } = require("./event-service");
 
 //Import sc mock
 const { BetContract, Erc20 } = require('smart_contract_mock');
@@ -57,6 +58,10 @@ exports.comparePassword = async (user, plainPassword ) => {
 exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session) => {
     const user = await this.getUserById(userId, session);
     const openBet = user.openBets.find(item => item === bet.id);
+
+    if(![BET_STATUS.active].includes(openBet.status)) {
+        throw new Error('bet had not have status active, but was: ' + openBet.status);
+    }
 
     if(openBet !== undefined) {
         user.openBets = filterClosedTrades(user, bet, newBalances);
