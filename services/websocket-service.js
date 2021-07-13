@@ -142,7 +142,7 @@ const emitEventCancelNotification = (userId, eventId, eventName, cancellationDes
   const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
   emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
 }
-exports.emitEventStartNotification = emitEventStartNotification;
+exports.emitEventCancelNotification = emitEventCancelNotification;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);

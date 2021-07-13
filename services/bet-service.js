@@ -1,4 +1,6 @@
 const userService   = require('../services/user-service');
+const websocketService = require("./websocket-service");
+const eventService = require("./event-service");
 const {BetContract, Erc20, Wallet} = require("smart_contract_mock");
 const EVNT = new Erc20('EVNT');
 
@@ -25,12 +27,18 @@ exports.clearOpenBets = async (bet, session) => {
     }
 }
 exports.refundUserHistory = async (bet, session) => {
+    const userIds = [];
     const betContract = new BetContract(bet.id, bet.outcomes.length);
     for(const outcome of bet.outcomes) {
         const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
 
         for(const wallet of wallets) {
             const userId = wallet.owner;
+
+            if(!userIds.includes(userId)) {
+                userIds.push(userId)
+            }
+
             const konstiWallet = new Wallet(userId);
 
             if(userId.startsWith('BET')) {
@@ -45,6 +53,8 @@ exports.refundUserHistory = async (bet, session) => {
             await userService.saveUser(user, session);
         }
     }
+
+    return userIds;
 }
 
 exports.automaticPayout = async (winningUsers, bet) => {
