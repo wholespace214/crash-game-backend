@@ -63,7 +63,7 @@ const io          = new Server(httpServer, {
     },
 });
 
-const pubClient = createClient({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT });
+const pubClient = createClient(process.env.REDIS_CONNECTION);
 const subClient = pubClient.duplicate();
 
 pubClient.on_connect = () => console.log('Connection to Redis successful');
