@@ -3,6 +3,9 @@ const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
+const { Erc20 } = require('smart_contract_mock');
+const EVNT = new Erc20('EVNT');
+
 // Import services
 const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
@@ -204,7 +207,9 @@ exports.initialize = function () {
                 } finally {
                   await session.endSession();
 
-                  for (const {owner: userId, balance: winToken} of resolveResults) {
+                  for (const {owner: userId, balance} of resolveResults) {
+                    const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
+
                     websocketService.emitBetResolveNotification(
                       userId,
                       id,
