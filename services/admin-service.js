@@ -181,6 +181,8 @@ exports.initialize = function () {
                   };
                 }
 
+                let resolveResults = [];
+
                 const session = await Bet.startSession();
                 try {
                   await session.withTransaction(async () => {
@@ -192,7 +194,7 @@ exports.initialize = function () {
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
                     const betContract = new BetContract(id);
-                    await betContract.resolveAndPayout(
+                    resolveResults = await betContract.resolveAndPayout(
                       "Wallfair Admin User",
                       indexOutcome
                     );
@@ -202,14 +204,13 @@ exports.initialize = function () {
                 } finally {
                   await session.endSession();
 
-                  const users = await User.find({ openBets: id }, { id: 1 });
-
-                  for (const user of users) {
+                  for (const {owner: userId, balance: winToken} of resolveResults) {
                     websocketService.emitBetResolveNotification(
-                      user.id,
+                      userId,
                       id,
                       bet.marketQuestion,
-                      bet.outcomes[indexOutcome].name
+                      bet.outcomes[indexOutcome].name,
+                      winToken
                     );
                   }
                 }
