@@ -20,6 +20,7 @@ const flatten = require("flat");
 const AdminBro = require("admin-bro");
 const AdminBroExpress = require("@admin-bro/express");
 const AdminBroMongoose = require("@admin-bro/mongoose");
+const {Router} = require("express");
 
 AdminBro.registerAdapter(AdminBroMongoose);
 
@@ -310,6 +311,8 @@ exports.initialize = function () {
     },
   });
 };
+const passport = require('passport');
+
 
 exports.getRootPath = function () {
   return adminBro.options.rootPath;
@@ -320,12 +323,12 @@ exports.getLoginPath = function () {
 };
 let router = null;
 exports.buildRouter = function () {
-  let password = generator.generate({
+  /*let password = generator.generate({
     length: 10,
     numbers: true,
   });
   router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
-    authenticate: async (email, password) => {
+    authenticate: async (email, password, request, response) => {
       const user = await User.findOne({ email });
       if (user) {
         if (await userService.comparePassword(user, password)) {
@@ -335,7 +338,11 @@ exports.buildRouter = function () {
       return false;
     },
     cookiePassword: password,
-  });
+  });*/
+
+  router = Router()
+  router.use(passport.authenticate('jwt_admin', { session: false }))
+  router = AdminBroExpress.buildRouter(adminBro, router)
 };
 
 exports.getRouter = function () {

@@ -11,11 +11,15 @@ exports.notifyPullOutBet = async (user, bet, amount, outcome) => {
     await this.sendSms(user.phone, message);
 }
 
+exports.notifyEventStart = async (user, eventName, url) => {
+  const message = `Event ${eventName} starts in 60s. Go to ${url} and get ready!`;
+  await this.sendSms(user.phone, message);
+}
+
 exports.notifyBetResolve = async (user, betQuestion, betOutcome, winToken) => {
   const message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You ${winToken > 0 ? "won" : "lost"} ${Math.abs(winToken)}.`;
   await this.sendSms(user.phone, message);
 }
-
 
 exports.sendSms = async function (phoneNumber, message) {
     twilio.messages
