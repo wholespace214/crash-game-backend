@@ -3,6 +3,9 @@ const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
+const { Erc20 } = require('smart_contract_mock');
+const EVNT = new Erc20('EVNT');
+
 // Import services
 const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
@@ -181,6 +184,8 @@ exports.initialize = function () {
                   };
                 }
 
+                let resolveResults = [];
+
                 const session = await Bet.startSession();
                 try {
                   await session.withTransaction(async () => {
@@ -192,7 +197,7 @@ exports.initialize = function () {
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
                     const betContract = new BetContract(id);
-                    await betContract.resolveAndPayout(
+                    resolveResults = await betContract.resolveAndPayout(
                       "Wallfair Admin User",
                       indexOutcome
                     );
@@ -202,14 +207,15 @@ exports.initialize = function () {
                 } finally {
                   await session.endSession();
 
-                  const users = await User.find({ openBets: id }, { id: 1 });
+                  for (const {owner: userId, balance} of resolveResults) {
+                    const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
 
-                  for (const user of users) {
                     websocketService.emitBetResolveNotification(
-                      user.id,
+                      userId,
                       id,
                       bet.marketQuestion,
-                      bet.outcomes[indexOutcome].name
+                      bet.outcomes[indexOutcome].name,
+                      winToken
                     );
                   }
                 }

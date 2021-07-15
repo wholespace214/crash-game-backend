@@ -41,12 +41,12 @@ const userSchema = new mongoose.Schema({
     required: false,
   },
   openBets: {
-    type: Array,
+    type: [Object],
     required: true,
     default: [],
   },
   closedBets: {
-    type: Array,
+    type: [Object],
     required: true,
     default: [],
   },
