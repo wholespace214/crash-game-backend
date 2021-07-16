@@ -11,7 +11,7 @@ const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
 const betService = require("../services/bet-service");
 const websocketService = require("../services/websocket-service");
-const smsService = require('../services/sms-notificaiton-service');
+const smsService = require('../services/sms-notification-service');
 
 const generator = require("generate-password");
 
