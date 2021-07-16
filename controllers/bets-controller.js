@@ -139,7 +139,7 @@ const placeBet = async (req, res, next) => {
                 await betContract.buy(userId, investmentAmount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
             });
 
-            eventService.placeBet(user, bet, amount, outcome);
+            await eventService.placeBet(user, bet, amount, outcome);
         } finally {
             await session.endSession();
         }
@@ -201,7 +201,7 @@ const pullOutBet = async (req, res, next) => {
             }).catch(err => console.debug(err));
 
             const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
-            eventService.pullOutBet(user, bet, sellAmount, outcome, currentPrice);
+            await eventService.pullOutBet(user, bet, sellAmount, outcome, currentPrice);
         } catch (err) {
             console.error(err);
         } finally {

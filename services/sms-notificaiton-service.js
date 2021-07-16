@@ -18,7 +18,7 @@ exports.sendSms = async function (phoneNumber, message) {
             messagingServiceSid: 'MG0b7fc2df0fa33330d73a7d6fb9ea8981',
             to: phoneNumber
         })
-        .then(message => console.log(message.sid))
+        .then(message => console.log('[SMS] ' + message.sid))
         .catch(err => console.err(err))
         .done();
 }

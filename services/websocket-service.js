@@ -35,16 +35,17 @@ exports.handleJoinRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
-            await socket.join(eventId);
+            io.of('/').adapter.remoteJoin(socket.id, eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
 
         if (userId) {
-            socket.join(userId);
+            io.of('/').adapter.remoteJoin(socket.id, userId);
         } else {
             console.debug(LOG_TAG, 'no user id in handle join data', data);
         }
+
     } catch (error) {
         console.error(error);
         console.log(LOG_TAG, 'failed to handle join room', data);
@@ -57,13 +58,14 @@ exports.handleLeaveRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
+            io.of('/').adapter.remoteLeave(socket.id, eventId);
             await socket.leave(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle leave data', data);
         }
 
         if (userId) {
-            socket.leave(userId);
+            io.of('/').adapter.remoteLeave(socket.id, userId);
         } else {
             console.debug(LOG_TAG, 'no user id in handle leave data', data);
         }
@@ -122,7 +124,7 @@ const handleBetMessage = async (eventId, emitEventName, data) => {
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
-    io.to(eventId.toString()).emit(emitEventName, data);
+    io.of('/').to(eventId.toString()).emit(emitEventName, data);
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
@@ -153,7 +155,7 @@ exports.emitEventCancelNotification = emitEventCancelNotification;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
-  io.to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
+    io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
 };
 
 function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {

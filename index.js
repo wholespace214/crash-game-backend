@@ -63,7 +63,13 @@ const io          = new Server(httpServer, {
     },
 });
 
-const pubClient = createClient(process.env.REDIS_CONNECTION);
+const pubClient = createClient(
+    {
+        url: process.env.REDIS_CONNECTION,
+        no_ready_check: true
+    });
+
+
 const subClient = pubClient.duplicate();
 
 pubClient.on_connect = () => console.log('Connection to Redis successful');
@@ -102,11 +108,10 @@ server.use('/api/user', passport.authenticate('jwt', { session: false }), secure
 
 io.use(socketioJwt.authorize({
     secret:               process.env.JWT_KEY,
-    handshake:            true,
-    auth_header_required: true,
+    handshake: true
 }));
 
-io.on('connection', (socket) => {
+io.on('connection',  (socket) => {
     const userId = socket.decoded_token.userId;
 
     socket.on(
@@ -117,10 +122,31 @@ io.on('connection', (socket) => {
         'joinRoom',
         (data) => websocketService.handleJoinRoom(socket, data, userId),
     );
+
     socket.on(
         'leaveRoom',
         (data) => websocketService.handleLeaveRoom(socket, data, userId),
     );
+});
+
+io.on('error', (err) => {
+    console.debug(err);
+});
+
+io.of("/").adapter.on("time", (data) => {
+    console.log(`message ${data}`);
+});
+const mainAdapter = io.of("/").adapter;
+io.of("/").adapter.on("chatMessage", (data) => {
+    console.log(`message ${data}`);
+});
+
+io.of("/").adapter.on("create-room", (room) => {
+    console.log(`room ${room} was created`);
+});
+
+io.of("/").adapter.on("join-room", (room, id) => {
+    console.log(`socket ${id} has joined room ${room}`);
 });
 
 // Let server run and listen

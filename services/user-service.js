@@ -57,7 +57,8 @@ exports.comparePassword = async (user, plainPassword ) => {
 
 exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session) => {
     const user = await this.getUserById(userId, session);
-    const openBet = user.openBets.find(item => item === bet.id);
+    const openBetId = user.openBets.find(item => item === bet.id);
+    const openBet = await eventService.getBet(openBetId);
 
     if(![BET_STATUS.active].includes(openBet.status)) {
         throw new Error('bet had not have status active, but was: ' + openBet.status);
