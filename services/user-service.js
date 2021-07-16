@@ -10,6 +10,7 @@ const axios = require('axios')
 
 //Import services
 const eventService = require("./event-service");
+const bigDecimal = require("js-big-decimal");
 const { BET_STATUS } = require("./event-service");
 
 //Import sc mock
@@ -150,7 +151,7 @@ exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
 }
 
 exports.getBalanceOf = async (userId) => {
-    return (await EVNT.balanceOf(userId)) / EVNT.ONE;
+    return new bigDecimal(await EVNT.balanceOf(userId)).getPrettyValue(4, '.');
 }
 
 const INITIAL_LIQUIDITY = 1000n;

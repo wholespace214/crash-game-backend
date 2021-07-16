@@ -21,6 +21,7 @@ const mailService = require("../services/mail-service");
 const User = require("../models/User");
 
 const Bet   = require('../models/Bet');
+const bigDecimal = require("js-big-decimal");
 
 
 const { BetContract, Erc20, Wallet } = require('smart_contract_mock');
@@ -216,14 +217,15 @@ const getUsers = async (req, res, next) => {
 const getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
-        const balance = await EVNT.balanceOf(req.params.userId) / BigInt(EVNT.ONE);
+        const balance = await EVNT.balanceOf(req.params.userId);
+        const formattedBalance = new bigDecimal(balance).getPrettyValue(4, '.');
         const rank = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
             username: user.username,
             profilePictureUrl: user.profilePictureUrl,
-            balance: balance.toString(),
+            balance: formattedBalance,
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
@@ -312,8 +314,8 @@ const getOpenBetsList = async (request, response) => {
                     const openBet = {
                         betId:            openBetId,
                         outcome:          outcome.index,
-                        investmentAmount: (investment / EVNT.ONE).toString(),
-                        outcomeAmount: (balance / EVNT.ONE).toString()
+                        investmentAmount: new bigDecimal(investment).getPrettyValue('4', '.'),
+                        outcomeAmount: new bigDecimal(balance).getPrettyValue('4', '.')
                     };
 
                     openBets.push(openBet);
@@ -379,9 +381,9 @@ const getAMMHistory = async (request, response) => {
             for (const interaction of interactions) {
                 transactions.push({
                     ...interaction,
-                    investmentamount:    (BigInt(interaction.investmentamount) / EVNT.ONE).toString(),
-                    feeamount:           (BigInt(interaction.feeamount) / EVNT.ONE).toString(),
-                    outcometokensbought: (BigInt(interaction.outcometokensbought) / EVNT.ONE).toString(),
+                    investmentamount:    new bigDecimal(interaction.investmentamount).getPrettyValue('4', '.'),
+                    feeamount:           new bigDecimal(interaction.feeamount).getPrettyValue('4', '.'),
+                    outcometokensbought: new bigDecimal(interaction.outcometokensbought).getPrettyValue('4', '.'),
                 });
             }
 
