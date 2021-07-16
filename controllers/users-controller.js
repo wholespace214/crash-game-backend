@@ -379,11 +379,15 @@ const getAMMHistory = async (request, response) => {
             const transactions = [];
 
             for (const interaction of interactions) {
+                const investmentAmount    = new bigDecimal(BigInt(interaction.investmentamount) / EVNT.ONE).getPrettyValue('4', '.');
+                const feeAmount           = new bigDecimal(BigInt(interaction.feeamount) / EVNT.ONE).getPrettyValue('4', '.');
+                const outcomeTokensBought = new bigDecimal(BigInt(interaction.outcometokensbought) / EVNT.ONE).getPrettyValue('4', '.');
+
                 transactions.push({
                     ...interaction,
-                    investmentamount:    new bigDecimal(interaction.investmentamount).getPrettyValue('4', '.'),
-                    feeamount:           new bigDecimal(interaction.feeamount).getPrettyValue('4', '.'),
-                    outcometokensbought: new bigDecimal(interaction.outcometokensbought).getPrettyValue('4', '.'),
+                    investmentAmount,
+                    feeAmount,
+                    outcomeTokensBought,
                 });
             }
 
