@@ -5,7 +5,7 @@ let io        = null;
 let pubClient        = null;
 
 const persist = async (data) => {
-  if(data && data.message) {
+  if(data) {
       const chatMessage = await ChatMessageService.createChatMessage(data);
       await ChatMessageService.saveChatMessage(chatMessage);
     }
