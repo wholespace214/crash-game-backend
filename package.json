@@ -36,7 +36,7 @@
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
     "mailchimp-api-v3": "^1.15.0",
-    "mongoose": "^5.13.2",
+    "mongoose": "^5.13.3",
     "nodemailer": "^6.6.3",
     "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.1",
