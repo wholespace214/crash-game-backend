@@ -36,9 +36,6 @@ exports.doLogin = async (phone, ref) => {
                     createdUser = await userService.getUserByPhone(phone, session);
                     console.debug('createdUser ' + createdUser.id);
                     await userService.mintUser(createdUser.id.toString());
-                    if(ref) {
-                        await userService.mintUser(ref.toString(), 50);
-                    }
                 });
             } finally {
                 await session.endSession();
@@ -70,6 +67,10 @@ exports.verifyLogin = async (phone, smsToken) => {
 
     if(verification === undefined || verification.status !== "approved") {
         throw new Error("sms verification timeout or token incorrect", 401);
+    }
+
+    if(user.ref) {
+        await userService.mintUser(user.ref.toString(), 50);
     }
 
     return user;
