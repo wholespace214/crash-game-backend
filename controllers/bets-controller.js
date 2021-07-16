@@ -241,22 +241,16 @@ const calculateBuyOutcome = async (req, res, next) => {
 
         console.debug(LOG_TAG, "Calculating buy outcomes");
         const betContract = new BetContract(id, bet.outcomes.length);
-        console.debug(LOG_TAG, "Calculating buy outcomes1");
-
 
         let buyAmount = parseFloat(amount).toFixed(4);
         const bigAmount = new bigDecimal(buyAmount.toString().replace('.', ''));
         buyAmount = BigInt(bigAmount.getValue());
-        console.debug(LOG_TAG, "Calculating buy outcomes2");
 
         const result = [];
 
         for (const outcome of bet.outcomes) {
-            console.log('buy 1 '+ bet.id + ' ' + outcome + ' ' + buyAmount)
             const outcomeSellAmount  = await betContract.calcBuy(buyAmount, outcome.index);
-            console.log('buy 2 '+ bet.id + ' ' + outcome + ' ' + buyAmount)
             const bigAmount = new bigDecimal(outcomeSellAmount);
-            console.log('buy  3 '+ bet.id + ' ' + outcome + ' ' + buyAmount)
             result.push({index: outcome.index, outcome: bigAmount.getPrettyValue(4, '.')});
         }
 
@@ -291,20 +285,15 @@ const calculateSellOutcome = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Calculating Sell Outcomes');
         const betContract = new BetContract(id, bet.outcomes.length);
-        console.debug(LOG_TAG, 'Calculating Sell Outcomes1');
         let sellAmount = parseFloat(amount).toFixed(4);
 
         const bigAmount = new bigDecimal(sellAmount.toString().replace('.', ''));
-        console.debug(LOG_TAG, 'Calculating Sell Outcomes2');
 
         const result = [];
 
         for (const outcome of bet.outcomes) {
-            console.log('sell 1 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
             const outcomeSellAmount  = await betContract.calcSellFromAmount(BigInt(bigAmount.getValue()), outcome.index);
-            console.log('sell 2 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
             const bigOutcome = new bigDecimal(outcomeSellAmount);
-            console.log('sell 3 ' + bet.id + ' ' + outcome + ' ' + sellAmount)
             result.push({index: outcome.index, outcome: bigOutcome.getPrettyValue(4, '.')});
         }
 
