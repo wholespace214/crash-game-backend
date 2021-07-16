@@ -11,6 +11,11 @@ exports.notifyPullOutBet = async (user, bet, amount, outcome) => {
     await this.sendSms(user.phone, message);
 }
 
+exports.notifyEventStart = async (user, eventName, url) => {
+  const message = `Event ${eventName} starts in 60s. Go to ${url} and get ready!`;
+  await this.sendSms(user.phone, message);
+}
+
 exports.sendSms = async function (phoneNumber, message) {
     twilio.messages
         .create({

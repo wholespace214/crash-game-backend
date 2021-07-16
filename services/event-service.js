@@ -4,7 +4,7 @@ const Bet   = require('../models/Bet');
 
 //Import services
 const websocketService = require('./websocket-service');
-const smsService = require('./sms-notificaiton-service');
+const smsService = require('./sms-notification-service');
 
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
@@ -108,7 +108,8 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 };
 
 exports.isBetTradable = async (bet) => {
-        if(bet.status !== BET_STATUS.active) {
+        const {status} = await Bet.findOne({_id: bet._id}, {status: 1}).exec()
+        if(status !== BET_STATUS.active) {
             return false;
         }
 
