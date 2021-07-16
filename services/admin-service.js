@@ -11,6 +11,7 @@ const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
 const betService = require("../services/bet-service");
 const websocketService = require("../services/websocket-service");
+const smsService = require('../services/sms-notificaiton-service');
 
 const generator = require("generate-password");
 
@@ -211,13 +212,22 @@ exports.initialize = function () {
                   for (const {owner: userId, balance} of resolveResults) {
                     const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
 
-                    websocketService.emitBetResolveNotification(
-                      userId,
-                      id,
-                      bet.marketQuestion,
-                      bet.outcomes[indexOutcome].name,
-                      winToken
-                    );
+                    if(userId.includes('_')) {
+                      continue;
+                    }
+
+                    const user = await User.findById({_id: userId}, {phone: 1}).exec();
+
+                    if(user) {
+                      websocketService.emitBetResolveNotification(
+                        userId,
+                        id,
+                        bet.marketQuestion,
+                        bet.outcomes[indexOutcome].name,
+                        winToken
+                      );
+                      await smsService.notifyBetResolve(user, bet.marketQuestion, bet.outcomes[indexOutcome].name, winToken);
+                    }
                   }
                 }
                 return {
