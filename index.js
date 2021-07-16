@@ -52,7 +52,7 @@ const httpServer  = http.createServer(server);
 
 const socketioJwt = require('socketio-jwt');
 const { Server }  = require('socket.io');
-const { createAdapter } = require("@socket.io/redis-adapter");
+
 const { createClient } = require("redis");
 const io          = new Server(httpServer, {
     cors: {
@@ -66,16 +66,23 @@ const io          = new Server(httpServer, {
 const pubClient = createClient(
     {
         url: process.env.REDIS_CONNECTION,
-        no_ready_check: true
+        no_ready_check: false
+    });
+const subClient = createClient(
+    {
+        url: process.env.REDIS_CONNECTION,
+        no_ready_check: false
     });
 
+websocketService.setPubClient(pubClient)
 
-const subClient = pubClient.duplicate();
+subClient.on('message', function (channel, message) {
+    console.log('[REDIS] Incoming : ' + message);
+    const messageObj = JSON.parse(message);
+    io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
+});
 
-pubClient.on_connect = () => console.log('Connection to Redis successful');
-pubClient.on_error = (error) => console.log('Error on connection to Redis:', error);
-
-io.adapter(createAdapter(pubClient, subClient));
+subClient.subscribe('message');
 
 websocketService.setIO(io);
 
@@ -116,7 +123,9 @@ io.on('connection',  (socket) => {
 
     socket.on(
         'chatMessage',
-        (data) => websocketService.handleChatMessage(socket, data, userId),
+        (data) => {
+            websocketService.handleChatMessage(socket, data, userId);
+        }
     );
     socket.on(
         'joinRoom',
@@ -129,25 +138,6 @@ io.on('connection',  (socket) => {
     );
 });
 
-io.on('error', (err) => {
-    console.debug(err);
-});
-
-io.of("/").adapter.on("time", (data) => {
-    console.log(`message ${data}`);
-});
-const mainAdapter = io.of("/").adapter;
-io.of("/").adapter.on("chatMessage", (data) => {
-    console.log(`message ${data}`);
-});
-
-io.of("/").adapter.on("create-room", (room) => {
-    console.log(`room ${room} was created`);
-});
-
-io.of("/").adapter.on("join-room", (room, id) => {
-    console.log(`socket ${id} has joined room ${room}`);
-});
 
 // Let server run and listen
 const appServer = httpServer.listen(process.env.PORT || 8000, function () {

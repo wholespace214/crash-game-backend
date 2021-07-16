@@ -2,6 +2,7 @@ const ChatMessageService = require('./chat-message-service');
 
 const LOG_TAG = '[SOCKET] ';
 let io        = null;
+let pubClient        = null;
 
 const persist = async (data) => {
   if(data && data.message) {
@@ -11,6 +12,7 @@ const persist = async (data) => {
 };
 
 exports.setIO = (newIo) => io = newIo;
+exports.setPubClient = (newpub) => pubClient = newpub;
 
 exports.handleChatMessage = async function (socket, data, userId) {
     try {
@@ -35,13 +37,13 @@ exports.handleJoinRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
-            io.of('/').adapter.remoteJoin(socket.id, eventId);
+            await socket.join(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle join data', data);
         }
 
         if (userId) {
-            io.of('/').adapter.remoteJoin(socket.id, userId);
+            socket.join(userId);
         } else {
             console.debug(LOG_TAG, 'no user id in handle join data', data);
         }
@@ -58,14 +60,13 @@ exports.handleLeaveRoom = async function (socket, data) {
         const {eventId, userId} = data;
 
         if (eventId) {
-            io.of('/').adapter.remoteLeave(socket.id, eventId);
             await socket.leave(eventId);
         } else {
             console.debug(LOG_TAG, 'no event id in handle leave data', data);
         }
 
         if (userId) {
-            io.of('/').adapter.remoteLeave(socket.id, userId);
+            socket.leave(userId);
         } else {
             console.debug(LOG_TAG, 'no user id in handle leave data', data);
         }
@@ -124,7 +125,8 @@ const handleBetMessage = async (eventId, emitEventName, data) => {
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
     console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in event room ' + eventId);
-    io.of('/').to(eventId.toString()).emit(emitEventName, data);
+    //io.of('/').to(eventId.toString()).emit(emitEventName, data);
+    pubClient.publish('message', JSON.stringify({to: eventId.toString(), event: emitEventName, data: {date: new Date(), ...data}}));
 };
 
 exports.emitToAllByEventId = emitToAllByEventId;
@@ -156,6 +158,7 @@ exports.emitEventCancelNotification = emitEventCancelNotification;
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
     io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
+    pubClient.publish('message', JSON.stringify({to: userId.toString(), event: emitEventName, data: {date: new Date(), ...data}}));
 };
 
 function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {
