@@ -36,6 +36,9 @@ exports.doLogin = async (phone, ref) => {
                     createdUser = await userService.getUserByPhone(phone, session);
                     console.debug('createdUser ' + createdUser.id);
                     await userService.mintUser(createdUser.id.toString());
+                    if(ref) {
+                        await userService.mintUser(ref.toString(), 50);
+                    }
                 });
             } finally {
                 await session.endSession();
