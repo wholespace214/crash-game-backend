@@ -44,12 +44,12 @@ const betSchema = new mongoose.Schema({
         max: 255,
     },
     date: {
-        type: Date,
+        type: String,
         required: true,
         default: Date.now,
     },
     endDate: {
-        type: Date,
+        type: String,
         required: false,
     },
     published: {

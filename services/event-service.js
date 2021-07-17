@@ -30,11 +30,11 @@ const calculateBetStatus = (bet) => {
     } = bet;
 
     const now = new Date();
-    if(date && endDate && endDate <= now) {
+    if(date && endDate && Date.parse(endDate) <= now) {
         status = BET_STATUS.closed;
     }
 
-    if(evidenceDescription && evidenceActual && resolved) {
+    if(resolved) {
         status = BET_STATUS.resolved;
     } else if (canceled) {
         status = BET_STATUS.canceled
@@ -109,21 +109,8 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 
 exports.isBetTradable = async (bet) => {
         const {status} = await Bet.findOne({_id: bet._id}, {status: 1}).exec()
-        if(status !== BET_STATUS.active) {
-            return false;
-        }
+        return status === BET_STATUS.active;
 
-        if(bet.finalOutcome !== undefined) {
-            return false;
-        }
-
-        const event = await Event.findById(bet.event);
-
-        if(event.date !== undefined) {
-            return event.date <= Date.now();
-        }
-
-    return bet.date.getTime() <= Date.now();
 };
 
 exports.betCreated = async (bet, userId) => {

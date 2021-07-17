@@ -77,12 +77,14 @@ exports.handleLeaveRoom = async function (socket, data) {
 };
 
 exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outcome) => {
+    const message = 'dummy';
     const betPlacedData = getCopyWithBaseResponseData(
         {
             eventId,
             betId,
             amount: amount.toString(),
             outcome,
+            message
         },
         userId,
     );
@@ -91,6 +93,7 @@ exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outc
 };
 
 exports.emitPullOutBetToAllByEventId = async (eventId, userId, betId, amount, outcome, currentPrice) => {
+    const message = 'dummy';
     const betPulledOutData = getCopyWithBaseResponseData(
         {
             eventId,
@@ -98,6 +101,7 @@ exports.emitPullOutBetToAllByEventId = async (eventId, userId, betId, amount, ou
             amount:       amount.toString(),
             outcome,
             currentPrice: currentPrice.toString(),
+            message
         },
         userId,
     );
@@ -106,11 +110,13 @@ exports.emitPullOutBetToAllByEventId = async (eventId, userId, betId, amount, ou
 };
 
 exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
+    const message = 'dummy';
     const betCreationData = getCopyWithBaseResponseData(
         {
             eventId,
             betId,
             title,
+            message
         },
         userId,
     );
@@ -119,8 +125,8 @@ exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
 };
 
 const handleBetMessage = async (eventId, emitEventName, data) => {
-  await persist(data);
-  emitToAllByEventId(eventId, emitEventName, data);
+    await persist(data);
+    emitToAllByEventId(eventId, emitEventName, data);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
