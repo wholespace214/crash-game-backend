@@ -203,9 +203,8 @@ const pullOutBet = async (req, res, next) => {
                 await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances, session);
             }).catch(err => console.debug(err));
 
-            const currentPrice = newBalances.earnedTokens / newBalances.soldOutcomeTokens;
-            const bigAmount = new bigDecimal(sellAmount);
-            await eventService.pullOutBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome, currentPrice);
+            const bigAmount = new bigDecimal(newBalances.earnedTokens);
+            await eventService.pullOutBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome, 0n);
         } catch (err) {
             console.error(err);
         } finally {
