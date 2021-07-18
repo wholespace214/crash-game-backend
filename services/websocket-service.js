@@ -163,7 +163,7 @@ exports.emitEventCancelNotification = emitEventCancelNotification;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, 'emitting event "' + emitEventName + '" to all in user room ' + userId);
-    io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
+    //io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
     pubClient.publish('message', JSON.stringify({to: userId.toString(), event: emitEventName, data: {date: new Date(), ...data}}));
 };
 

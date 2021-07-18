@@ -10,6 +10,7 @@ const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
 const BET_STATUS = {
+    upcoming: 'upcoming',
     active: 'active',
     closed: 'closed',
     resolved: 'resolved',
@@ -30,7 +31,9 @@ const calculateBetStatus = (bet) => {
     } = bet;
 
     const now = new Date();
-    if(date && endDate && Date.parse(endDate) <= now) {
+    if(date && Date.parse(date) >= now) {
+        status = BET_STATUS.upcoming;
+    } else if(date && endDate && Date.parse(endDate) <= now) {
         status = BET_STATUS.closed;
     }
 
