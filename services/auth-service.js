@@ -69,10 +69,6 @@ exports.verifyLogin = async (phone, smsToken) => {
         throw new Error("sms verification timeout or token incorrect", 401);
     }
 
-    if(user.ref) {
-        await userService.mintUser(user.ref.toString(), 50);
-    }
-
     return user;
 }
 
