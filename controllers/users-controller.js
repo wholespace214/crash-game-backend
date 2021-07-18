@@ -134,6 +134,9 @@ const saveAdditionalInformation = async (req, res, next) => {
     user.name = name;
     user.email = email.replace(" ", "");
     user.username = username.replace(" ", "");
+
+    await rewardRefUserIfNotConfirmed(user);
+
     user = await userService.saveUser(user);
 
     await mailService.sendConfirmMail(user);
@@ -160,14 +163,11 @@ const saveAcceptConditions = async (req, res, next) => {
 
   try {
     let user = await userService.getUserById(req.user.id);
+    const userConfirmedChanged  = await rewardRefUserIfNotConfirmed(user);
 
-    if(!user.confirmed) {
-        await userService.rewardRefUser(user.ref);
-        await userService.createUser(user);
+    if (userConfirmedChanged) {
+        user = await userService.saveUser(user);
     }
-
-    user.confirmed = true;
-    user = await userService.saveUser(user);
 
     res.status(201).json({
       confirmed: user.confirmed,
@@ -177,6 +177,19 @@ const saveAcceptConditions = async (req, res, next) => {
     next(error);
   }
 };
+
+const rewardRefUserIfNotConfirmed = async (user) => {
+    if(!user.confirmed) {
+        await userService.rewardRefUser(user.ref);
+        await userService.createUser(user);
+
+        user.confirmed = true;
+
+        return true;
+    }
+
+    return false;
+}
 
 // Receive all users
 const getUsers = async (req, res, next) => {
