@@ -1,18 +1,24 @@
 # Wallfair. Playmoney V1 Server-Side
 
-# server-side setup
-```
-git clone ...
-cd docker
-docker-compose up -d
+# Usage
 
-# open mongo shell and execute following for setting up cluster
-rs.initiate( {
-   _id : "rs0",
-   members: [
-      { _id: 0, host: "localhost:27017" },
-   ]
-});
+Step 1: Download repo and install modules
+
+```bash
+git clone https://github.com/wallfair-organization/server-side
+npm install
+```
+
+Step 2: Start the docker containers needed
+
+```
+docker-compose -f docker/docker-compose.yml up -d
+```
+
+Step 3: Create a `.env` file (see `.env.example`) and start the server with:
+
+```
+npm run start
 ```
 
 # Api-Endpoints
