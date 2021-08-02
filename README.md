@@ -23,6 +23,21 @@ Step 3: Create a `.env` file (see `.env.example`) and start the server with:
 npm run start
 ```
 
+Step 4: Configure the mongo container for replication
+
+```
+docker exec -it mongodb-wall bash
+
+mongo -u wallfair -p walfair
+
+rs.initiate( {
+   _id : "rs0",
+   members: [
+      { _id: 0, host: "localhost:27017" },
+   ]
+});
+```
+
 # Api-Endpoints
 
 ### Auth
