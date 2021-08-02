@@ -6,6 +6,7 @@ Step 1: Download repo and install modules
 
 ```bash
 git clone https://github.com/wallfair-organization/server-side
+cd server-side
 npm install
 ```
 
@@ -18,6 +19,7 @@ docker-compose -f docker/docker-compose.yml up -d
 Step 3: Create a `.env` file (see `.env.example`) and start the server with:
 
 ```
+# copy .env file from email
 npm run start
 ```
 
