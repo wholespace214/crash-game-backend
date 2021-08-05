@@ -33,9 +33,6 @@ services:
   - key: JWT_KEY
     scope: RUN_AND_BUILD_TIME
     value: $JWT_KEY
-  - key: PORT
-    scope: RUN_AND_BUILD_TIME
-    value: "80"
   - key: TWILIO_ACC_SID
     scope: RUN_AND_BUILD_TIME
     value: $TWILIO_ACC_SID
@@ -45,6 +42,21 @@ services:
   - key: TWILIO_SID
     scope: RUN_AND_BUILD_TIME
     value: $TWILIO_SID
+  - key: ENVIRONMENT
+    scope: RUN_AND_BUILD_TIME
+    value: STAGING
+  - key: VERIFY_URL
+    scope: RUN_AND_BUILD_TIME
+    value: https://staging.wallfair.io/
+  - key: GMAIL_USERNAME
+    scope: RUN_AND_BUILD_TIME
+    value: noreply@wallfair.io
+  - key: GMAIL_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: $GMAIL_PASSWORD
+  - key: POSTGRES_CA
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app/ssl/postgres-prod.crt
   - key: POSTGRES_USER
     scope: RUN_AND_BUILD_TIME
     value: doadmin
@@ -56,33 +68,18 @@ services:
     value: testdb
   - key: POSTGRES_PASSWORD
     scope: RUN_AND_BUILD_TIME
-    value: $PG_PASSWORD
-  - key: POSTGRES_PORT
-    scope: RUN_AND_BUILD_TIME
-    value: "25060"
+    value: $POSTGRES_PASSWORD
   - key: POSTGRES_SSL
     scope: RUN_AND_BUILD_TIME
     value: "true"
-  - key: ENVIRONMENT
+  - key: POSTGRES_PORT
     scope: RUN_AND_BUILD_TIME
-    value: STAGING
-  - key: VERIFY_URL
-    scope: RUN_AND_BUILD_TIME
-    value: https://example.com/
-  - key: GMAIL_USERNAME
-    scope: RUN_AND_BUILD_TIME
-    value: noreply@wallfair.io
-  - key: GMAIL_PASSWORD
-    scope: RUN_AND_BUILD_TIME
-    value: $GMAIL_PASSWORD
-  - key: POSTGRES_CA
-    scope: RUN_AND_BUILD_TIME
-    value: /usr/src/app/ssl/postgres-prod.crt
+    value: "25060"
   http_port: 80
   image:
     registry_type: DOCR
     repository: backend
-    tag: dev
+    tag: $VERSION
   instance_count: 2
   instance_size_slug: professional-xs
   name: staging

@@ -63,7 +63,7 @@ services:
     value: defaultdb
   - key: POSTGRES_PASSWORD
     scope: RUN_AND_BUILD_TIME
-    value: $DIGITAL_OCEAN_PG_PASSWORD
+    value: $POSTGRES_PASSWORD
   - key: POSTGRES_SSL
     scope: RUN_AND_BUILD_TIME
     value: "true"
@@ -77,7 +77,7 @@ services:
   image:
     registry_type: DOCR
     repository: backend
-    tag: prod
+    tag: $VERSION
   instance_count: 2
   instance_size_slug: professional-xs
   name: prod

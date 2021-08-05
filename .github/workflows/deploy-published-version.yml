@@ -15,6 +15,13 @@ on:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    env:
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      TWILIO_ACC_SID: ${{ secrets.TWILIO_ACC_SID }}
+      TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_SID: ${{ secrets.TWILIO_SID }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
