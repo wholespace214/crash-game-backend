@@ -1,0 +1,88 @@
+databases:
+- cluster_name: wallfair
+  engine: MONGODB
+  name: wallfair
+  production: true
+  version: "4"
+- cluster_name: redis
+  engine: REDIS
+  name: redis
+  production: true
+  version: "6"
+- cluster_name: prod-db
+  db_name: testdb
+  db_user: doadmin
+  engine: PG
+  name: prod-db
+  production: true
+  version: "13"
+envs:
+- key: DB_CONNECTION
+  scope: RUN_AND_BUILD_TIME
+  value: ${wallfair.DATABASE_URL}
+- key: REDIS_CONNECTION
+  scope: RUN_AND_BUILD_TIME
+  value: ${redis.DATABASE_URL}
+- key: REDIS_OLD
+  scope: RUN_AND_BUILD_TIME
+  value: ${db-redis-fra1-53827.DATABASE_URL}
+name: staging-backend
+region: fra
+services:
+- envs:
+  - key: JWT_KEY
+    scope: RUN_AND_BUILD_TIME
+    value: $JWT_KEY
+  - key: TWILIO_ACC_SID
+    scope: RUN_AND_BUILD_TIME
+    value: $TWILIO_ACC_SID
+  - key: TWILIO_AUTH_TOKEN
+    scope: RUN_AND_BUILD_TIME
+    value: $TWILIO_AUTH_TOKEN
+  - key: TWILIO_SID
+    scope: RUN_AND_BUILD_TIME
+    value: $TWILIO_SID
+  - key: ENVIRONMENT
+    scope: RUN_AND_BUILD_TIME
+    value: STAGING
+  - key: VERIFY_URL
+    scope: RUN_AND_BUILD_TIME
+    value: https://staging.wallfair.io/
+  - key: GMAIL_USERNAME
+    scope: RUN_AND_BUILD_TIME
+    value: noreply@wallfair.io
+  - key: GMAIL_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: $GMAIL_PASSWORD
+  - key: POSTGRES_CA
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app/ssl/postgres-prod.crt
+  - key: POSTGRES_USER
+    scope: RUN_AND_BUILD_TIME
+    value: doadmin
+  - key: POSTGRES_HOST
+    scope: RUN_AND_BUILD_TIME
+    value: prod-db-do-user-9290946-0.b.db.ondigitalocean.com
+  - key: POSTGRES_DB
+    scope: RUN_AND_BUILD_TIME
+    value: testdb
+  - key: POSTGRES_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: $POSTGRES_PASSWORD
+  - key: POSTGRES_SSL
+    scope: RUN_AND_BUILD_TIME
+    value: "true"
+  - key: POSTGRES_PORT
+    scope: RUN_AND_BUILD_TIME
+    value: "25060"
+  http_port: 80
+  image:
+    registry_type: DOCR
+    repository: backend
+    tag: $VERSION
+  instance_count: 2
+  instance_size_slug: professional-xs
+  name: staging
+  routes:
+  - path: /
+  source_dir: /

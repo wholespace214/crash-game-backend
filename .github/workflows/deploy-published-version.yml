@@ -1,0 +1,49 @@
+name: Deploy a previously published version (Will rebuild environment)
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Stage to deploy: staging or production'
+        required: true
+        default: 'staging'
+      version:
+        description: 'Tag Version of this deploy'
+        required: true
+        default: '1.x.x'
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    env:
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      TWILIO_ACC_SID: ${{ secrets.TWILIO_ACC_SID }}
+      TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_SID: ${{ secrets.TWILIO_SID }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+      - run: pwd
+      - name: Validate inputs
+        run: stage=${{ github.event.inputs.stage }} version=${{ github.event.inputs.version }} node ./.github/scripts/validate-release-inputs.js
+      - name: Create spec file
+        run: stage=${{ github.event.inputs.stage }} version=${{ github.event.inputs.version }} node ./.github/scripts/generate-spec.js > config.yaml
+      - name: Install doctl (to be able to login on Digital Ocean)
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Authenticate on Digital Ocean
+        run: doctl auth init
+      - name: Deploy the new spec file to staging
+        if: ${{ github.event.inputs.stage == 'staging' }}
+        run: doctl apps update ${{ secrets.DIGITALOCEAN_STAGING_BACKEND_ID }} --verbose --spec config.yaml --access-token ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} 
+      - name: Deploy the new spec file to production
+        if: ${{ github.event.inputs.stage == 'production' }}
+        run: doctl apps update ${{ secrets.DIGITALOCEAN_PRODUCTION_BACKEND_ID }} --verbose --spec config.yaml --acess-token ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} 
+      
