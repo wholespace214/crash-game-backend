@@ -73,6 +73,7 @@ const verfiySms = async (req, res, next) => {
       phone: user.phone,
       name: user.name,
       email: user.email,
+      walletAddress: user.walletAddress,
       session: await authService.generateJwt(user),
       confirmed: user.confirmed,
     });
@@ -80,6 +81,38 @@ const verfiySms = async (req, res, next) => {
     let error = res.status(422).send(err.message);
     next(error);
   }
+};
+
+const bindWalletAddress = async (req, res, next) => {
+  // retrieve wallet address
+  const { walletAddress } = req.body;
+
+  // ensure address is present
+  if (!walletAddress) {
+    return next(res.status(422).send("Property 'walletAddreess' expected but was missing"));
+  }
+
+  try {
+    //retrieve user who made the request
+    let user = await userService.getUserById(req.user.id);
+
+    // check if there is already a user with this wallet
+    let walletUser = await User.findOne({walletAddress});
+
+    // if this address was already bound to another user, return 409 error
+    if (walletUser && walletUser.id != user.id) {
+      return next(res.status(409).send("This wallet is already bound to another user"));
+    } else if (!walletUser) {  
+      user.walletAddress = walletAddress;
+    } else {
+      // do nothing if wallet exists and is already bound to the same user who made the request
+    }
+
+  } catch (err) {
+    console.log(err);
+    let error = res.status(422).send(err.message);
+    next(error);
+}
 };
 
 const saveAdditionalInformation = async (req, res, next) => {
@@ -479,6 +512,7 @@ const resendConfirmEmail = async (req, res) => {
 
 exports.login                     = login;
 exports.verfiySms                 = verfiySms;
+exports.bindWalletAddress         = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions      = saveAcceptConditions;
 exports.getUsers                  = getUsers;
