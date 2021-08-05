@@ -84,12 +84,14 @@ const verfiySms = async (req, res, next) => {
 };
 
 const bindWalletAddress = async (req, res, next) => {
+  console.log("Binding wallet address", req.body);
+
   // retrieve wallet address
   const { walletAddress } = req.body;
 
   // ensure address is present
   if (!walletAddress) {
-    return next(res.status(422).send("Property 'walletAddreess' expected but was missing"));
+    return next(res.status(422).send("Property 'walletAddress' expected but was missing"));
   }
 
   try {
@@ -104,9 +106,15 @@ const bindWalletAddress = async (req, res, next) => {
       return next(res.status(409).send("This wallet is already bound to another user"));
     } else if (!walletUser) {  
       user.walletAddress = walletAddress;
+      user = await userService.saveUser(user);
     } else {
       // do nothing if wallet exists and is already bound to the same user who made the request
     }
+
+    res.status(201).json({
+      userId: user.id,
+      walletAddress
+    });
 
   } catch (err) {
     console.log(err);
