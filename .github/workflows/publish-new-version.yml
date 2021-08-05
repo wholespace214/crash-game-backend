@@ -22,10 +22,6 @@ jobs:
           node-version: '14.x'
       - name: Install node dependencies
         run: npm ci
-      - name: Build the react app
-        run: npm run build
-        env:
-          CI: false
       - name: Install doctl (to be able to login on Digital Ocean)
         uses: digitalocean/action-doctl@v2
         with:
