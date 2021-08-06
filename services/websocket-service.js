@@ -144,20 +144,24 @@ const notificationTypes = {
 }
 
 const emitEventStartNotification = (userId, eventId, eventName) => {
-  const message = `The event ${eventName} begins in 60s. Place your token.`;
-  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
+  //const message = `The event ${eventName} begins in 60s. Place your token.`;
+  //emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
 }
 exports.emitEventStartNotification = emitEventStartNotification;
 
-const emitBetResolveNotification = (userId, betId, betQuestion, betOutcome, winToken) => {
-  const message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You ${winToken > 0 ? "won" : "lost"} ${Math.abs(winToken)}.`;
-  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_RESOLVE, betId, message });
+const emitBetResolveNotification = (userId, betId, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon) => {
+  let message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You traded ${amountTraded} EVNT.`;
+  if (tokensWon > 0) {
+      message += ` You won ${tokensWon} EVNT.`;
+  }
+
+  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_RESOLVE, betId, message, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon});
 }
 exports.emitBetResolveNotification = emitBetResolveNotification;
 
 const emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
-  const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
-  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
+  //const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
+  //emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
 }
 exports.emitEventCancelNotification = emitEventCancelNotification;
 

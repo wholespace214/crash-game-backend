@@ -174,6 +174,7 @@ exports.initialize = function () {
               handler: async (request, response, context) => {
                 const id = context.record.params._id;
                 const bet = await eventService.getBet(id);
+                const event = await Event.findById(bet.event);
                 const indexOutcome = request.fields.index;
                 const evidenceActual = request.fields.evidenceActual;
                 const evidenceDescription = request.fields.evidenceDescription;
@@ -195,7 +196,7 @@ exports.initialize = function () {
                     bet.resolved = true;
                     bet.evidenceDescription = evidenceDescription;
                     bet.evidenceActual = evidenceActual;
-
+                    
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
                     const betContract = new BetContract(id);
@@ -209,7 +210,10 @@ exports.initialize = function () {
                 } finally {
                   await session.endSession();
 
-                  for (const {owner: userId, balance} of resolveResults) {
+                  for (let resolvedResult of resolveResults) {
+                    const userId = resolvedResult.owner;
+                    const balance = resolvedResult.balance;
+
                     const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
 
                     if(userId.includes('_')) {
@@ -218,12 +222,15 @@ exports.initialize = function () {
 
                     const user = await User.findById({_id: userId}, {phone: 1}).exec();
 
+                    // userId, betId, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon
                     if(user) {
                       websocketService.emitBetResolveNotification(
                         userId,
                         id,
                         bet.marketQuestion,
                         bet.outcomes[indexOutcome].name,
+                        winToken, // find value originally traded
+                        event.previewImageUrl,
                         winToken
                       );
                       await smsService.notifyBetResolve(user, bet.marketQuestion, bet.outcomes[indexOutcome].name, winToken);
