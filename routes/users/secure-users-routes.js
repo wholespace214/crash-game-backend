@@ -7,6 +7,11 @@ const { check } = require("express-validator");
 // Import User Controller
 const userController = require("../../controllers/users-controller");
 
+router.post("/bindWalletAddress", 
+    [check("walletAddress").notEmpty()], 
+    userController.bindWalletAddress
+);
+
 router.post(
   "/saveAdditionalInformation",
   [check("name").notEmpty(), check("email").isEmail(), check("username").notEmpty()],
