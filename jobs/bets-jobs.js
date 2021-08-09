@@ -1,7 +1,6 @@
 const Bet = require('../models/Bet');
 const User = require('../models/User');
 const websocketService = require('../services/websocket-service');
-const smsService = require('../services/sms-notification-service');
 
 const betsActiveNotification = async () => {
   const now = new Date();
@@ -19,7 +18,6 @@ const betsActiveNotification = async () => {
 
     for(const user of users) {
       websocketService.emitEventStartNotification(user.id, bet.event.id, bet.event.name);
-      await smsService.notifyEventStart(user, bet.event.name, url);
 
       bet.activeNotificationSend = true
       await bet.save()

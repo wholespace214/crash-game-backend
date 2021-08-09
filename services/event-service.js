@@ -4,7 +4,6 @@ const Bet   = require('../models/Bet');
 
 //Import services
 const websocketService = require('./websocket-service');
-const smsService = require('./sms-notification-service');
 
 const { BetContract, Erc20 } = require('smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
@@ -95,7 +94,6 @@ exports.placeBet = async (user, bet, investmentAmount, outcome) => {
         const betId   = bet._id;
 
         await websocketService.emitPlaceBetToAllByEventId(eventId, userId, betId, investmentAmount, outcome);
-        await smsService.notifyPlacedBet(user, bet, investmentAmount, outcome);
     }
 };
 
@@ -106,7 +104,6 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
         const betId   = bet._id;
 
         await websocketService.emitPullOutBetToAllByEventId(eventId, userId, betId, amount, outcome, currentPrice);
-        await smsService.notifyPullOutBet(user, bet, amount, outcome);
     }
 };
 
