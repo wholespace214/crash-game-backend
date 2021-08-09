@@ -107,10 +107,8 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
     }
 };
 
-exports.isBetTradable = async (bet) => {
-        const {status} = await Bet.findOne({_id: bet._id}, {status: 1}).exec()
-        return status === BET_STATUS.active;
-
+exports.isBetTradable = (bet) => {
+        return bet.status === BET_STATUS.active;
 };
 
 exports.betCreated = async (bet, userId) => {
