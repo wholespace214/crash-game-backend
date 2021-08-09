@@ -24,7 +24,7 @@ const Bet   = require('../models/Bet');
 const bigDecimal = require("js-big-decimal");
 
 
-const { BetContract, Erc20, Wallet } = require('smart_contract_mock');
+const { BetContract, Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 

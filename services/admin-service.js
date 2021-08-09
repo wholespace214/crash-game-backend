@@ -1,9 +1,8 @@
-const { BetContract, Wallet } = require("smart_contract_mock");
+const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
-const { Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 // Import services

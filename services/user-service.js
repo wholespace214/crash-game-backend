@@ -1,8 +1,5 @@
-const {Wallet} = require('smart_contract_mock');
-
 // Import models
 const User = require("../models/User");
-const Bet = require("../models/Bet");
 
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
@@ -14,7 +11,7 @@ const bigDecimal = require("js-big-decimal");
 const { BET_STATUS } = require("./event-service");
 
 //Import sc mock
-const { BetContract, Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 exports.getUserByPhone = async (phone, session) => {

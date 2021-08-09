@@ -6,7 +6,7 @@ const Bet   = require('../models/Bet');
 const websocketService = require('./websocket-service');
 const smsService = require('./sms-notification-service');
 
-const { BetContract, Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
 const BET_STATUS = {

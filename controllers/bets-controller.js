@@ -15,7 +15,7 @@ const bigDecimal = require('js-big-decimal');
 const eventService           = require('../services/event-service');
 const userService            = require('../services/user-service');
 
-const { BetContract, Erc20 } = require('smart_contract_mock');
+const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const EVNT                   = new Erc20('EVNT');
 
 const createBet = async (req, res, next) => {
