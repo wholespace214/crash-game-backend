@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema({
     max: 128,
     min: 2,
   },
+  walletAddress: {
+    type: String,
+    required: false,
+    max: 42,
+    min: 42
+  },
   profilePictureUrl: {
     type: String,
     required: false,
