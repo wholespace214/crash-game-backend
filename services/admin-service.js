@@ -187,6 +187,7 @@ exports.initialize = function () {
                 }
 
                 let resolveResults = [];
+                let ammInteraction = [];
 
                 const session = await Bet.startSession();
                 try {
@@ -203,11 +204,24 @@ exports.initialize = function () {
                       "Wallfair Admin User",
                       indexOutcome
                     );
+                    ammInteraction = await betContract.getUserAmmInteractions();
                   });
                 } catch (err) {
                   console.debug(err);
                 } finally {
                   await session.endSession();
+
+                  
+                  // find out how much each individual user invested
+                  let investedValues = {}; // userId -> value
+                  for (let interaction of ammInteraction) {
+                    let amount = Number(interaction.amount) / Number(EVNT.ONE);
+                    if ('BUY' === interaction.direction) { // when user bought, add this amount to value invested
+                      investedValues[interaction.buyer] = investedValues[interaction.buyer] ? investedValues[interaction.buyer] + amount : amount;
+                    } else if ('SELL' === interaction.direction) { // when user sells, decrease amount invested
+                      investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
+                    }
+                  }
 
                   for (let resolvedResult of resolveResults) {
                     const userId = resolvedResult.owner;
@@ -228,7 +242,7 @@ exports.initialize = function () {
                         id,
                         bet.marketQuestion,
                         bet.outcomes[indexOutcome].name,
-                        winToken, // find value originally traded
+                        Math.round(investedValues[userId]),
                         event.previewImageUrl,
                         winToken
                       );
