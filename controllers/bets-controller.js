@@ -116,7 +116,7 @@ const placeBet = async (req, res, next) => {
 
         const bet  = await eventService.getBet(id);
 
-        if(await !eventService.isBetTradable(bet)) {
+        if(!eventService.isBetTradable(bet)) {
             res.status(405).json({error: 'BET_NOT_TRADEABLE', message: 'No further action can be performed on an event/bet that has ended!'});
             return;
         }
