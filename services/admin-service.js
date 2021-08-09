@@ -11,7 +11,6 @@ const userService = require("../services/user-service");
 const eventService = require("../services/event-service");
 const betService = require("../services/bet-service");
 const websocketService = require("../services/websocket-service");
-const smsService = require('../services/sms-notification-service');
 
 const generator = require("generate-password");
 
@@ -226,7 +225,6 @@ exports.initialize = function () {
                         bet.outcomes[indexOutcome].name,
                         winToken
                       );
-                      await smsService.notifyBetResolve(user, bet.marketQuestion, bet.outcomes[indexOutcome].name, winToken);
                     }
                   }
                 }
