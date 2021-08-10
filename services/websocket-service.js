@@ -16,7 +16,7 @@ exports.setPubClient = (newpub) => pubClient = newpub;
 
 exports.handleChatMessage = async function (socket, data, userId) {
     try {
-        const responseData = getCopyWithBaseResponseData(data, userId);
+        const responseData = {...data, userId, date: new Date()};
         const eventId      = data.eventId;
         const message      = data.message;
 
@@ -55,7 +55,6 @@ exports.handleJoinRoom = async function (socket, data) {
 };
 
 exports.handleLeaveRoom = async function (socket, data) {
-    console.info('------------------------------------------ leave room');
     try {
         const {eventId, userId} = data;
 
@@ -78,48 +77,45 @@ exports.handleLeaveRoom = async function (socket, data) {
 
 exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outcome) => {
     const message = 'dummy';
-    const betPlacedData = getCopyWithBaseResponseData(
-        {
-            eventId,
-            betId,
-            amount: amount.toString(),
-            outcome,
-            message
-        },
+    const betPlacedData = {
+        eventId,
+        betId,
+        amount: amount.toString(),
+        outcome,
+        message,
         userId,
-    );
+        date: new Date()
+    }
 
     await handleBetMessage(eventId, 'betPlaced', betPlacedData);
 };
 
 exports.emitPullOutBetToAllByEventId = async (eventId, userId, betId, amount, outcome, currentPrice) => {
     const message = 'dummy';
-    const betPulledOutData = getCopyWithBaseResponseData(
-        {
-            eventId,
-            betId,
-            amount:       amount.toString(),
-            outcome,
-            currentPrice: currentPrice.toString(),
-            message
-        },
+    const betPulledOutData = {
+        eventId,
+        betId,
+        amount:       amount.toString(),
+        outcome,
+        currentPrice: currentPrice.toString(),
+        message,
         userId,
-    );
+        date: new Date()
+    }
 
     await handleBetMessage(eventId, 'betPulledOut', betPulledOutData);
 };
 
 exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
     const message = 'dummy';
-    const betCreationData = getCopyWithBaseResponseData(
-        {
-            eventId,
-            betId,
-            title,
-            message
-        },
-        userId,
-    );
+    const betCreationData = {
+        eventId,
+        betId,
+        title,
+        message,
+        userId, 
+        date: new Date()
+    };
 
     await handleBetMessage(eventId, 'betCreated', betCreationData);
 };
@@ -170,11 +166,3 @@ const emitToAllByUserId = (userId, emitEventName, data) => {
     //io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
     pubClient.publish('message', JSON.stringify({to: userId.toString(), event: emitEventName, data: {date: new Date(), ...data}}));
 };
-
-function getCopyWithBaseResponseData (targetData, userId, date = new Date()) {
-    return {
-        ...targetData,
-        userId,
-        date,
-    };
-}

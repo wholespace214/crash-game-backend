@@ -238,7 +238,7 @@ const calculateBuyOutcome = async (req, res, next) => {
 
         const bet = await Bet.findById(id);
 
-        console.debug(LOG_TAG, "Calculating buy outcomes");
+        //console.debug(LOG_TAG, "Calculating buy outcomes");
         const betContract = new BetContract(id, bet.outcomes.length);
 
         let buyAmount = parseFloat(amount).toFixed(4);
@@ -253,7 +253,7 @@ const calculateBuyOutcome = async (req, res, next) => {
             result.push({index: outcome.index, outcome: bigAmount.getPrettyValue(4, '.')});
         }
 
-        console.debug(LOG_TAG, 'Buy outcomes successfully calculated', result);
+        //console.debug(LOG_TAG, 'Buy outcomes successfully calculated', result);
 
         res.status(200).json(result);
     } catch (err) {
@@ -282,7 +282,7 @@ const calculateSellOutcome = async (req, res, next) => {
 
         const bet = await Bet.findById(id);
 
-        console.debug(LOG_TAG, 'Calculating Sell Outcomes');
+        //console.debug(LOG_TAG, 'Calculating Sell Outcomes');
         const betContract = new BetContract(id, bet.outcomes.length);
         let sellAmount = parseFloat(amount).toFixed(4);
 
@@ -296,7 +296,7 @@ const calculateSellOutcome = async (req, res, next) => {
             result.push({index: outcome.index, outcome: bigOutcome.getPrettyValue(4, '.')});
         }
 
-        console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
+        //console.debug(LOG_TAG, 'Sell outcomes successfully calculated', result);
 
         res.status(200).json(result);
     } catch (err) {
