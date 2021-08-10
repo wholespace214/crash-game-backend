@@ -6,6 +6,7 @@ const Bet   = require('../models/Bet');
 const websocketService = require('./websocket-service');
 
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+const { SinkPage } = require('twilio/lib/rest/events/v1/sink');
 const EVNT                   = new Erc20('EVNT');
 
 const BET_STATUS = {
@@ -75,9 +76,17 @@ const filterPublishedBets = (eventOrArray) => {
 exports.filterPublishedBets = filterPublishedBets;
 
 exports.listEvent = async (linkedTo) => {
- return Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
+    return Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 };
 
+exports.filterEvents = async (category, count = 10, page = 1, sortby = 'name', searchQuery) => {
+    return Event
+        .find(searchQuery ? {category, name : { "$regex": searchQuery, "$options": 'i' }} : {category})
+        .limit(count)
+        .skip(count * (page-1))
+        .sort(sortby)
+        .lean();
+};
 
 exports.getEvent = async (id) => {
     return Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);

@@ -59,7 +59,17 @@ const eventSchema = new mongoose.Schema({
     bets: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bet'
-    }]
+    }],
+    type: {
+        type: String,
+        required: true,
+        enum: ['streamed', 'non-streamed', 'game']
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: ['streamed-esports', 'streamed-shooter', 'streamed-mmorpg', 'streamed-other', 'sports', 'politics', 'crypto', 'celebrities', 'other']
+    }
 });
 
 module.exports = mongoose.model("Event", eventSchema);
