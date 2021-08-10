@@ -67,7 +67,8 @@ const eventSchema = new mongoose.Schema({
     }],
     category: {
         type: String,
-        required: true
+        required: true,
+        enum: ['streamed-esports', 'streamed-shooter', 'streamed-mmorpg', 'streamed-other', 'sports', 'politics', 'crypto', 'celebrities', 'other']
     }
 });
 
