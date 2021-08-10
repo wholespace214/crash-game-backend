@@ -244,6 +244,11 @@ Successful Result:
 ```
 
 ### GET http://localhost:8000/api/event/list/:category/:count/:page/:sortby/:searchQuery
+
+* :searchQuery is optional
+* :page is 1-based
+* :sortby is an Event property to be used in mongoose syntax (ex: name (asc), -name (desc))
+
 Successful Result:
 ```json
 [

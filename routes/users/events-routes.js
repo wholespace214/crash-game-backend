@@ -15,6 +15,11 @@ router.get(
 );
 
 router.get(
+    "/list/:category/:count/:page/:sortby",
+    eventController.filterEvents
+);
+
+router.get(
     "/list/:category/:count/:page/:sortby/:searchQuery",
     eventController.filterEvents
 );
