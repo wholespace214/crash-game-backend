@@ -104,15 +104,18 @@ server.get('/', (req, res) => {
 });
 
 // Import Routes
-const userRoute       = require('./routes/users/users-routes');
-const eventRoute      = require('./routes/users/events-routes');
-const secureUserRoute = require('./routes/users/secure-users-routes');
+const userRoute         = require('./routes/users/users-routes');
+const secureEventRoutes = require('./routes/users/secure-events-routes');
+const eventRoutes       = require('./routes/users/events-routes');
+const secureUserRoute   = require('./routes/users/secure-users-routes');
 
 server.use(cors());
 
 // Using Routes
+server.use('/api/event', eventRoutes);
+server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
+
 server.use('/api/user', userRoute);
-server.use('/api/event', passport.authenticate('jwt', { session: false }), eventRoute);
 server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
 io.use(socketioJwt.authorize({
