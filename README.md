@@ -243,6 +243,37 @@ Successful Result:
 ]
 ```
 
+### GET http://localhost:8000/api/event/list/:category/:count/:page/:sortby/:searchQuery
+Successful Result:
+```json
+[
+    {
+        "_id": "6107e58bf0a40958ecaab7f3",
+        "bets": [
+            "6107e5c9f0a40958ecaab932",
+            "6107e704f0a40958ecaac05a"
+        ],
+        "name": "FIFA Match CyrusTwo",
+        "streamUrl": "...",
+        "previewImageUrl": "...",
+        "tags": [
+            {
+                "_id": "6107e58bf0a40958ecaab7f4",
+                "name": "fifa"
+            },
+            {
+                "_id": "6107e58bf0a40958ecaab7f5",
+                "name": "soccer"
+            }
+        ],
+        "date": "2021-08-02T22:00:00.000Z",
+        "__v": 2,
+        "category": "Esports",
+        "type": "streamed"
+    }
+]
+```
+
 ### POST http://localhost:8000/api/event/create
 
 Request:

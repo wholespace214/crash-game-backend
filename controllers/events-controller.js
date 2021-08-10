@@ -30,6 +30,18 @@ const listEvents = async (req, res) => {
         .json(calculateAllBetsStatus(eventList));
 };
 
+const filterEvents = async (req, res) => {
+    let { category, sortby, searchQuery} = req.params;
+    let count = parseInt(req.params.count);
+    let page = parseInt(req.params.page);
+
+    let eventList = await eventService.filterEvents(category, count, page, sortby, searchQuery);
+
+    res
+        .status(201)
+        .json(eventList);
+};
+
 const getEvent = async (req, res, next) => {
     // Validating User Inputs
     const errors = validationResult(req);
@@ -95,6 +107,7 @@ const getChatMessagesByEventId = async (req, res, next) => {
         .json(await chatMessageService.getNewestChatMessagesByEvent(id));
 };
 exports.listEvents = listEvents;
+exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
