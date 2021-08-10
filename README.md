@@ -243,8 +243,10 @@ Successful Result:
 ]
 ```
 
-### GET http://localhost:8000/api/event/list/:category/:count/:page/:sortby/:searchQuery
+### GET http://localhost:8000/api/event/list/:type/:category/:count/:page/:sortby/:searchQuery
 
+* :type can be 'all', 'streamed', 'non-streamed', 'game'
+* :category can be 'all', 'streamed-esports', 'streamed-shooter', 'streamed-mmorpg', 'streamed-other', 'sports', 'politics', 'crypto', 'celebrities', 'other'
 * :searchQuery is optional
 * :page is 1-based
 * :sortby is an Event property to be used in mongoose syntax (ex: name (asc), -name (desc))

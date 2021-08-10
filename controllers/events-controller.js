@@ -31,11 +31,11 @@ const listEvents = async (req, res) => {
 };
 
 const filterEvents = async (req, res) => {
-    let { category, sortby, searchQuery} = req.params;
+    let { category, sortby, searchQuery, type} = req.params;
     let count = parseInt(req.params.count);
     let page = parseInt(req.params.page);
 
-    let eventList = await eventService.filterEvents(category, count, page, sortby, searchQuery);
+    let eventList = await eventService.filterEvents(type, category, count, page, sortby, searchQuery);
 
     res
         .status(201)

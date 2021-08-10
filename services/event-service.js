@@ -79,9 +79,25 @@ exports.listEvent = async (linkedTo) => {
     return Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 };
 
-exports.filterEvents = async (category, count = 10, page = 1, sortby = 'name', searchQuery) => {
+exports.filterEvents = async (type = 'all', category = 'all', count = 10, page = 1, sortby = 'name', searchQuery) => {
+    let query = {};
+
+    // only filter by type if it is not 'all'
+    if (type !== 'all') { 
+        query.type = type;
+    }
+
+    if (category !== 'all') {
+        query.category = category;
+    }
+
+    // only filter by searchQuery if it is present
+    if (searchQuery) {
+        query.name = { "$regex": searchQuery, "$options": 'i' };
+    }
+
     return Event
-        .find(searchQuery ? {category, name : { "$regex": searchQuery, "$options": 'i' }} : {category})
+        .find(query)
         .limit(count)
         .skip(count * (page-1))
         .sort(sortby)
