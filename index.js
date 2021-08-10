@@ -53,10 +53,9 @@ require('./util/auth');
 const server      = express();
 const httpServer  = http.createServer(server);
 
+// Create socket.io server
 const socketioJwt = require('socketio-jwt');
 const { Server }  = require('socket.io');
-
-const { createClient } = require("redis");
 const io          = new Server(httpServer, {
     cors: {
         origin:         '*',
@@ -66,19 +65,19 @@ const io          = new Server(httpServer, {
     },
 });
 
-const pubClient = createClient(
-    {
-        url: process.env.REDIS_CONNECTION,
-        no_ready_check: false
-    });
-const subClient = createClient(
-    {
-        url: process.env.REDIS_CONNECTION,
-        no_ready_check: false
-    });
-
+// Create Redis pub and sub clients
+const { createClient } = require("redis");
+const pubClient = createClient({
+    url: process.env.REDIS_CONNECTION,
+    no_ready_check: false
+});
+const subClient = createClient({
+    url: process.env.REDIS_CONNECTION,
+    no_ready_check: false
+});
 websocketService.setPubClient(pubClient)
 
+// When message arrive from Redis, disseminate to proper channels
 subClient.on('message', function (channel, message) {
     console.log('[REDIS] Incoming : ' + message);
     const messageObj = JSON.parse(message);
