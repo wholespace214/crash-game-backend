@@ -35,11 +35,6 @@ const eventSchema = new mongoose.Schema({
         required: true,
         max: 255,
     },
-    type: {
-        type: String,
-        required: true,
-        enum: ['streamed', 'non-streamed', 'game']
-    },
     previewImageUrl: {
             type: String,
             required: true,
@@ -65,6 +60,11 @@ const eventSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Bet'
     }],
+    type: {
+        type: String,
+        required: true,
+        enum: ['streamed', 'non-streamed', 'game']
+    },
     category: {
         type: String,
         required: true,
