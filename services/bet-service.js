@@ -1,7 +1,7 @@
 const userService   = require('../services/user-service');
 const websocketService = require("./websocket-service");
 const eventService = require("./event-service");
-const {BetContract, Erc20, Wallet} = require("smart_contract_mock");
+const {BetContract, Erc20, Wallet} = require("@wallfair.io/smart_contract_mock");
 const EVNT = new Erc20('EVNT');
 
 exports.clearOpenBets = async (bet, session) => {

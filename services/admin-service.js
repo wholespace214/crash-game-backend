@@ -1,9 +1,8 @@
-const { BetContract, Wallet } = require("smart_contract_mock");
+const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
-const { Erc20 } = require('smart_contract_mock');
 const EVNT = new Erc20('EVNT');
 
 // Import services
@@ -173,6 +172,7 @@ exports.initialize = function () {
               handler: async (request, response, context) => {
                 const id = context.record.params._id;
                 const bet = await eventService.getBet(id);
+                const event = await Event.findById(bet.event);
                 const indexOutcome = request.fields.index;
                 const evidenceActual = request.fields.evidenceActual;
                 const evidenceDescription = request.fields.evidenceDescription;
@@ -186,6 +186,7 @@ exports.initialize = function () {
                 }
 
                 let resolveResults = [];
+                let ammInteraction = [];
 
                 const session = await Bet.startSession();
                 try {
@@ -194,7 +195,7 @@ exports.initialize = function () {
                     bet.resolved = true;
                     bet.evidenceDescription = evidenceDescription;
                     bet.evidenceActual = evidenceActual;
-
+                    
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
                     const betContract = new BetContract(id);
@@ -202,13 +203,29 @@ exports.initialize = function () {
                       "Wallfair Admin User",
                       indexOutcome
                     );
+                    ammInteraction = await betContract.getUserAmmInteractions();
                   });
                 } catch (err) {
                   console.debug(err);
                 } finally {
                   await session.endSession();
 
-                  for (const {owner: userId, balance} of resolveResults) {
+                  
+                  // find out how much each individual user invested
+                  let investedValues = {}; // userId -> value
+                  for (let interaction of ammInteraction) {
+                    let amount = Number(interaction.amount) / Number(EVNT.ONE);
+                    if ('BUY' === interaction.direction) { // when user bought, add this amount to value invested
+                      investedValues[interaction.buyer] = investedValues[interaction.buyer] ? investedValues[interaction.buyer] + amount : amount;
+                    } else if ('SELL' === interaction.direction) { // when user sells, decrease amount invested
+                      investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
+                    }
+                  }
+
+                  for (let resolvedResult of resolveResults) {
+                    const userId = resolvedResult.owner;
+                    const balance = resolvedResult.balance;
+
                     const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
 
                     if(userId.includes('_')) {
@@ -217,12 +234,15 @@ exports.initialize = function () {
 
                     const user = await User.findById({_id: userId}, {phone: 1}).exec();
 
+                    // userId, betId, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon
                     if(user) {
                       websocketService.emitBetResolveNotification(
                         userId,
                         id,
                         bet.marketQuestion,
                         bet.outcomes[indexOutcome].name,
+                        Math.round(investedValues[userId]),
+                        event.previewImageUrl,
                         winToken
                       );
                     }
