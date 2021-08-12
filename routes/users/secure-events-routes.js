@@ -72,22 +72,6 @@ router.post(
     betController.pullOutBet
 );
 
-router.post(
-    "/bet/:id/outcomes/buy",
-    [
-        check("amount").isNumeric()
-    ],
-    betController.calculateBuyOutcome
-);
-
-router.post(
-    "/bet/:id/outcomes/sell",
-    [
-        check("amount").isNumeric()
-    ],
-    betController.calculateSellOutcome
-);
-
 router.get(
     "/bet/:id/payout",
     betController.payoutBet
