@@ -82,6 +82,11 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+  amountWon: {
+    type: Number,
+    required: false,
+    default: 0
+  }
 });
 
 module.exports = mongoose.model("User", userSchema);
