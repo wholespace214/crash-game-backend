@@ -161,3 +161,10 @@ exports.getTotalWin = (balance) => {
     const value = balance - INITIAL_LIQUIDITY;
     return value < 0n ? 0n : value;
 }
+
+exports.changeProfilePicture = async (userId, profilePicture) => {
+    let user = await User.findById(userId);
+    user.profilePicture = profilePicture;
+    await user.save();
+}
+

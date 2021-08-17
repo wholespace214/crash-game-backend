@@ -278,7 +278,7 @@ const getUserInfo = async (req, res) => {
             userId: user.id,
             name: user.name,
             username: user.username,
-            profilePictureUrl: user.profilePictureUrl,
+            profilePicture: user.profilePicture,
             balance: formattedBalance,
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
@@ -518,6 +518,16 @@ const resendConfirmEmail = async (req, res) => {
         );
 }
 
+const changeProfilePicture = async (request, response) => {
+    await userService.changeProfilePicture(request.user.id, request.body.profilePicture)
+
+    response
+      .status(200)
+      .send(
+        {status: 'OK'}
+      );
+}
+
 exports.login                     = login;
 exports.verfiySms                 = verfiySms;
 exports.bindWalletAddress         = bindWalletAddress;
@@ -532,3 +542,4 @@ exports.getTransactions           = getTransactions;
 exports.getAMMHistory             = getAMMHistory;
 exports.confirmEmail              = confirmEmail;
 exports.resendConfirmEmail        = resendConfirmEmail;
+exports.changeProfilePicture      = changeProfilePicture;
