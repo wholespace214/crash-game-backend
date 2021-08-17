@@ -307,7 +307,8 @@ const getUserInfo = async (req, res) => {
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
-            rank: rank
+            rank: rank,
+            amountWon: user.amountWon
         });
     } catch (err) {
         console.error(err);
