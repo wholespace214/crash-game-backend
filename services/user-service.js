@@ -89,7 +89,7 @@ function filterClosedTrades(user, openBet, newBalances) {
 exports.getRankByUserId = async (userId) => {
     let users = await User.find({}).sort({amountWon: -1}).select({_id: 1}).exec();
     for (let i = 0; i < users.length; i++) {
-        if (users[i].userId === userId) {
+        if (users[i]._id == userId) {
             return i+1;
         }
     }
