@@ -87,24 +87,11 @@ function filterClosedTrades(user, openBet, newBalances) {
 
 
 exports.getRankByUserId = async (userId) => {
-    let users = await User.find({}, { name: 1 });
-    const usersWithBalance = [];
-
-    for (const user of users) {
-        const balance = await EVNT.balanceOf(user.id);
-        usersWithBalance.push({userId: user.id, name: user.name, balance: (balance / EVNT.ONE).toString()});
-    }
-
-    usersWithBalance.sort(function (a, b) {
-        return b.balance - a.balance;
-    });
-
-    let counter = 1;
-    for (const user of usersWithBalance) {
-        if(user.userId === userId) {
-            return counter;
+    let users = await User.find({}).sort({amountWon: -1}).select({_id: 1}).exec();
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].userId === userId) {
+            return i+1;
         }
-        counter += 1;
     }
 }
 

@@ -232,7 +232,31 @@ const rewardRefUserIfNotConfirmed = async (user) => {
     return false;
 }
 
+// Receive all users in leaderboard
+const getLeaderboard = async (req, res, next) => {
+  let page = parseInt(req.params.page);
+  let perPage = parseInt(req.params.perPage);
+
+  let users = await User.find({})
+                        .select({username: 1, amountWon: 1})
+                        .sort({amountWon: -1})
+                        .limit(perPage)
+                        .skip (perPage * page)
+                        .exec();
+
+  let total = await User.countDocuments().exec();
+
+  res.json({
+    total,
+    users,
+    page,
+    perPage
+  });
+};
+
 // Receive all users
+// TODO is this method being used by anything other than leaderboard?
+// if no, remove it
 const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -532,3 +556,4 @@ exports.getTransactions           = getTransactions;
 exports.getAMMHistory             = getAMMHistory;
 exports.confirmEmail              = confirmEmail;
 exports.resendConfirmEmail        = resendConfirmEmail;
+exports.getLeaderboard            = getLeaderboard;
