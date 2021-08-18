@@ -518,14 +518,21 @@ const resendConfirmEmail = async (req, res) => {
         );
 }
 
-const changeProfilePicture = async (request, response) => {
-    await userService.changeProfilePicture(request.user.id, request.body.profilePicture)
-
-    response
-      .status(200)
-      .send(
-        {status: 'OK'}
-      );
+const updateUser = async (request, response) => {
+    if (request.user.admin === false && request.params.userId !== request.user.id) {
+        response
+            .status(403)
+            .send(
+                {status: 'Forbidden'}
+            )
+    } else {
+        await userService.updateUser(request.params.userId, request.body)
+        response
+            .status(200)
+            .send(
+                {status: 'OK'}
+            );
+    }
 }
 
 exports.login                     = login;
@@ -542,4 +549,4 @@ exports.getTransactions           = getTransactions;
 exports.getAMMHistory             = getAMMHistory;
 exports.confirmEmail              = confirmEmail;
 exports.resendConfirmEmail        = resendConfirmEmail;
-exports.changeProfilePicture      = changeProfilePicture;
+exports.updateUser                = updateUser;

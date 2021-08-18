@@ -162,9 +162,17 @@ exports.getTotalWin = (balance) => {
     return value < 0n ? 0n : value;
 }
 
-exports.changeProfilePicture = async (userId, profilePicture) => {
+exports.updateUser = async (userId, updatedUser) => {
     let user = await User.findById(userId);
-    user.profilePicture = profilePicture;
+    if (updatedUser.name) {
+        user.name = updatedUser.name;
+    }
+    if (updatedUser.username) {
+        user.username = updatedUser.username;
+    }
+    if (updatedUser.profilePicture) {
+        user.profilePicture = updatedUser.profilePicture;
+    }
     await user.save();
 }
 

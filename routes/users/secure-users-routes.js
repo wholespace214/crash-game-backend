@@ -54,9 +54,9 @@ router.get(
     userController.resendConfirmEmail
 )
 
-router.put(
-        "/change-profile-picture",
-        userController.changeProfilePicture
+router.patch(
+        "/:userId",
+        userController.updateUser
 );
 
 router.get("/:userId", userController.getUserInfo);
