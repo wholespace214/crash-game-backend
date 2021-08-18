@@ -234,14 +234,14 @@ const rewardRefUserIfNotConfirmed = async (user) => {
 
 // Receive all users in leaderboard
 const getLeaderboard = async (req, res, next) => {
-  let page = parseInt(req.params.page);
-  let perPage = parseInt(req.params.perPage);
+  let limit = parseInt(req.params.limit);
+  let skip = parseInt(req.params.skip);
 
   let users = await User.find({})
                         .select({username: 1, amountWon: 1})
                         .sort({amountWon: -1})
-                        .limit(perPage)
-                        .skip (perPage * page)
+                        .limit(limit)
+                        .skip (skip)
                         .exec();
 
   let total = await User.countDocuments().exec();
@@ -249,8 +249,8 @@ const getLeaderboard = async (req, res, next) => {
   res.json({
     total,
     users,
-    page,
-    perPage
+    limit,
+    skip
   });
 };
 
