@@ -297,7 +297,7 @@ const getUserInfo = async (req, res) => {
         const user = await User.findById(req.params.userId);
         const balance = await EVNT.balanceOf(req.params.userId);
         const formattedBalance = new bigDecimal(balance).getPrettyValue(4, '.');
-        const rank = await userService.getRankByUserId(req.params.userId);
+        let {rank, toNextRank} = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
@@ -307,7 +307,8 @@ const getUserInfo = async (req, res) => {
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
-            rank: rank,
+            rank,
+            toNextRank,
             amountWon: user.amountWon
         });
     } catch (err) {
