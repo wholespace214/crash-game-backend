@@ -237,7 +237,7 @@ const getLeaderboard = async (req, res, next) => {
   let limit = parseInt(req.params.limit);
   let skip = parseInt(req.params.skip);
 
-  let users = await User.find({})
+  let users = await User.find({username: {"$exists": true}})
                         .select({username: 1, amountWon: 1})
                         .sort({amountWon: -1})
                         .limit(limit)
