@@ -586,3 +586,30 @@ Successful Result:
 ```json
 {"status":"OK"}
 ```
+
+### POST http://localhost:8000/api/event/extract/twitch
+```json
+{
+    "streamUrl": "https://www.twitch.tv/chess"
+}
+```
+
+Successful Result:
+```json
+{
+    "name": "Chess",
+    "previewImageUrl": "https://static-cdn.jtvnw.net/jtv_user_pictures/6eb1c704-e4b4-4269-9e26-ec762668fb79-channel_offline_image-1920x1080.png",
+    "streamUrl": "https://www.twitch.tv/chess",
+    "tags": [
+        {
+            "name": "Esports"
+        },
+        {
+            "name": "English"
+        }
+    ],
+    "date": 1629448490358,
+    "type": "streamed",
+    "category": "Chess"
+}
+```

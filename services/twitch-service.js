@@ -57,9 +57,10 @@ const getTwitchUser = async (twitchUsername) => {
 
 const getTwitchTags = async (broadcaster_id) => {
     let tagsData = await twitchRequest(`https://api.twitch.tv/helix/streams/tags?broadcaster_id=${broadcaster_id}`);
-    console.log("TAGS", JSON.stringify(tagsData));
 
-    return tagsData.data.map(t => {name: t.localization_names["en-us"]});
+    return tagsData.data.map((i) => {
+        return {name: i.localization_names["en-us"]}
+    });
 };
 
 const getTwitchChannel = async (broadcaster_id) => {
@@ -70,28 +71,29 @@ const getTwitchChannel = async (broadcaster_id) => {
 const getEventFromTwitchUrl = async (streamUrl) => {
     let username = streamUrl.substring(streamUrl.lastIndexOf("/")+1)
 
-    let userData = await getTwitchUser(login);
+    let userData = await getTwitchUser(username);
     let channelData = await getTwitchChannel(userData.id);
     let tags = await getTwitchTags(userData.id);
 
     let event = {
-        name: userData.displayName,
+        name: userData.display_name,
         previewImageUrl: userData.offline_image_url,
         streamUrl,
         tags,
         date: Date.now(),
         type: 'streamed',
-
+        category: channelData.game_name
     }
+
+    return event;
 }
 
-const main = async (login) => {
-    let userData = await getTwitchUser(login);
-    let channelData = await getTwitchChannel(userData.id);
-    let tags = await getTwitchTags(userData.id);
+exports.getEventFromTwitchUrl = getEventFromTwitchUrl;
 
-    console.log(tags);
+
+// for quick cli tests:
+const main = async () => {
+    console.log(await getEventFromTwitchUrl("https://www.twitch.tv/gmhikaru"))
 }
 
-//main("chess");
-//main("blinx_");
+//main();
