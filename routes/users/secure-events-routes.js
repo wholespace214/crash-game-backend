@@ -7,6 +7,7 @@ const { check } = require("express-validator");
 // Import controllers
 const eventController = require("../../controllers/events-controller");
 const betController = require("../../controllers/bets-controller");
+const twitchController = require("../../controllers/twitch-controller")
 
 //Login does register & login
 router.get(
@@ -40,6 +41,14 @@ router.post(
         check("endDate")
     ],
     betController.createBet
+);
+
+router.post(
+    "/extract/twitch",
+    [
+        check("streamUrl").notEmpty()
+    ],
+    twitchController.getEventFromTwitchUrl
 );
 
 router.post(
