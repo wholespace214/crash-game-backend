@@ -5,8 +5,8 @@
 Step 1: Download repo and install modules
 
 ```bash
-git clone https://github.com/wallfair-organization/server-side
-cd server-side
+git clone https://github.com/wallfair-organization/backend
+cd backend
 npm install
 ```
 
