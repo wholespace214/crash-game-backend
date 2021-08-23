@@ -43,4 +43,9 @@ router.post(
     betController.calculateSellOutcome
 );
 
+router.get(
+    "/tags",
+    eventController.getTags
+)
+
 module.exports = router;
