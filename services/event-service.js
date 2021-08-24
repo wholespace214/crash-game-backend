@@ -167,15 +167,5 @@ exports.saveBet = async (bet, session) => {
 };
 
 exports.getTags = async (params = {}) => {
-    return Event.find().select({'_id': 0, 'tags.name': 1}).then(res => {
-        let arr = [];
-        res.forEach(item => {
-            item.tags.forEach(tag => {
-                if (!arr.includes(tag.name)) {
-                    arr.push(tag.name);
-                }
-            })
-        });
-        return arr;
-    });
+    return Event.distinct('tags.name').exec();
 };
