@@ -165,3 +165,7 @@ exports.saveEvent = async (event, session) => {
 exports.saveBet = async (bet, session) => {
     return bet.save({session});
 };
+
+exports.getTags = async (params = {}) => {
+    return Event.distinct('tags.name').exec();
+};
