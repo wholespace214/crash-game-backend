@@ -108,10 +108,11 @@ const getChatMessagesByEventId = async (req, res, next) => {
 };
 
 const getTags = async (req, res) => {
+    const tags = await eventService.getTags();
     res
         .status(200)
         .json({
-            data: ['esports', 'shooter', 'celebrities', 'politics', 'fun', 'racing']
+            data: tags
         })
 }
 
