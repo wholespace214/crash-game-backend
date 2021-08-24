@@ -10,6 +10,16 @@ router.get(
 );
 
 router.get(
+    "/list/:type/:category/:count/:page/:sortby",
+    eventController.filterEvents
+);
+
+router.get(
+    "/list/:type/:category/:count/:page/:sortby/:searchQuery",
+    eventController.filterEvents
+);
+
+router.get(
     "/chat-messages/:id",
     [
         check("id").notEmpty()
@@ -32,5 +42,10 @@ router.post(
     ],
     betController.calculateSellOutcome
 );
+
+router.get(
+    "/tags",
+    eventController.getTags
+)
 
 module.exports = router;

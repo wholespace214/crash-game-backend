@@ -232,7 +232,31 @@ const rewardRefUserIfNotConfirmed = async (user) => {
     return false;
 }
 
+// Receive all users in leaderboard
+const getLeaderboard = async (req, res, next) => {
+  let limit = parseInt(req.params.limit);
+  let skip = parseInt(req.params.skip);
+
+  let users = await User.find({username: {"$exists": true}})
+                        .select({username: 1, amountWon: 1})
+                        .sort({amountWon: -1})
+                        .limit(limit)
+                        .skip (skip)
+                        .exec();
+
+  let total = await User.countDocuments().exec();
+
+  res.json({
+    total,
+    users,
+    limit,
+    skip
+  });
+};
+
 // Receive all users
+// TODO is this method being used by anything other than leaderboard?
+// if no, remove it
 const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -273,7 +297,7 @@ const getUserInfo = async (req, res) => {
         const user = await User.findById(req.params.userId);
         const balance = await EVNT.balanceOf(req.params.userId);
         const formattedBalance = new bigDecimal(balance).getPrettyValue(4, '.');
-        const rank = await userService.getRankByUserId(req.params.userId);
+        let {rank, toNextRank} = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
             userId: user.id,
             name: user.name,
@@ -283,7 +307,9 @@ const getUserInfo = async (req, res) => {
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
             emailConfirmed: user.emailConfirmed,
-            rank: rank
+            rank,
+            toNextRank,
+            amountWon: user.amountWon
         });
     } catch (err) {
         console.error(err);
@@ -550,3 +576,4 @@ exports.getAMMHistory             = getAMMHistory;
 exports.confirmEmail              = confirmEmail;
 exports.resendConfirmEmail        = resendConfirmEmail;
 exports.updateUser                = updateUser;
+exports.getLeaderboard            = getLeaderboard;

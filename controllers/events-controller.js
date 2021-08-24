@@ -106,8 +106,19 @@ const getChatMessagesByEventId = async (req, res, next) => {
         .status(200)
         .json(await chatMessageService.getNewestChatMessagesByEvent(id));
 };
+
+const getTags = async (req, res) => {
+    const tags = await eventService.getTags();
+    res
+        .status(200)
+        .json({
+            data: tags
+        })
+}
+
 exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
+exports.getTags = getTags;

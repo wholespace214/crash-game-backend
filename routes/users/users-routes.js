@@ -21,6 +21,8 @@ router.post(
 
 router.get("/getUsers", userController.getUsers);
 
+router.get("/getLeaderboard/:skip/:limit", userController.getLeaderboard);
+
 router.get("/confirm-email",
     [
     check("userId").isString(),

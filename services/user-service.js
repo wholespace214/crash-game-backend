@@ -87,24 +87,24 @@ function filterClosedTrades(user, openBet, newBalances) {
 
 
 exports.getRankByUserId = async (userId) => {
-    let users = await User.find({}, { name: 1 });
-    const usersWithBalance = [];
+    // TODO this cant stay like this. 
+    // it is an improvement over the previous solution, but still bad
+    // we need to have a service updating the rank frequently (ex: every 15 secs)
+    let users = await User.find({username: {"$exists": true}}).sort({amountWon: -1, username: 1}).select({_id: 1, amountWon: 1}).exec();
 
-    for (const user of users) {
-        const balance = await EVNT.balanceOf(user.id);
-        usersWithBalance.push({userId: user.id, name: user.name, balance: (balance / EVNT.ONE).toString()});
-    }
+    let lastDiffAmount = 0;
+    for (let i = 0; i < users.length; i++) {
+        
+        if (users[i]._id == userId) {
+            let rank = i+1;
+            let toNextRank =  i == 0 ? 0 : lastDiffAmount - users[i].amountWon;
 
-    usersWithBalance.sort(function (a, b) {
-        return b.balance - a.balance;
-    });
-
-    let counter = 1;
-    for (const user of usersWithBalance) {
-        if(user.userId === userId) {
-            return counter;
+            return {rank, toNextRank};
         }
-        counter += 1;
+
+        if (lastDiffAmount == 0 || lastDiffAmount != users[i].amountWon) {
+            lastDiffAmount = users[i].amountWon;
+        }
     }
 }
 
