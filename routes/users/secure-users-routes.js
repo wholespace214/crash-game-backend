@@ -54,6 +54,10 @@ router.get(
     userController.resendConfirmEmail
 )
 
+router.patch(
+        "/:userId",
+        userController.updateUser
+);
 
 router.get("/:userId", userController.getUserInfo);
 

@@ -302,7 +302,7 @@ const getUserInfo = async (req, res) => {
             userId: user.id,
             name: user.name,
             username: user.username,
-            profilePictureUrl: user.profilePictureUrl,
+            profilePicture: user.profilePicture,
             balance: formattedBalance,
             totalWin: userService.getTotalWin(balance).toString(),
             admin: user.admin,
@@ -544,6 +544,23 @@ const resendConfirmEmail = async (req, res) => {
         );
 }
 
+const updateUser = async (request, response) => {
+    if (request.user.admin === false && request.params.userId !== request.user.id) {
+        response
+            .status(403)
+            .send(
+                {status: 'Forbidden'}
+            )
+    } else {
+        await userService.updateUser(request.params.userId, request.body)
+        response
+            .status(200)
+            .send(
+                {status: 'OK'}
+            );
+    }
+}
+
 exports.login                     = login;
 exports.verfiySms                 = verfiySms;
 exports.bindWalletAddress         = bindWalletAddress;
@@ -558,4 +575,5 @@ exports.getTransactions           = getTransactions;
 exports.getAMMHistory             = getAMMHistory;
 exports.confirmEmail              = confirmEmail;
 exports.resendConfirmEmail        = resendConfirmEmail;
+exports.updateUser                = updateUser;
 exports.getLeaderboard            = getLeaderboard;

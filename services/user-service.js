@@ -161,3 +161,18 @@ exports.getTotalWin = (balance) => {
     const value = balance - INITIAL_LIQUIDITY;
     return value < 0n ? 0n : value;
 }
+
+exports.updateUser = async (userId, updatedUser) => {
+    let user = await User.findById(userId);
+    if (updatedUser.name) {
+        user.name = updatedUser.name;
+    }
+    if (updatedUser.username) {
+        user.username = updatedUser.username;
+    }
+    if (updatedUser.profilePicture) {
+        user.profilePicture = updatedUser.profilePicture;
+    }
+    await user.save();
+}
+
