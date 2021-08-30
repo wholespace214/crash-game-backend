@@ -176,3 +176,21 @@ exports.updateUser = async (userId, updatedUser) => {
     await user.save();
 }
 
+exports.increaseAmountWon = async (userId, amount) => {
+    let userSession = await User.startSession();
+    let user = null;
+    try {
+        await userSession.withTransaction(async () => {
+        user = await User.findById({_id: userId}, {phone: 1, amountWon: 1}).exec();
+        if(user) {
+            user.amountWon += amount;
+            await user.save();
+        }
+        });
+
+    } catch (err) {
+        throw err;
+    } finally {
+        await userSession.endSession();
+    }
+}
