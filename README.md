@@ -483,7 +483,7 @@ Request:
   "amount": 10
 }
 ```
-Der "amount" ist in EVNT andgegeben
+Der "amount" ist in WFAIR andgegeben
 
 Successful Result:
 ```json

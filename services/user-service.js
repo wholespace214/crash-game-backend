@@ -12,7 +12,7 @@ const { BET_STATUS } = require("./event-service");
 
 //Import sc mock
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
-const EVNT = new Erc20('EVNT');
+const WFAIR = new Erc20('WFAIR');
 
 exports.getUserByPhone = async (phone, session) => {
     return User.findOne({phone: phone}).session(session);
@@ -69,8 +69,8 @@ exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session)
             {
                 betId:            bet.id,
                 outcome:          outcome ,
-                sellAmount: (sellAmount / EVNT.ONE).toString(),
-                earnedTokens: (newBalances.earnedTokens / EVNT.ONE).toString(),
+                sellAmount: (sellAmount / WFAIR.ONE).toString(),
+                earnedTokens: (newBalances.earnedTokens / WFAIR.ONE).toString(),
             });
     }
 
@@ -142,19 +142,19 @@ exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
     user.closedBets.push({
         betId:            bet.id,
         outcome:          bet.finalOutcome,
-        sellAmount: (BigInt(sellAmount) / EVNT.ONE).toString(),
-        earnedTokens: (BigInt(earnedTokens) / EVNT.ONE).toString(),
+        sellAmount: (BigInt(sellAmount) / WFAIR.ONE).toString(),
+        earnedTokens: (BigInt(earnedTokens) / WFAIR.ONE).toString(),
     });
 }
 
 exports.getBalanceOf = async (userId) => {
-    return new bigDecimal(await EVNT.balanceOf(userId)).getPrettyValue(4, '.');
+    return new bigDecimal(await WFAIR.balanceOf(userId)).getPrettyValue(4, '.');
 }
 
 const INITIAL_LIQUIDITY = 1000n;
 
 exports.mintUser  = async (userId, amount) => {
-    await EVNT.mint(userId, amount ? BigInt(amount)  * EVNT.ONE : INITIAL_LIQUIDITY * EVNT.ONE);
+    await WFAIR.mint(userId, amount ? BigInt(amount)  * WFAIR.ONE : INITIAL_LIQUIDITY * WFAIR.ONE);
 }
 
 exports.getTotalWin = (balance) => {

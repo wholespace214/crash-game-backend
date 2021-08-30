@@ -3,7 +3,7 @@ const User = require("../models/User");
 const Bet = require("../models/Bet");
 const Event = require("../models/Event");
 
-const EVNT = new Erc20('EVNT');
+const WFAIR = new Erc20('WFAIR');
 
 // Import services
 const userService = require("../services/user-service");
@@ -214,7 +214,7 @@ exports.initialize = function () {
                   // find out how much each individual user invested
                   let investedValues = {}; // userId -> value
                   for (let interaction of ammInteraction) {
-                    let amount = Number(interaction.amount) / Number(EVNT.ONE);
+                    let amount = Number(interaction.amount) / Number(WFAIR.ONE);
                     if ('BUY' === interaction.direction) { // when user bought, add this amount to value invested
                       investedValues[interaction.buyer] = investedValues[interaction.buyer] ? investedValues[interaction.buyer] + amount : amount;
                     } else if ('SELL' === interaction.direction) { // when user sells, decrease amount invested
@@ -226,7 +226,7 @@ exports.initialize = function () {
                     const userId = resolvedResult.owner;
                     const balance = resolvedResult.balance;
 
-                    const winToken = Math.round(Number(balance) / Number(EVNT.ONE));
+                    const winToken = Math.round(Number(balance) / Number(WFAIR.ONE));
 
                     if(userId.includes('_')) {
                       continue;

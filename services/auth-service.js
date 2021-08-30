@@ -11,7 +11,7 @@ const userService = require("../services/user-service");
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const { Erc20 } = require('@wallfair.io/smart_contract_mock');
-const EVNT = new Erc20('EVNT');
+const WFAIR = new Erc20('WFAIR');
 
 exports.doLogin = async (phone, ref) => {
     // Check if user with phone already exists

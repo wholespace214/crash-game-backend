@@ -7,7 +7,7 @@ const websocketService = require('./websocket-service');
 
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { SinkPage } = require('twilio/lib/rest/events/v1/sink');
-const EVNT                   = new Erc20('EVNT');
+const WFAIR                   = new Erc20('WFAIR');
 
 const BET_STATUS = {
     upcoming: 'upcoming',
@@ -153,9 +153,9 @@ exports.provideLiquidityToBet = async (createBet) => {
     const betContract             = new BetContract(createBet.id, createBet.outcomes.length);
 
     console.debug(LOG_TAG, 'Minting new Tokens');
-    await EVNT.mint(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+    await WFAIR.mint(liquidityProviderWallet, liquidityAmount * WFAIR.ONE);
     console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-    await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * EVNT.ONE);
+    await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * WFAIR.ONE);
 }
 
 exports.saveEvent = async (event, session) => {

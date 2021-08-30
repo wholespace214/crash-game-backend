@@ -2,7 +2,7 @@ const userService   = require('../services/user-service');
 const websocketService = require("./websocket-service");
 const eventService = require("./event-service");
 const {BetContract, Erc20, Wallet} = require("@wallfair.io/smart_contract_mock");
-const EVNT = new Erc20('EVNT');
+const WFAIR = new Erc20('WFAIR');
 
 exports.clearOpenBets = async (bet, session) => {
     const betContract = new BetContract(bet.id, bet.outcomes.length);
@@ -17,7 +17,7 @@ exports.clearOpenBets = async (bet, session) => {
                 continue;
             }
 
-            const balance = BigInt(wallet.balance)/EVNT.ONE;
+            const balance = BigInt(wallet.balance)/WFAIR.ONE;
 
             const user = await userService.getUserById(userId, session);
             userService.clearOpenBetAndAddToClosed(user, bet, balance, winning ? balance : 0 );
@@ -45,7 +45,7 @@ exports.refundUserHistory = async (bet, session) => {
                 continue;
             }
 
-            const balance = BigInt(wallet.balance)/EVNT.ONE;
+            const balance = BigInt(wallet.balance)/WFAIR.ONE;
 
             const user = await userService.getUserById(userId, session);
             userService.clearOpenBetAndAddToClosed(user, bet, balance, await konstiWallet.investmentBet(bet.id, outcome.index));

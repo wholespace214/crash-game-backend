@@ -25,7 +25,7 @@ const bigDecimal = require("js-big-decimal");
 
 
 const { BetContract, Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
-const EVNT = new Erc20('EVNT');
+const WFAIR = new Erc20('WFAIR');
 
 
 // Controller to sign up a new user
@@ -271,11 +271,11 @@ const getUsers = async (req, res, next) => {
   const usersWithBalance = [];
 
   for (const user of users) {
-    const balance = await EVNT.balanceOf(user.id);
+    const balance = await WFAIR.balanceOf(user.id);
       if(user.username === undefined || user.username === null) {
           continue;
       }
-    usersWithBalance.push({userId: user.id, name: user.username, balance: (balance / EVNT.ONE).toString()});
+    usersWithBalance.push({userId: user.id, name: user.username, balance: (balance / WFAIR.ONE).toString()});
   }
 
     usersWithBalance.sort(function (a, b) {
@@ -295,7 +295,7 @@ const getUsers = async (req, res, next) => {
 const getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
-        const balance = await EVNT.balanceOf(req.params.userId);
+        const balance = await WFAIR.balanceOf(req.params.userId);
         const formattedBalance = new bigDecimal(balance).getPrettyValue(4, '.');
         let {rank, toNextRank} = await userService.getRankByUserId(req.params.userId);
         res.status(200).json({
@@ -459,9 +459,9 @@ const getAMMHistory = async (request, response) => {
             const transactions = [];
 
             for (const interaction of interactions) {
-                const investmentAmount    = new bigDecimal(BigInt(interaction.investmentamount) / EVNT.ONE).getPrettyValue('4', '.');
-                const feeAmount           = new bigDecimal(BigInt(interaction.feeamount) / EVNT.ONE).getPrettyValue('4', '.');
-                const outcomeTokensBought = new bigDecimal(BigInt(interaction.outcometokensbought) / EVNT.ONE).getPrettyValue('4', '.');
+                const investmentAmount    = new bigDecimal(BigInt(interaction.investmentamount) / WFAIR.ONE).getPrettyValue('4', '.');
+                const feeAmount           = new bigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE).getPrettyValue('4', '.');
+                const outcomeTokensBought = new bigDecimal(BigInt(interaction.outcometokensbought) / WFAIR.ONE).getPrettyValue('4', '.');
 
                 transactions.push({
                     ...interaction,

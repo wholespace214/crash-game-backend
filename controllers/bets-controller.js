@@ -16,7 +16,7 @@ const eventService           = require('../services/event-service');
 const userService            = require('../services/user-service');
 
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
-const EVNT                   = new Erc20('EVNT');
+const WFAIR                   = new Erc20('WFAIR');
 
 const createBet = async (req, res, next) => {
     const LOG_TAG = '[CREATE-BET]';
@@ -139,7 +139,7 @@ const placeBet = async (req, res, next) => {
                 console.debug(LOG_TAG, 'Saved user');
 
                 console.debug(LOG_TAG, 'Interacting with the AMM');
-                await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy * EVNT.ONE);
+                await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy * WFAIR.ONE);
             });
 
             await eventService.placeBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome);
@@ -195,9 +195,9 @@ const pullOutBet = async (req, res, next) => {
                 const betContract = new BetContract(id, bet.outcomes.length);
 
                 sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
-                console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * EVNT.ONE);
+                console.debug(LOG_TAG, 'SELL ' + userId + ' ' +  sellAmount + ' ' + outcome + ' ' + requiredMinReturnAmount * WFAIR.ONE);
 
-                newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * EVNT.ONE);
+                newBalances = await betContract.sellAmount(userId, sellAmount, outcome, requiredMinReturnAmount * WFAIR.ONE);
                 console.debug(LOG_TAG, 'Successfully sold Tokens');
 
                 await userService.sellBet(user.id, bet, sellAmount, outcome, newBalances, session);
