@@ -182,7 +182,7 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
 
             for(let i=1; i<=rangeValue; i++) {
                 tmpChartData.push({
-                    x: new Date(tmpDay.getTime()+i*1000*60*60),
+                    x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60),
                     y: 0
                 })
             }
@@ -193,7 +193,7 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
 
             for(let i=1; i<=rangeValue; i++) {
                 tmpChartData.push({
-                    x: new Date(tmpDay.getTime()+i*1000*60*60*24),
+                    x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60 * 24),
                     y: 0
                 })
             }
