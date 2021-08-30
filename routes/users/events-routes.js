@@ -1,6 +1,6 @@
 // Import the express Router to create routes
 const router = require("express").Router();
-const { check } = require("express-validator");
+const { check, query } = require("express-validator");
 const eventController = require("../../controllers/events-controller");
 const betController = require("../../controllers/bets-controller");
 
@@ -41,6 +41,17 @@ router.post(
         check("amount").isNumeric()
     ],
     betController.calculateSellOutcome
+);
+
+router.get(
+    "/bet/:id/history",
+    [
+        check("id").notEmpty(),
+        query("direction").isIn(['BUY', 'SELL']).withMessage('Direction type must be one of values [BUY, SELL]'),
+        query("rangeType").isIn(['day', 'hour']).withMessage('Range type must be one of values [day, hour]'),
+        query("rangeValue").isInt({ min: 1 }).withMessage('Range value must be numeric and >= 1')
+    ],
+    betController.betHistory
 );
 
 router.get(
