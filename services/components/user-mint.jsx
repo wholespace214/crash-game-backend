@@ -34,9 +34,9 @@ const UserMint = (props) => {
         <Box variant="grey">
             <Box variant="white">
                 {console.log(record.params.balance)}
-                <H3>Mint EVNT - {record.params.username}</H3>
+                <H3>Mint WFAIR - {record.params.username}</H3>
                 <Box>
-                    <p>{'Current balance: ' + balance + ' EVNT'}</p>
+                    <p>{'Current balance: ' + balance + ' WFAIR'}</p>
                     <br />
 
 
@@ -46,7 +46,7 @@ const UserMint = (props) => {
                     <br />
                     <br />
 
-                    <Button onClick={() => {callAction(record);}}>Mint EVNT</Button>
+                    <Button onClick={() => {callAction(record);}}>Mint WFAIR</Button>
                 </Box>
             </Box>
         </Box>

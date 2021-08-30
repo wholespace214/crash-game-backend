@@ -146,9 +146,9 @@ const emitEventStartNotification = (userId, eventId, eventName) => {
 exports.emitEventStartNotification = emitEventStartNotification;
 
 const emitBetResolveNotification = (userId, betId, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon) => {
-  let message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You traded ${amountTraded} EVNT.`;
+  let message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You traded ${amountTraded} WFAIR.`;
   if (tokensWon > 0) {
-      message += ` You won ${tokensWon} EVNT.`;
+      message += ` You won ${tokensWon} WFAIR.`;
   }
 
   emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_RESOLVE, betId, message, betQuestion, betOutcome, amountTraded, eventPhotoUrl, tokensWon});
