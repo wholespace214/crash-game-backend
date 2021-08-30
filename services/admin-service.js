@@ -234,25 +234,7 @@ exports.initialize = function () {
 
                     // update the balance of tokens won of a user, to be used for leaderboards
                     // must be done inside transaction
-                    let userSession = await User.startSession();
-                    let user = null;
-                    try {
-                      await session.withTransaction(async () => {
-                        user = await User.findById({_id: userId}, {phone: 1, amountWon: 1}).exec();
-                        if(user) {
-                          user.amountWon += winToken;
-                          await user.save();
-
-                          // increase amount won of this user
-                          // User.updateOne({_id: userId}, {$set: {amountWon: amountWon + winToken}});
-                        }
-                      });
-  
-                    } catch (err2) {
-                      console.debug(err2);
-                    } finally {
-                      await userSession.endSession();
-                    }
+                    await userService.increaseAmountWon(userId, winToken);
 
                     // send notification to this user
                     if (user) {
