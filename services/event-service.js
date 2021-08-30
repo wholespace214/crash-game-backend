@@ -170,14 +170,14 @@ exports.getTags = async (params = {}) => {
 };
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
-    let response = [];
-    let tmpChartData = [];
-    let startDate = new Date('2021-01-01');
-    let tmpDay;
+    let response = [],
+        tmpChartData = [];
+    let startDate,
+        tmpDay;
 
     switch (rangeType) {
         case 'hour':
-            startDate = new Date(new Date().getTime() - (rangeValue * 60 * 60 * 1000));
+            startDate = new Date(new Date().getTime() - rangeValue * 60 * 60 * 1000);
             tmpDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), 0, 0);
 
             for(let i=1; i<=rangeValue; i++) {
