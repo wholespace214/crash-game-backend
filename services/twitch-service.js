@@ -6,7 +6,7 @@ const axios = require("axios");
 let clientId = process.env.TWITCH_CLIENT_ID;
 let clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
-let INPUT_URL = `https://www.twitch.tv/blinkx_`;
+const Event = require("../models/Event");
 
 let credentials = {
     access_token: null,
@@ -75,21 +75,75 @@ const getEventFromTwitchUrl = async (streamUrl) => {
     let channelData = await getTwitchChannel(userData.id);
     let tags = await getTwitchTags(userData.id);
 
-    let event = {
-        name: userData.display_name,
-        previewImageUrl: userData.offline_image_url,
-        streamUrl,
-        tags,
-        date: Date.now(),
-        type: 'streamed',
-        category: channelData.game_name
+    const metadata = {
+        'twitch_id': userData.id, 
+        'twitch_last_synced': null, 
+        'twitch_login': userData.login, 
+        'twitch_name': userData.display_name, 
+        'twitch_game_id': channelData.game_id, 
+        'twitch_game_name': channelData.game_name,
+        'twitch_channel_title': channelData.title
+    };
+
+    // first check if event exists
+    let event = await Event.findOne({streamUrl}).exec();
+    if (!event) {
+        event = new Event({
+            name: userData.display_name,
+            previewImageUrl: userData.offline_image_url,
+            streamUrl,
+            tags,
+            date: Date.now(),
+            type: 'streamed',
+            category: channelData.game_name,
+            metadata
+        });
+        await event.save();
+    } else {
+        event.metadata = metadata;
+        event.tags = tags;
+        event.category = channelData.game_name;
+        await event.save();
     }
 
     return event;
 }
 
-exports.getEventFromTwitchUrl = getEventFromTwitchUrl;
+const subscribeToChannel = async (streamerId) => {
+    if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
+        console.log("WARNING: Attempted to subscribe to twich events without backend properly configured.");
+        return;
+    }
 
+    let token = await getAccessToken();
+
+    let data = {
+        "type": "stream.online",
+        "version": "1",
+        "condition": {
+            "broadcaster_user_id": streamerId
+        },
+        "transport": {
+            "method": "webhook",
+            "callback": `${process.env.BACKEND_URL}/webhooks/twitch/`,
+            "secret": process.env.TWITCH_CALLBACK_SECRET
+        }
+    };
+
+    let response = await axios.post("https://api.twitch.tv/helix/eventsub/subscriptions", data, {
+        headers: {
+            "Client-Id": clientId,
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    console.log(response.data);
+};
+
+module.exports = {
+    getEventFromTwitchUrl,
+    subscribeToChannel
+}
 
 // for quick cli tests:
 const main = async () => {
