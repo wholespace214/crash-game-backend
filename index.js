@@ -11,6 +11,7 @@ const adminService = require('./services/admin-service');
 const userService = require('./services/user-service');
 
 const { initBetsJobs } = require("./jobs/bets-jobs");
+const { initTwitchSubscribeJob } = require("./jobs/twitch-subscribe-job");
 
 // Import mongoose to connect to Database
 const mongoose = require('mongoose');
@@ -29,13 +30,14 @@ mongoose
     .connect(mongoURL, {
         useUnifiedTopology: true,
         useNewUrlParser:    true,
-    })
-    .then(
-        async () => console.log('Connection to Mongo-DB successful'),
-    )
-    .catch(
-        (error) => console.log(error),
-    ).then(initBetsJobs);
+    }).then(() => {
+        console.log('Connection to Mongo-DB successful');
+    }).catch((error) => { 
+        console.log(error);
+    }).then(() => {
+        initBetsJobs();
+        initTwitchSubscribeJob();
+    });
 
 adminService.setMongoose(mongoose);
 adminService.initialize();
@@ -115,10 +117,11 @@ server.get('/', (req, res) => {
 });
 
 // Import Routes
-const userRoute         = require('./routes/users/users-routes');
+const userRoute = require('./routes/users/users-routes');
 const secureEventRoutes = require('./routes/users/secure-events-routes');
-const eventRoutes       = require('./routes/users/events-routes');
-const secureUserRoute   = require('./routes/users/secure-users-routes');
+const eventRoutes = require('./routes/users/events-routes');
+const secureUserRoute = require('./routes/users/secure-users-routes');
+const twitchWebhook = require('./routes/webhooks/twitch-webhook');
 
 server.use(cors());
 
@@ -128,6 +131,8 @@ server.use('/api/event', passport.authenticate('jwt', { session: false }), secur
 
 server.use('/api/user', userRoute);
 server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
+
+server.use('/webhooks/twitch/', twitchWebhook);
 
 io.use(socketioJwt.authorize({
     secret:               process.env.JWT_KEY,

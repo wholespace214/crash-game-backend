@@ -266,7 +266,7 @@ exports.initialize = function () {
                     editProperties: ["name", "type", "category", "previewImageUrl", "streamUrl"],
                     showProperties: ["name", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
                     actions: {
-                        "new-from-url": {
+                        "import-event-from-twitch": {
                             actionType: "resource",
                             label: 'Create Event from Twitch URL',
                             icon: "Add",

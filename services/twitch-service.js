@@ -69,7 +69,8 @@ const getTwitchChannel = async (broadcaster_id) => {
 };
 
 const getEventFromTwitchUrl = async (streamUrl) => {
-    let username = streamUrl.substring(streamUrl.lastIndexOf("/")+1)
+    let index = streamUrl.lastIndexOf("/");
+    let username = index == -1 ? streamUrl : streamUrl.substring(+1)
 
     let userData = await getTwitchUser(username);
     let channelData = await getTwitchChannel(userData.id);
@@ -77,7 +78,6 @@ const getEventFromTwitchUrl = async (streamUrl) => {
 
     const metadata = {
         'twitch_id': userData.id, 
-        'twitch_last_synced': null, 
         'twitch_login': userData.login, 
         'twitch_name': userData.display_name, 
         'twitch_game_id': channelData.game_id, 
@@ -96,11 +96,21 @@ const getEventFromTwitchUrl = async (streamUrl) => {
             date: Date.now(),
             type: 'streamed',
             category: channelData.game_name,
-            metadata
+            metadata: {
+                ...metadata,
+                'twitch_last_synced': null, 
+                'twitch_subscribed_online': "false",
+                'twitch_subscribed_offline': "false"
+            }
         });
         await event.save();
     } else {
-        event.metadata = metadata;
+        event.metadata = event.metadata || {
+            'twitch_last_synced': null, 
+            'twitch_subscribed_online': "false",
+            'twitch_subscribed_offline': "false"
+        };
+        event.metadata = {...event.metadata, ...metadata};
         event.tags = tags;
         event.category = channelData.game_name;
         await event.save();
@@ -109,7 +119,7 @@ const getEventFromTwitchUrl = async (streamUrl) => {
     return event;
 }
 
-const subscribeToChannel = async (streamerId) => {
+const subscribeForOnlineNotifications = async (broadcaster_user_id) => {
     if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
         console.log("WARNING: Attempted to subscribe to twich events without backend properly configured.");
         return;
@@ -121,7 +131,7 @@ const subscribeToChannel = async (streamerId) => {
         "type": "stream.online",
         "version": "1",
         "condition": {
-            "broadcaster_user_id": streamerId
+            "broadcaster_user_id": broadcaster_user_id
         },
         "transport": {
             "method": "webhook",
@@ -130,19 +140,71 @@ const subscribeToChannel = async (streamerId) => {
         }
     };
 
-    let response = await axios.post("https://api.twitch.tv/helix/eventsub/subscriptions", data, {
-        headers: {
-            "Client-Id": clientId,
-            "Authorization": `Bearer ${token}`
+    try {
+        await axios.post("https://api.twitch.tv/helix/eventsub/subscriptions", data, {
+            headers: {
+                "Client-Id": clientId,
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        return "pending";
+    } catch (err) {
+        if (err.response.statusText === "Conflict") {
+            // already subscribed. Store info and continue;
+            return "true";
+        } else {
+            console.log("Could not subscribe to twitch online events", err.response);
         }
-    });
+    }
+    
+    return "false";
+};
 
-    console.log(response.data);
+const subscribeForOfflineNotifications = async (broadcaster_user_id) => {
+    if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
+        console.log("WARNING: Attempted to subscribe to twich events without backend properly configured.");
+        return;
+    }
+
+    let token = await getAccessToken();
+
+    let data = {
+        "type": "stream.offline",
+        "version": "1",
+        "condition": {
+            "broadcaster_user_id": broadcaster_user_id
+        },
+        "transport": {
+            "method": "webhook",
+            "callback": `${process.env.BACKEND_URL}/webhooks/twitch/`,
+            "secret": process.env.TWITCH_CALLBACK_SECRET
+        }
+    };
+
+    try {
+        await axios.post("https://api.twitch.tv/helix/eventsub/subscriptions", data, {
+            headers: {
+                "Client-Id": clientId,
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        return "pending";
+    } catch (err) {
+        if (err.response.statusText === "Conflict") {
+            // already subscribed. Store info and continue;
+            return "true";
+        } else {
+            console.log("Could not subscribe to twitch offline events", err.response);
+        }
+    }
+    
+    return "false";
 };
 
 module.exports = {
     getEventFromTwitchUrl,
-    subscribeToChannel
+    subscribeForOnlineNotifications,
+    subscribeForOfflineNotifications
 }
 
 // for quick cli tests:

@@ -5,22 +5,28 @@ const Outcome = new mongoose.Schema({
     name: String,
 });
 
-/*const Metadata = new mongoose.Schema({
-    key: {
-        type: String,
-        enum: ['twitch_id', 'twitch_synced', 'twitch_login', 'twitch_name', 'twitch_game_id', 'twitch_game_name', 'twitch_channel_title']
-    },
-    name: String,
-});*/
-
 const Metadata = new mongoose.Schema({
     'twitch_id': String, 
-    'twitch_synced': String, 
     'twitch_login': String, 
     'twitch_name':String, 
     'twitch_game_id': String, 
     'twitch_game_name': String, 
-    'twitch_channel_title': String
+    'twitch_channel_title': String,
+    'twitch_last_synced': String, 
+    'twitch_subscribed_online': {
+        type: String,
+        enum: ["false", "pending", "true"] 
+        // "false" when unsubscribed, 
+        // "pending" when sub is requested, 
+        // "true" when sub is confirmed
+    },
+    'twitch_subscribed_offline': {
+        type: String,
+        enum: ["false", "pending", "true"] 
+        // "false" when unsubscribed, 
+        // "pending" when sub is requested, 
+        // "true" when sub is confirmed
+    }
 });
 
 exports.BetTemplate = new mongoose.Schema({
@@ -57,6 +63,11 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true,
         max: 500,
+    },
+    state: {
+        type: String,
+        required: false,
+        enum: ["coming_soon", "offline", "online"]
     },
     previewImageUrl: {
         type: String,
