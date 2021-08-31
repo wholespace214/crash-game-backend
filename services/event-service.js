@@ -145,7 +145,6 @@ exports.betCreated = async (bet, userId) => {
     }
 };
 
-
 exports.provideLiquidityToBet = async (createBet) => {
     const LOG_TAG = '[CREATE-BET]';
     const liquidityAmount                                           = 214748n;
@@ -169,3 +168,72 @@ exports.saveBet = async (bet, session) => {
 exports.getTags = async (params = {}) => {
     return Event.distinct('tags.name').exec();
 };
+
+exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
+    let response = [],
+        tmpChartData = [];
+    let startDate,
+        tmpDay;
+
+    switch (rangeType) {
+        case 'hour':
+            startDate = new Date(new Date().getTime() - rangeValue * 60 * 60 * 1000);
+            tmpDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), 0, 0);
+
+            for(let i=1; i<=rangeValue; i++) {
+                tmpChartData.push({
+                    x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60),
+                    y: 0
+                })
+            }
+            break;
+        case 'day':
+            startDate = new Date(Date.now() - rangeValue * 24 * 60 * 60 * 1000);
+            tmpDay = new Date(startDate);
+
+            for(let i=1; i<=rangeValue; i++) {
+                tmpChartData.push({
+                    x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60 * 24),
+                    y: 0
+                })
+            }
+            break;
+    }
+
+    const betContract = new BetContract(bet.id, bet.outcomes.length);
+    const interactions = await betContract.getBetInteractions(startDate, direction);
+
+    bet.outcomes.forEach((outcome) => {
+        let chartData = tmpChartData.map(tmp => ({ ...tmp }))
+
+        interactions.forEach((interaction) => {
+            if(interaction.outcome === outcome.index) {
+                if(rangeType === 'hour') {
+                    const hours = new Date(interaction.trx_timestamp).getHours();
+
+                    chartData.map((entry) => {
+                        if(hours === new Date(entry.x).getHours()) {
+                            entry.y += +interaction.investmentamount;
+                        }
+                    })
+                } else {
+                    const days = new Date(interaction.trx_timestamp).getDate();
+
+                    chartData.map((entry) => {
+                        if(days === new Date(entry.x).getDate()) {
+                            entry.y += +interaction.investmentamount;
+                        }
+                    })
+                }
+            }
+        })
+
+        response.push({
+            outcomeName: outcome.name,
+            outcomeIndex: outcome.index,
+            data: chartData
+        });
+    })
+
+    return response;
+}

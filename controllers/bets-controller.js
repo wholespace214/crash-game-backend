@@ -349,9 +349,35 @@ const payoutBet = async (req, res, next) => {
     }
 };
 
+const betHistory = async (req, res, next) => {
+    const errors  = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(res.status(422).send(errors));
+    }
+
+    let { direction, rangeType, rangeValue} = req.query;
+    const { id } = req.params;
+
+    try {
+        const bet = await Bet.findById(id);
+        if(!bet) {
+            return next(res.status(404).send('Bet does not exist'));
+        }
+
+        let interactionsList = await eventService.combineBetInteractions(bet, direction, rangeType, rangeValue);
+
+        res.status(200).json(interactionsList);
+    } catch (err) {
+        console.debug(err);
+        let error = res.status(422).send(err.message);
+        next(error);
+    }
+}
+
 exports.createBet = createBet;
 exports.placeBet = placeBet;
 exports.pullOutBet = pullOutBet;
 exports.calculateBuyOutcome = calculateBuyOutcome;
 exports.calculateSellOutcome = calculateSellOutcome;
-exports.payoutBet        = payoutBet;
+exports.payoutBet = payoutBet;
+exports.betHistory = betHistory;
