@@ -12,6 +12,7 @@ router.post("/", async (req, res, chain) => {
         let type = req.header("Twitch-Eventsub-Subscription-Type");
         let broadcaster_user_id = req.body.subscription.condition.broadcaster_user_id;
 
+        const session = await Event.startSession();
         try {
             await session.withTransaction(async () => {
                 let event = await Event.find({"metadata.twitch_id": broadcaster_user_id}).exec();
