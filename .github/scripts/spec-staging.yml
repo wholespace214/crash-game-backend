@@ -23,9 +23,6 @@ envs:
 - key: REDIS_CONNECTION
   scope: RUN_AND_BUILD_TIME
   value: ${redis.DATABASE_URL}
-- key: REDIS_OLD
-  scope: RUN_AND_BUILD_TIME
-  value: ${db-redis-fra1-53827.DATABASE_URL}
 name: staging-backend
 region: fra
 services:
