@@ -40,13 +40,17 @@ const getAccessToken = async () => {
 const twitchRequest = async (url) => {
     let token = await getAccessToken();
 
-    let response = await axios.get(url, {
-        headers: {
-            "Client-Id": clientId,
-            "Authorization": `Bearer ${token}`
-        }
-    })
-    return response.data;
+    try {
+        let response = await axios.get(url, {
+            headers: {
+                "Client-Id": clientId,
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        return response.data;
+    } catch (err) {
+        console.log(new Date(), "Failed to make a twitch request", err)
+    }
 };
 
 const getTwitchUser = async (twitchUsername) => {
@@ -69,8 +73,7 @@ const getTwitchChannel = async (broadcaster_id) => {
 };
 
 const getEventFromTwitchUrl = async (streamUrl) => {
-    let index = streamUrl.lastIndexOf("/");
-    let username = index == -1 ? streamUrl : streamUrl.substring(+1)
+    let username = streamUrl.substring(streamUrl.lastIndexOf("/")+1)
 
     let userData = await getTwitchUser(username);
     let channelData = await getTwitchChannel(userData.id);
@@ -110,7 +113,9 @@ const getEventFromTwitchUrl = async (streamUrl) => {
             'twitch_subscribed_online': "false",
             'twitch_subscribed_offline': "false"
         };
-        event.metadata = {...event.metadata, ...metadata};
+        for (let prop in metadata) {
+            event.metadata[prop] = metadata[prop];
+        }
         event.tags = tags;
         event.category = channelData.game_name;
         await event.save();

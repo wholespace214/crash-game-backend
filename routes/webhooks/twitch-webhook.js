@@ -5,7 +5,7 @@ const { check } = require("express-validator");
 const Event = require('../../models/Event');
 
 router.post("/", async (req, res, chain) => {
-    console.log("TWITCH_INCOMING", JSON.stringify(req.body));
+    console.log(new Date(), "TWITCH_MESSAGE", JSON.stringify(req.body));
 
     // handle twitch challenges
     if (req.header("Twitch-Eventsub-Message-Type") === "webhook_callback_verification") {
@@ -15,7 +15,7 @@ router.post("/", async (req, res, chain) => {
         const session = await Event.startSession();
         try {
             await session.withTransaction(async () => {
-                let event = await Event.find({"metadata.twitch_id": broadcaster_user_id}).exec();
+                let event = await Event.findOne({"metadata.twitch_id": broadcaster_user_id}).exec();
 
                 if (type == "stream.online") {
                     event.metadata.twitch_subscribed_online = "true";
@@ -26,7 +26,7 @@ router.post("/", async (req, res, chain) => {
                 }
             });
         } catch (err) {
-            console.log("AQUI", err);
+            console.log("Twitch webhook challenge error", err);
         } finally {
             await session.endSession();
         }
@@ -42,7 +42,7 @@ router.post("/", async (req, res, chain) => {
         const session = await Event.startSession();
         try {
             await session.withTransaction(async () => {
-                let event = await Event.find({"metadata.twitch_id": broadcaster_user_id}).exec();
+                let event = await Event.findOne({"metadata.twitch_id": broadcaster_user_id}).exec();
 
                 if (type == "stream.online") {
                     event.state = "online";
@@ -53,7 +53,7 @@ router.post("/", async (req, res, chain) => {
                 }
             });
         } catch (err) {
-            console.log("AQUI", err);
+            console.log("Twitch webhook event error", err);
         } finally {
             await session.endSession();
         }

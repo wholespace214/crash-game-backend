@@ -263,7 +263,7 @@ exports.initialize = function () {
                 resource: Event,
                 options: {
                     listProperties: ["_id", "name", "type", "category"],
-                    editProperties: ["name", "type", "category", "previewImageUrl", "streamUrl"],
+                    editProperties: ["name", "type", "category", "previewImageUrl", "streamUrl", "tags"],
                     showProperties: ["name", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
                     actions: {
                         "import-event-from-twitch": {
@@ -278,10 +278,37 @@ exports.initialize = function () {
                             isVisible: false,
                             handler: async (request, response, context) => {
                                 let { twitch_url } = request.payload;
+                                if (twitch_url.lastIndexOf("/") == -1) {
+                                    twitch_url = "https://www.twitch.tv/" + twitch_url;
+                                }
                                 let event = await twitchService.getEventFromTwitchUrl(twitch_url);
                                 
                                 return {
                                     eventId: event._id.toString()
+                                }
+                            }
+                        },
+                        "sync-with-twitch": {
+                            actionType: "record",
+                            label: "Reload information from twitch",
+                            icon: "Reset",
+                            component: false,
+                            isVisible: (currentAdmin) => {
+                                return currentAdmin.record.params.type === "streamed"
+                            },
+                            isAccessible: (currentAdmin) => {
+                                return currentAdmin.record.params.type === "streamed"
+                            },
+                            handler: async (request, response, context) => {
+                                let twitchUrl = context.record.params.streamUrl;
+                                console.log("URL", twitchUrl)
+
+                                let event = await twitchService.getEventFromTwitchUrl(twitchUrl);
+
+                                context.record.params = event;
+
+                                return {
+                                    record: context.record.toJSON(),
                                 }
                             }
                         },
