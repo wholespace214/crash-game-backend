@@ -7,7 +7,9 @@ import Component3 from '../services/components/bet-cancel'
 AdminBro.UserComponents.Component3 = Component3
 import Component4 from '../services/components/resolve'
 AdminBro.UserComponents.Component4 = Component4
-import Component5 from '../services/components/new-bet'
+import Component5 from '../services/components/twitch-url'
 AdminBro.UserComponents.Component5 = Component5
 import Component6 from '../services/components/new-bet'
 AdminBro.UserComponents.Component6 = Component6
+import Component7 from '../services/components/new-bet'
+AdminBro.UserComponents.Component7 = Component7
