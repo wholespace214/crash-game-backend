@@ -397,6 +397,11 @@ exports.buildRouter = function () {
             return username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD;
           },
       cookiePassword: "ueudeiuhihd",
+    }, 
+    null, 
+    {
+        resave: false,
+        saveUninitialized: true,
     });/**/
 
     //router = Router()
