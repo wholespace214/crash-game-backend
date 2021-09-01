@@ -1,4 +1,6 @@
-const Event = require("../models/Event");
+// Import Event model
+const { Event } = require("@wallfair.io/wallfair-commons").models;
+
 const twitchService = require("../services/twitch-service");
 
 const findAndSubscribe = async () => {

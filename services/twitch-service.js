@@ -6,7 +6,8 @@ const axios = require("axios");
 let clientId = process.env.TWITCH_CLIENT_ID;
 let clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
-const Event = require("../models/Event");
+// Import Event model
+const { Event } = require("@wallfair.io/wallfair-commons").models;
 
 let credentials = {
     access_token: null,
