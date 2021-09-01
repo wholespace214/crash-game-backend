@@ -11,4 +11,9 @@ console.log(
     .replace("$TWILIO_SID", process.env.TWILIO_SID)
     .replace("$POSTGRES_PASSWORD", process.env.POSTGRES_PASSWORD)
     .replace("$GMAIL_PASSWORD", process.env.GMAIL_PASSWORD)
+    .replace("$TWITCH_CLIENT_ID", process.env.TWITCH_CLIENT_ID)
+    .replace("$TWITCH_CLIENT_SECRET", process.env.TWITCH_CLIENT_SECRET)
+    .replace("$TWITCH_CALLBACK_SECRET", process.env.TWITCH_CALLBACK_SECRET)
+    .replace("$ADMIN_USERNAME", process.env.ADMIN_USERNAME)
+    .replace("$ADMIN_PASSWORD", process.env.ADMIN_PASSWORD)
     );
