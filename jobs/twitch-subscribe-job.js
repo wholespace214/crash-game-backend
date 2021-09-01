@@ -39,7 +39,10 @@ const findAndSubscribe = async () => {
 };
 
 const initTwitchSubscribeJob = () => {
-    setInterval(findAndSubscribe, 5_000);
+    // only start the service if the env var is set
+    if (process.env.TWITCH_CLIENT_ID) {
+        setInterval(findAndSubscribe, 5_000);
+    }
 };
 
 exports.initTwitchSubscribeJob = initTwitchSubscribeJob;
