@@ -36,7 +36,6 @@ async function connectMongoDB() {
 }
 
 async function main() {
-
     const mongoDBConnection = await connectMongoDB();
 
     //Import Admin service
@@ -46,6 +45,9 @@ async function main() {
 
     const { initBetsJobs } = require("./jobs/bets-jobs");
     initBetsJobs();
+
+    const { initTwitchSubscribeJob } = require("./jobs/twitch-subscribe-job");
+    initTwitchSubscribeJob();
 
     //Import Socket.io service
     const websocketService = require('./services/websocket-service');
@@ -114,6 +116,7 @@ async function main() {
     adminService.buildRouter();
     server.use(adminService.getRootPath(), adminService.getRouter());
     server.use(adminService.getLoginPath(), adminService.getRouter());
+    
 
     // Home Route
     server.get('/', (req, res) => {
@@ -127,6 +130,7 @@ async function main() {
     const secureEventRoutes = require('./routes/users/secure-events-routes');
     const eventRoutes       = require('./routes/users/events-routes');
     const secureUserRoute   = require('./routes/users/secure-users-routes');
+    const twitchWebhook = require('./routes/webhooks/twitch-webhook');
 
     server.use(cors());
 
@@ -136,6 +140,8 @@ async function main() {
 
     server.use('/api/user', userRoute);
     server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
+    
+    server.use('/webhooks/twitch/', twitchWebhook);
 
     io.use(socketioJwt.authorize({
         secret:               process.env.JWT_KEY,
