@@ -23,9 +23,6 @@ envs:
 - key: REDIS_CONNECTION
   scope: RUN_AND_BUILD_TIME
   value: ${redis.DATABASE_URL}
-- key: REDIS_OLD
-  scope: RUN_AND_BUILD_TIME
-  value: ${db-redis-fra1-53827.DATABASE_URL}
 name: staging-backend
 region: fra
 services:
@@ -75,6 +72,24 @@ services:
   - key: POSTGRES_PORT
     scope: RUN_AND_BUILD_TIME
     value: "25060"
+  - key: BACKEND_URL
+    scope: RUN_AND_BUILD_TIME
+    value: "https://staging-zeaec.ondigitalocean.app"
+  - key: TWITCH_CLIENT_ID
+    scope: RUN_AND_BUILD_TIME
+    value: $TWITCH_CLIENT_ID
+  - key: TWITCH_CLIENT_SECRET
+    scope: RUN_AND_BUILD_TIME
+    value: $TWITCH_CLIENT_SECRET
+  - key: TWITCH_CALLBACK_SECRET
+    scope: RUN_AND_BUILD_TIME
+    value: $TWITCH_CALLBACK_SECRET
+  - key: ADMIN_USERNAME
+    scope: RUN_AND_BUILD_TIME
+    value: $ADMIN_USERNAME
+  - key: ADMIN_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: $ADMIN_PASSWORD
   http_port: 80
   image:
     registry_type: DOCR

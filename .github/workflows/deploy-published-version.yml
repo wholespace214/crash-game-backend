@@ -22,6 +22,11 @@ jobs:
       TWILIO_SID: ${{ secrets.TWILIO_SID }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+      TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+      TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+      TWITCH_CALLBACK_SECRET: ${{ secrets.TWITCH_CALLBACK_SECRET }}
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
