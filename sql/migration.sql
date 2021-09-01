@@ -6,3 +6,5 @@ ALTER TABLE amm_interactions ALTER COLUMN outcome TYPE smallint;
 ALTER TABLE amm_interactions ALTER COLUMN investmentAmount TYPE bigint;
 ALTER TABLE amm_interactions ALTER COLUMN feeAmount TYPE bigint;
 ALTER TABLE amm_interactions ALTER COLUMN outcomeTokensBought TYPE bigint;
+
+Update token_balances set symbol = 'WFAIR' WHERE symbol ='EVNT';
