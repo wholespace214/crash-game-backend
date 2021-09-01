@@ -1,5 +1,5 @@
-// Import Event model
-const Stream = require("../models/Stream");
+// Import Stream model
+const { Stream } = require("@wallfair.io/wallfair-commons").models;
 
 exports.listStreams = async () => {
     return Stream.find();

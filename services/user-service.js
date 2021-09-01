@@ -1,5 +1,5 @@
-// Import models
-const User = require("../models/User");
+// Import User model
+const { User } = require("@wallfair.io/wallfair-commons").models;
 
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
