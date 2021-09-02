@@ -47,7 +47,7 @@ const twitchRequest = async (url) => {
                 "Client-Id": clientId,
                 "Authorization": `Bearer ${token}`
             }
-        })
+        });
         return response.data;
     } catch (err) {
         console.log(new Date(), "Failed to make a twitch request", err)
@@ -168,7 +168,7 @@ const subscribeForOnlineNotifications = async (broadcaster_user_id) => {
 
 const subscribeForOfflineNotifications = async (broadcaster_user_id) => {
     if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
-        console.log("WARNING: Attempted to subscribe to twich events without backend properly configured.");
+        console.log("WARNING: Attempted to subscribe to twitch events without backend properly configured.");
         return;
     }
 
@@ -207,6 +207,50 @@ const subscribeForOfflineNotifications = async (broadcaster_user_id) => {
     return "false";
 };
 
+const removeSubscription = async (subscription_id) => {
+    if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
+        console.log("WARNING: Attempted to remove twitch event without backend properly configured.");
+        return;
+    }
+
+    let token = await getAccessToken();
+
+    try {
+        let response = await axios.delete(`https://api.twitch.tv/helix/eventsub/subscriptions?id=${subscription_id}`, {
+            headers: {
+                "Client-Id": clientId,
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        return response.data;
+    } catch (err) {
+        console.log(new Date(), "Failed to remove a twitch subscription", err.data);
+    }
+}
+
+const listSubscriptions = async () => {
+    if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
+        console.log("WARNING: Attempted to list twitch subscriptions without backend properly configured.");
+        return;
+    }
+
+    const subscriptionsList = await twitchRequest(`https://api.twitch.tv/helix/eventsub/subscriptions`);
+
+    return subscriptionsList.data;
+}
+
+const removeAllSubscriptions = async () => {
+    const subscriptionsList = await listSubscriptions();
+
+    for (const subscription of subscriptionsList) {
+        await removeSubscription(subscription.id);
+    }
+
+    const result = await listSubscriptions();
+
+    return result.length === 0;
+}
+
 module.exports = {
     getEventFromTwitchUrl,
     subscribeForOnlineNotifications,
@@ -215,7 +259,16 @@ module.exports = {
 
 // for quick cli tests:
 const main = async () => {
-    console.log(await getEventFromTwitchUrl("https://www.twitch.tv/gmhikaru"))
+    // console.log(await getEventFromTwitchUrl("https://www.twitch.tv/wackyjacky101"));
+    // console.log(await subscribeForOfflineNotifications('91103221'));
+    // console.log(await subscribeForOnlineNotifications('91103221'));
+    // console.log(await listSubscriptions());
+    // console.log(await removeSubscription('9d973e0a-cd4e-4888-aa70-89a3f5b36264'));
+
+    // setTimeout(async () => {
+    //     console.log('start removing');
+    //     console.log('Removed all? ', await removeAllSubscriptions());
+    // }, 6000);
 }
 
-//main();
+// main();
