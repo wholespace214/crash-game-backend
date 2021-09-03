@@ -260,10 +260,11 @@ module.exports = {
 // for quick cli tests:
 const main = async () => {
     // console.log(await getEventFromTwitchUrl("https://www.twitch.tv/wackyjacky101"));
+    // console.log(await removeSubscription('9d973e0a-cd4e-4888-aa70-89a3f5b36264'));
+    
     // console.log(await subscribeForOfflineNotifications('91103221'));
     // console.log(await subscribeForOnlineNotifications('91103221'));
     // console.log(await listSubscriptions());
-    // console.log(await removeSubscription('9d973e0a-cd4e-4888-aa70-89a3f5b36264'));
 
     // setTimeout(async () => {
     //     console.log('start removing');
