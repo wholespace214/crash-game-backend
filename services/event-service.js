@@ -5,6 +5,7 @@ const Bet   = require('../models/Bet');
 //Import services
 const websocketService = require('./websocket-service');
 
+const bigDecimal = require('js-big-decimal');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { SinkPage } = require('twilio/lib/rest/events/v1/sink');
 const WFAIR                   = new Erc20('WFAIR');
@@ -202,30 +203,48 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
 
     const betContract = new BetContract(bet.id, bet.outcomes.length);
     const interactions = await betContract.getBetInteractions(startDate, direction);
+    const summary = await betContract.getBetInteractionsSummary(direction, startDate);
 
     bet.outcomes.forEach((outcome) => {
         let chartData = tmpChartData.map(tmp => ({ ...tmp }))
+        const initValue = +(summary.filter(e => e.outcome === outcome.index)[0])?.amount || 0;
+        const interactionHours = [];
+        const interactionDays = [];
+        const interactionAmounts = [];
 
         interactions.forEach((interaction) => {
             if(interaction.outcome === outcome.index) {
-                if(rangeType === 'hour') {
-                    const hours = new Date(interaction.trx_timestamp).getHours();
-
-                    chartData.map((entry) => {
-                        if(hours === new Date(entry.x).getHours()) {
-                            entry.y += +interaction.investmentamount;
-                        }
-                    })
-                } else {
-                    const days = new Date(interaction.trx_timestamp).getDate();
-
-                    chartData.map((entry) => {
-                        if(days === new Date(entry.x).getDate()) {
-                            entry.y += +interaction.investmentamount;
-                        }
-                    })
-                }
+                interactionHours.push(new Date(interaction.trx_timestamp).getHours());
+                interactionDays.push(new Date(interaction.trx_timestamp).getDate());
+                interactionAmounts.push(+interaction.investmentamount);
             }
+        })
+
+        chartData.map((entry, index) => {
+            if(index === 0) {
+                entry.y = initValue;
+            } else {
+                entry.y = chartData[index-1].y;
+            }
+
+            if(rangeType === 'hour') {
+                interactionHours.forEach((hour, index) => {
+                    if(hour === new Date(entry.x).getHours()) {
+                        entry.y += interactionAmounts[index];
+                    }
+                })
+            } else {
+                interactionDays.forEach((day, index) => {
+                    if(day === new Date(entry.x).getDate()) {
+                        entry.y += interactionAmounts[index];
+                    }
+                })
+            }
+        })
+
+        chartData.forEach(entry => {
+            const bigOutcome = new bigDecimal(entry.y);
+            entry.y = parseFloat(bigOutcome.getPrettyValue(4, '.'));
         })
 
         response.push({
