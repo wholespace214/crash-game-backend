@@ -46,6 +46,7 @@
     "passport-local": "^1.0.0",
     "redis": "3.1.2",
     "socket.io": "^4.2.0",
+    "@wallfair.io/smart_contract_mock": "0.3.3",
     "socket.io-redis": "^6.1.1",
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.1",

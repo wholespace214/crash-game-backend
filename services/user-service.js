@@ -90,22 +90,32 @@ exports.getRankByUserId = async (userId) => {
     // TODO this cant stay like this. 
     // it is an improvement over the previous solution, but still bad
     // we need to have a service updating the rank frequently (ex: every 15 secs)
-    let users = await User.find({username: {"$exists": true}}).sort({amountWon: -1, username: 1}).select({_id: 1, amountWon: 1}).exec();
+    let users = await User.find({username: {"$exists": true}})
+        .sort({amountWon: -1, username: 1})
+        .select({_id: 1, amountWon: 1})
+        .exec();
 
     let lastDiffAmount = 0;
+    let ranking = {
+        rank: 0,
+        toNextRank: 0,
+    };
+
     for (let i = 0; i < users.length; i++) {
         
         if (users[i]._id == userId) {
             let rank = i+1;
             let toNextRank =  i == 0 ? 0 : lastDiffAmount - users[i].amountWon;
 
-            return {rank, toNextRank};
+            ranking = {rank, toNextRank};
         }
 
         if (lastDiffAmount == 0 || lastDiffAmount != users[i].amountWon) {
             lastDiffAmount = users[i].amountWon;
         }
     }
+
+    return ranking;
 }
 
 exports.createUser = async (user) => {
