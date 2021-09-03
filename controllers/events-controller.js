@@ -68,10 +68,10 @@ const createEvent = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const { name, tags, streamUrl, previewImageUrl, date } = req.body;
+        const { name, tags, streamUrl, previewImageUrl, date, slug } = req.body;
 
         console.debug(LOG_TAG, 'Create a new Event',
-            { name: name, tags: tags, previewImageUrl: previewImageUrl, streamUrl: streamUrl },
+            { name: name, tags: tags, previewImageUrl: previewImageUrl, streamUrl: streamUrl, slug: slug },
         );
         const createEvent = new Event({
             name:            name,
@@ -79,7 +79,8 @@ const createEvent = async (req, res, next) => {
             previewImageUrl: previewImageUrl,
             streamUrl:       streamUrl,
             bets:            [],
-            date: date,
+            date:            date,
+            slug:            slug
         });
 
         let event = await eventService.saveEvent(createEvent);

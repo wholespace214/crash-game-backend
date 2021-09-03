@@ -263,8 +263,16 @@ exports.initialize = function () {
                 resource: Event,
                 options: {
                     listProperties: ["_id", "name", "type", "category"],
-                    editProperties: ["name", "type", "category", "previewImageUrl", "streamUrl", "tags"],
-                    showProperties: ["name", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
+                    editProperties: ["name", "slug", "type", "category", "previewImageUrl", "streamUrl", "tags"],
+                    showProperties: ["name", "slug", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
+                    properties: {
+                        slug: {
+                            components: {
+                                new: AdminBro.bundle('./components/slug-input'),
+                                edit: AdminBro.bundle('./components/slug-input')
+                            }
+                        }
+                    },
                     actions: {
                         "import-event-from-twitch": {
                             actionType: "resource",
