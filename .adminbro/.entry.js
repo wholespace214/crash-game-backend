@@ -1,4 +1,5 @@
 AdminBro.UserComponents = {}
+AdminBro.env.CLIENT_URL = "http://localhost:3000"
 import Component1 from '../services/components/user-mint'
 AdminBro.UserComponents.Component1 = Component1
 import Component2 from '../services/components/bet-cancel'

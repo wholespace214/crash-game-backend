@@ -1,4 +1,4 @@
-import slugify from "slugify";
+const slugify = require("slugify");
 
 const generateSlug = (input) => {
   const slug = slugify(input, {
@@ -9,4 +9,4 @@ const generateSlug = (input) => {
   return slug;
 }
 
-export default generateSlug;
+module.exports = generateSlug;

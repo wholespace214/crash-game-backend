@@ -8,31 +8,39 @@ const SlugInput = (props) => {
     const [ignoreName, setIgnoreName] = useState(true);
     const [slug, setSlug] = useState(record.params[property.path]);
 
+    const setSlugRecordParam = (value) => {
+        // Update slug value on Record params, so it's passed to the request body when the form is saved
+        record.params[property.path] = value;
+    }
+
     useEffect(() => {
         //Ignore first render of the Name field so it gets the current slug value 
         if (!ignoreName) {
             console.log('name changed!!!');
 
-            const slug = generateSlug(record.params['name']);
-            setSlug(slug);
+            const newSlug = generateSlug(record.params['name']);
+            setSlug(newSlug);
+            setSlugRecordParam(newSlug);
         } else {
             setIgnoreName(false);
         }
     }, [record.params['name']]);
 
     const handleChange = useCallback((event) => {
-        setSlug(event.target.value);
-    });
-
-    const handleBlur = useCallback((event) => {
-        const slug = generateSlug(event.target.value);
-        setSlug(slug);
+        const newSlug = event.target.value;
+        setSlug(newSlug);
+        setSlugRecordParam(newSlug);
     });
 
     return (
         <Box>
-            <Label>{property.label}</Label>
-            <Input type="text" onChange={handleChange} onBlur={handleBlur} value={slug} />
+            <div style={{marginBottom: "32px"}}> 
+                <Label required>SEO-optimized name</Label>
+                <div style={{display: "flex", alignItems: "center", columnGap:"20px", color:"#999"}}>
+                    <Input type="text" onChange={handleChange} value={slug} />
+                    {slug && <p>URL Preview: {`${AdminBro.env.CLIENT_URL}/trade/${slug}`}</p>}
+                </div>
+            </div>
         </Box>
     );
 };

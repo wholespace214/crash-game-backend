@@ -8,6 +8,7 @@ let clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
 // Import Event model
 const { Event } = require("@wallfair.io/wallfair-commons").models;
+const generateSlug = require('../util/generateSlug');
 
 let credentials = {
     access_token: null,
@@ -92,8 +93,11 @@ const getEventFromTwitchUrl = async (streamUrl) => {
     // first check if event exists
     let event = await Event.findOne({streamUrl}).exec();
     if (!event) {
+        const slug = generateSlug(userData.display_name);
+
         event = new Event({
             name: userData.display_name,
+            slug: slug,
             previewImageUrl: userData.offline_image_url,
             streamUrl,
             tags,

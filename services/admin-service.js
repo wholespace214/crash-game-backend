@@ -31,6 +31,16 @@ let adminBro = null;
 
 exports.initialize = function () {
     adminBro = new AdminBro({
+        env: {
+            CLIENT_URL: process.env.CLIENT_URL
+        },
+        locale: {
+            translations: {
+                properties: {
+                    slug: 'SEO-optimized name'
+                }
+            }
+        },
         databases: [mongoose],
         resources: [
             {
@@ -269,7 +279,7 @@ exports.initialize = function () {
                         slug: {
                             components: {
                                 new: AdminBro.bundle('./components/slug-input'),
-                                edit: AdminBro.bundle('./components/slug-input')
+                                edit: AdminBro.bundle('./components/slug-input'),
                             }
                         }
                     },
