@@ -1,6 +1,5 @@
-// Import Event model
-const Event = require('../models/Event');
-const Bet   = require('../models/Bet');
+// Import Bet and Event models
+const { Bet, Event } = require("@wallfair.io/wallfair-commons").models;
 
 //Import services
 const websocketService = require('./websocket-service');

@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 
 // Import User model
-const User = require("../models/User");
+const { User } = require("@wallfair.io/wallfair-commons").models;
 
 // Import User Service
 const userService = require("../services/user-service");

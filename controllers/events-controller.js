@@ -5,8 +5,8 @@ dotenv.config();
 // Imports from express validator to validate user input
 const { validationResult } = require('express-validator');
 
-// Import Models
-const Event = require('../models/Event');
+// Import Event model
+const { Event } = require("@wallfair.io/wallfair-commons").models;
 
 // Import service
 const eventService           = require('../services/event-service');

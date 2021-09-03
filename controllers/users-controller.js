@@ -17,10 +17,9 @@ const eventService = require("../services/event-service");
 // Import Mail Service
 const mailService = require("../services/mail-service");
 
-// Import User Model
-const User = require("../models/User");
+// Import User and Bet Models
+const { User, Bet } = require("@wallfair.io/wallfair-commons").models;
 
-const Bet   = require('../models/Bet');
 const bigDecimal = require("js-big-decimal");
 
 

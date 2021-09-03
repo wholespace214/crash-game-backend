@@ -1,7 +1,7 @@
 const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
-const User = require("../models/User");
-const Bet = require("../models/Bet");
-const Event = require("../models/Event");
+
+// Import User, Bet and Event models
+const { User, Bet, Event } = require("@wallfair.io/wallfair-commons").models;
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -397,6 +397,11 @@ exports.buildRouter = function () {
             return username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD;
           },
       cookiePassword: "ueudeiuhihd",
+    }, 
+    null, 
+    {
+        resave: false,
+        saveUninitialized: true,
     });/**/
 
     //router = Router()

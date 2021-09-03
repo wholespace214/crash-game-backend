@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 // Import ChatMessage model
-const ChatMessage = require("../models/ChatMessage");
+const { ChatMessage } = require("@wallfair.io/wallfair-commons").models;
 
 exports.getChatMessagesByEvent = async (eventId) => {
     return ChatMessage.find({eventId});

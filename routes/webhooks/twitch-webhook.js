@@ -2,7 +2,8 @@
 const router = require("express").Router();
 const { check } = require("express-validator");
 
-const Event = require('../../models/Event');
+// Import Event model
+const { Event } = require("@wallfair.io/wallfair-commons").models;
 
 router.post("/", async (req, res, chain) => {
     console.log(new Date(), "TWITCH_MESSAGE", JSON.stringify(req.body));

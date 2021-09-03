@@ -1,5 +1,5 @@
-const Bet = require('../models/Bet');
-const User = require('../models/User');
+// Import User and Bet models
+const { User, Bet } = require("@wallfair.io/wallfair-commons").models;
 const websocketService = require('../services/websocket-service');
 
 const betsActiveNotification = async () => {
@@ -8,7 +8,7 @@ const betsActiveNotification = async () => {
 
   const url = process.env.CLIENT_URL;
 
-  const users = await User.find({}, {id: 1, phone: 1}).exec()
+  const users = await User.find({}, {id: 1, phone: 1}).exec();
 
   const bets = await Bet.find({date: {$gt: now, $lt: nowPlus1Min}, activeNotificationSend: {$ne: true}}, {})
     .populate('event').exec()

@@ -5,9 +5,8 @@ dotenv.config();
 // Imports from express validator to validate user input
 const { validationResult } = require('express-validator');
 
-// Import Models
-const Bet   = require('../models/Bet');
-const User   = require('../models/User');
+// Import User and Bet model
+const { User, Bet } = require("@wallfair.io/wallfair-commons").models;
 
 const bigDecimal = require('js-big-decimal');
 
