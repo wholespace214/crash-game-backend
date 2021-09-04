@@ -8,6 +8,7 @@ let clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
 // Import Event model
 const { Event } = require("@wallfair.io/wallfair-commons").models;
+
 const generateSlug = require('../util/generateSlug');
 
 let credentials = {
@@ -258,7 +259,10 @@ const removeAllSubscriptions = async () => {
 module.exports = {
     getEventFromTwitchUrl,
     subscribeForOnlineNotifications,
-    subscribeForOfflineNotifications
+    subscribeForOfflineNotifications,
+    removeSubscription,
+    listSubscriptions,
+    removeAllSubscriptions
 }
 
 // for quick cli tests:

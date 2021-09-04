@@ -3,6 +3,8 @@ const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 // Import User, Bet and Event models
 const { User, Bet, Event } = require("@wallfair.io/wallfair-commons").models;
 
+const generateSlug = require("../util/generateSlug");
+
 const WFAIR = new Erc20('WFAIR');
 
 // Import services
@@ -90,6 +92,18 @@ exports.initialize = function () {
             {
                 resource: Bet,
                 options: {
+                    properties: {
+                        slug: {
+                            components: {
+                                new: AdminBro.bundle('./components/slug-input'),
+                                edit: AdminBro.bundle('./components/slug-input'),
+                            },
+                            props: {
+                                referenceField: "marketQuestion",
+                                basePath: "/trade/<event-name>/"
+                            }
+                        }
+                    },
                     actions: {
                         new: {
                             after: async (request) => {
@@ -280,6 +294,10 @@ exports.initialize = function () {
                             components: {
                                 new: AdminBro.bundle('./components/slug-input'),
                                 edit: AdminBro.bundle('./components/slug-input'),
+                            },
+                            props: {
+                                referenceField: "name",
+                                basePath: "/trade/"
                             }
                         }
                     },
@@ -352,6 +370,9 @@ exports.initialize = function () {
                                 });
                                 let dbEvent = await eventService.getEvent(record.params._id);
                                 const bet = event.betTemplate;
+
+                                const slug = generateSlug(bet.marketQuestion);
+
                                 let createBet = new Bet({
                                     marketQuestion: bet.marketQuestion,
                                     description: bet.description,
@@ -361,6 +382,7 @@ exports.initialize = function () {
                                     event: record.params._id,
                                     creator: bet.creator,
                                     published: false,
+                                    slug: slug,
                                 });
 
                                 const session = await Bet.startSession();

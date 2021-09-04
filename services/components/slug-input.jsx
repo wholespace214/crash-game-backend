@@ -5,7 +5,13 @@ import generateSlug from "../../util/generateSlug";
 const SlugInput = (props) => {
     const { record, property } = props;
 
-    const [ignoreName, setIgnoreName] = useState(true);
+    // referenceField is the field which value is copied from in order to generate the slug
+    const referenceField = property.props?.referenceField;
+
+    // basePath is used to display the path for the URL Preview
+    const basePath = property.props?.basePath;
+
+    const [populated, setPopulated] = useState(true);
     const [slug, setSlug] = useState(record.params[property.path]);
 
     const setSlugRecordParam = (value) => {
@@ -14,22 +20,31 @@ const SlugInput = (props) => {
     }
 
     useEffect(() => {
-        //Ignore first render of the Name field so it gets the current slug value 
-        if (!ignoreName) {
-            console.log('name changed!!!');
-
-            const newSlug = generateSlug(record.params['name']);
+        // It should start listening for inheritedField's content changes just after being populated by the current "Slug" value in the DB
+        if (!populated) {
+            const newSlug = generateSlug(record.params[referenceField]);
             setSlug(newSlug);
             setSlugRecordParam(newSlug);
         } else {
-            setIgnoreName(false);
+            setPopulated(false);
         }
-    }, [record.params['name']]);
+    }, [record.params[referenceField]]);
 
     const handleChange = useCallback((event) => {
         const newSlug = event.target.value;
         setSlug(newSlug);
         setSlugRecordParam(newSlug);
+
+        event.preventDefault();
+    });
+
+    const handleLostFocus = useCallback((event) => {
+        // TODO - add api call to check if Slug already exists
+        const newSlug = generateSlug(event.target.value);
+        setSlug(newSlug);
+        setSlugRecordParam(newSlug);
+
+        event.preventDefault();
     });
 
     return (
@@ -37,8 +52,8 @@ const SlugInput = (props) => {
             <div style={{marginBottom: "32px"}}> 
                 <Label required>SEO-optimized name</Label>
                 <div style={{display: "flex", alignItems: "center", columnGap:"20px", color:"#999"}}>
-                    <Input type="text" onChange={handleChange} value={slug} />
-                    {slug && <p>URL Preview: {`${AdminBro.env.CLIENT_URL}/trade/${slug}`}</p>}
+                    <Input type="text" onChange={handleChange} onBlur={handleLostFocus} value={slug} />
+                    {slug && <p>URL Preview: {`${AdminBro.env.CLIENT_URL}${basePath}${generateSlug(slug)}`}</p>}
                 </div>
             </div>
         </Box>
