@@ -27,14 +27,14 @@ const createBet = async (req, res, next) => {
 
     try {
         // Defining User Inputs
-        const { eventId, marketQuestion, description, hot, outcomes, endDate } = req.body;
+        const { eventId, marketQuestion, description, hot, outcomes, endDate, slug } = req.body;
 
 
         let event = await eventService.getEvent(eventId);
 
         console.debug(LOG_TAG, event);
         console.debug(LOG_TAG, {
-            marketQuestion: marketQuestion, hot: hot, outcomes: outcomes, endDate: endDate, event: eventId, creator: req.user.id,
+            marketQuestion: marketQuestion, hot: hot, outcomes: outcomes, endDate: endDate, event: eventId, creator: req.user.id, slug: slug
         });
 
         const outcomesDb = outcomes.map((outcome, index) =>
@@ -49,6 +49,7 @@ const createBet = async (req, res, next) => {
             date:        endDate,
             event:          eventId,
             creator:        req.user.id,
+            slug:           slug,
         });
 
         const session = await Bet.startSession();

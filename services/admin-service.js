@@ -3,6 +3,8 @@ const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 // Import User, Bet and Event models
 const { User, Bet, Event } = require("@wallfair.io/wallfair-commons").models;
 
+const generateSlug = require("../util/generateSlug");
+
 const WFAIR = new Erc20('WFAIR');
 
 // Import services
@@ -31,6 +33,16 @@ let adminBro = null;
 
 exports.initialize = function () {
     adminBro = new AdminBro({
+        env: {
+            CLIENT_URL: process.env.CLIENT_URL
+        },
+        locale: {
+            translations: {
+                properties: {
+                    slug: 'SEO-optimized name'
+                }
+            }
+        },
         databases: [mongoose],
         resources: [
             {
@@ -80,6 +92,18 @@ exports.initialize = function () {
             {
                 resource: Bet,
                 options: {
+                    properties: {
+                        slug: {
+                            components: {
+                                new: AdminBro.bundle('./components/slug-input'),
+                                edit: AdminBro.bundle('./components/slug-input'),
+                            },
+                            props: {
+                                referenceField: "marketQuestion",
+                                basePath: "/trade/<event-name>/"
+                            }
+                        }
+                    },
                     actions: {
                         new: {
                             after: async (request) => {
@@ -263,8 +287,20 @@ exports.initialize = function () {
                 resource: Event,
                 options: {
                     listProperties: ["_id", "name", "type", "category"],
-                    editProperties: ["name", "type", "category", "previewImageUrl", "streamUrl", "tags"],
-                    showProperties: ["name", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
+                    editProperties: ["name", "slug", "type", "category", "previewImageUrl", "streamUrl", "tags"],
+                    showProperties: ["name", "slug", "type", "category", "tags", "previewImageUrl", "streamUrl", "metadata"],
+                    properties: {
+                        slug: {
+                            components: {
+                                new: AdminBro.bundle('./components/slug-input'),
+                                edit: AdminBro.bundle('./components/slug-input'),
+                            },
+                            props: {
+                                referenceField: "name",
+                                basePath: "/trade/"
+                            }
+                        }
+                    },
                     actions: {
                         "import-event-from-twitch": {
                             actionType: "resource",
@@ -334,6 +370,9 @@ exports.initialize = function () {
                                 });
                                 let dbEvent = await eventService.getEvent(record.params._id);
                                 const bet = event.betTemplate;
+
+                                const slug = generateSlug(bet.marketQuestion);
+
                                 let createBet = new Bet({
                                     marketQuestion: bet.marketQuestion,
                                     description: bet.description,
@@ -343,6 +382,7 @@ exports.initialize = function () {
                                     event: record.params._id,
                                     creator: bet.creator,
                                     published: false,
+                                    slug: slug,
                                 });
 
                                 const session = await Bet.startSession();
