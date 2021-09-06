@@ -106,7 +106,7 @@ exports.initialize = function () {
                     },
                     actions: {
                         new: {
-                            after: async (request, response, next) => {
+                            after: async (request, response, context) => {
                                 const bet = flatten.unflatten(request.record.params, {
                                     safe: true,
                                 });
@@ -119,17 +119,20 @@ exports.initialize = function () {
                                         const event = await Event.findById(bet.event).session(
                                             session
                                         );
+                                        event.slug = '';
                                         event.bets.push(bet.id);
                                         await event.save({ session });
                                     });
                                 } catch (err) {
                                     console.error(err);
-                                    let error = response.status(422).send(err.message);
-                                    next(error);
+                                    return {
+                                        record: context.record.toJSON(),
+                                    };
+                                    
                                 } finally {
                                     await session.endSession();
                                 }
-                                
+
                                 return request;
                             },
                         },
