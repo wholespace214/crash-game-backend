@@ -1,0 +1,4 @@
+{
+  "extension": ["js"],
+  "spec": "__tests__/**/*.js"
+}
