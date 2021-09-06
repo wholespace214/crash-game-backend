@@ -10,6 +10,7 @@
     "start": "node index.js",
     "server": "nodemon index.js",
     "share": "ngrok http 8000 -host-header=\"localhost:8000\"",
+    "test": "npm run test:unit",
     "test:unit": "TS_NODE_PROJECT='./tsconfig.mocha.json' mocha --sort"
   },
   "author": "",
