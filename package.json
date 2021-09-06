@@ -10,9 +10,8 @@
     "start": "node index.js",
     "server": "nodemon index.js",
     "share": "ngrok http 8000 -host-header=\"localhost:8000\"",
-    "test": "npm run test:compile && npm run test:unit",
-    "test:unit": "TS_NODE_PROJECT='./tsconfig.mocha.json' mocha --sort",
-    "test:compile": "tsc"
+    "test": "npm run test:unit",
+    "test:unit": "TS_NODE_PROJECT='./tsconfig.mocha.json' mocha --sort"
   },
   "author": "",
   "license": "ISC",
@@ -20,8 +19,6 @@
     "@admin-bro/express": "^3.1.0",
     "@admin-bro/mongoose": "^1.1.0",
     "@socket.io/redis-adapter": "7.0.0",
-    "@types/chai": "^4.2.21",
-    "@types/mocha": "^9.0.0",
     "@wallfair.io/smart_contract_mock": "0.3.3",
     "@wallfair.io/wallfair-commons": "^1.2.2",
     "admin-bro": "^4.0.1",
@@ -63,8 +60,6 @@
     "cross-env": "^7.0.3",
     "mocha": "^9.1.1",
     "nodemon": "^2.0.12",
-    "prettier": "2.3.2",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "prettier": "2.3.2"
   }
 }
