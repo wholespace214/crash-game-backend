@@ -114,7 +114,7 @@ const placeBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Placing Bet', id, userId);
 
-        const bet  = await eventService.getBet(id);
+        const bet = await eventService.getBet(id);
 
         if(!eventService.isBetTradable(bet)) {
             res.status(405).json({error: 'BET_NOT_TRADEABLE', message: 'No further action can be performed on an event/bet that has ended!'});
@@ -123,11 +123,18 @@ const placeBet = async (req, res, next) => {
 
         const user = await userService.getUserById(userId);
 
+        const response = {
+            bet,
+            outcomeValue: bet.outcomes[outcome]?.name,
+            outcomeAmount: 0,
+            investedAmount: new bigDecimal(amount).getPrettyValue("4", "."),
+        };
+
         const session = await Bet.startSession();
         try {
             await session.withTransaction(async () => {
 
-                const betContract      = new BetContract(id, bet.outcomes.length);
+                const betContract = new BetContract(id, bet.outcomes.length);
 
                 console.debug(LOG_TAG, 'Successfully bought Tokens');
 
@@ -140,6 +147,11 @@ const placeBet = async (req, res, next) => {
 
                 console.debug(LOG_TAG, 'Interacting with the AMM');
                 await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy * WFAIR.ONE);
+
+                const balance = await betContract
+                    .getOutcomeToken(outcome)
+                    .balanceOf(userId.toString());
+                response.outcomeAmount = new bigDecimal(balance).getPrettyValue("4", ".");
             });
 
             await eventService.placeBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome);
@@ -147,7 +159,7 @@ const placeBet = async (req, res, next) => {
             await session.endSession();
         }
 
-        res.status(200).json(bet);
+        res.status(200).json(response);
     } catch (err) {
         console.error(err);
         let error = res.status(422).send(err.message);
