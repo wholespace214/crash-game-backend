@@ -21,7 +21,6 @@ exports.doLogin = async (phone, ref) => {
         .verifications
         .create({to: phone, channel: 'sms'});
 
-
     if (!existingUser) {
         let createdUser = new User({
             phone: phone,
@@ -45,14 +44,15 @@ exports.doLogin = async (phone, ref) => {
             throw new Error("Signing up/in failed, please try again later.", 500);
         }
     }
-    return verification.status;
+
+    return { status: verification.status, existing: existingUser && existingUser.confirmed };
 }
 
 exports.verifyLogin = async (phone, smsToken) => {
     let user = await userService.getUserByPhone(phone);
 
     if (!user) {
-        throw new Error("User not found, please try again.", 422);
+        throw new Error("User not found, please try again", 422);
     }
 
     let verification;
@@ -62,11 +62,11 @@ exports.verifyLogin = async (phone, smsToken) => {
             .verificationChecks
             .create({to: phone, code: smsToken})
     } catch (err) {
-        throw new Error("sms verification timeout or token incorrect", 401);
+        throw new Error("Invalid verification code", 401);
     }
 
     if(verification === undefined || verification.status !== "approved") {
-        throw new Error("sms verification timeout or token incorrect", 401);
+        throw new Error("Invalid verification code", 401);
     }
 
     return user;
