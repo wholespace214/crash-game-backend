@@ -106,21 +106,30 @@ exports.initialize = function () {
                     },
                     actions: {
                         new: {
-                            after: async (request) => {
+                            after: async (request, response, next) => {
                                 const bet = flatten.unflatten(request.record.params, {
                                     safe: true,
                                 });
 
                                 const session = await Event.startSession();
-                                await session.withTransaction(async () => {
-                                    bet.id = bet._id;
-                                    await eventService.provideLiquidityToBet(bet);
-                                    const event = await Event.findById(bet.event).session(
-                                        session
-                                    );
-                                    event.bets.push(bet.id);
-                                    await event.save({ session });
-                                });
+                                try {
+                                    await session.withTransaction(async () => {
+                                        bet.id = bet._id;
+                                        await eventService.provideLiquidityToBet(bet);
+                                        const event = await Event.findById(bet.event).session(
+                                            session
+                                        );
+                                        event.bets.push(bet.id);
+                                        await event.save({ session });
+                                    });
+                                } catch (err) {
+                                    console.error(err);
+                                    let error = response.status(422).send(err.message);
+                                    next(error);
+                                } finally {
+                                    await session.endSession();
+                                }
+                                
                                 return request;
                             },
                         },
