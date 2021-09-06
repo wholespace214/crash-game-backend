@@ -1,26 +1,17 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 .idea/
 .eslintcache
-tmp
 
 # dependencies
 node_modules
 
 # build
 dist
-dist/
 build
-build/
 .env
 
 # testing
 coverage
-
-# server
-docker/
-dockerData/
-mongoDumps/
-test-setup/db-dump
 
 # server logs
 combined.log
