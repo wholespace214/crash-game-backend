@@ -6,6 +6,8 @@ dotenv.config();
 const express = require('express');
 const http    = require('http');
 
+const { handleError } = require('./util/error-handler');
+
 // Import mongoose to connect to Database
 const mongoose = require('mongoose');
 
@@ -142,6 +144,11 @@ async function main() {
     server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
     
     server.use('/webhooks/twitch/', twitchWebhook);
+
+    // Error handler middleware
+    server.use((err, req, res, next) => {
+        handleError(err, res);
+    });
 
     io.use(socketioJwt.authorize({
         secret:               process.env.JWT_KEY,

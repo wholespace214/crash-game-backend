@@ -2,19 +2,28 @@
 const router = require("express").Router();
 
 // Imports from express validator to validate user input
-const { check } = require("express-validator");
+const { check, oneOf } = require("express-validator");
 
 // Import User Controller
 const userController = require("../../controllers/users-controller");
 
-router.post("/bindWalletAddress", 
-    [check("walletAddress").notEmpty()], 
-    userController.bindWalletAddress
+router.post(
+  "/bindWalletAddress",
+  [check("walletAddress").notEmpty()],
+  userController.bindWalletAddress
 );
 
 router.post(
   "/saveAdditionalInformation",
-  [check("name").notEmpty(), check("email").isEmail(), check("username").notEmpty()],
+  oneOf([
+    [
+      check("name").notEmpty(),
+      check("username").notEmpty(),
+      check("username").isLength({ min: 3 }),
+      check("name").isLength({ min: 3 }),
+    ],
+    check("email").isEmail(),
+  ]),
   userController.saveAdditionalInformation
 );
 
@@ -24,40 +33,19 @@ router.post(
   userController.saveAcceptConditions
 );
 
-router.get(
-    "/refList",
-    userController.getRefList
-);
+router.get("/refList", userController.getRefList);
 
-router.get(
-    "/open-bets",
-    userController.getOpenBetsList
-);
+router.get("/open-bets", userController.getOpenBetsList);
 
-router.get(
-    "/closed-bets",
-    userController.getClosedBetsList
-);
+router.get("/closed-bets", userController.getClosedBetsList);
 
-router.get(
-    "/transactions",
-    userController.getTransactions
-)
+router.get("/transactions", userController.getTransactions);
 
-router.get(
-    "/history",
-    userController.getAMMHistory
-)
+router.get("/history", userController.getAMMHistory);
 
-router.get(
-    "/resend-confirm",
-    userController.resendConfirmEmail
-)
+router.get("/resend-confirm", userController.resendConfirmEmail);
 
-router.patch(
-        "/:userId",
-        userController.updateUser
-);
+router.patch("/:userId", userController.updateUser);
 
 router.get("/:userId", userController.getUserInfo);
 
