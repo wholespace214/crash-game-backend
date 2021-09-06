@@ -9,7 +9,10 @@
   "scripts": {
     "start": "node index.js",
     "server": "nodemon index.js",
-    "share": "ngrok http 8000 -host-header=\"localhost:8000\""
+    "share": "ngrok http 8000 -host-header=\"localhost:8000\"",
+    "test": "npm run lint",
+    "lint": "eslint --max-warnings=-1 --cache --c .eslintrc.js --ext .js,.json '.'",
+    "lint:fix": "eslint --cache --c .eslintrc.js --ext .js,.json --fix '.'"
   },
   "author": "",
   "license": "ISC",
