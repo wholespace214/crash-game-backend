@@ -9,7 +9,9 @@
   "scripts": {
     "start": "node index.js",
     "server": "nodemon index.js",
-    "share": "ngrok http 8000 -host-header=\"localhost:8000\""
+    "share": "ngrok http 8000 -host-header=\"localhost:8000\"",
+    "test": "npm run test:unit",
+    "test:unit": "TS_NODE_PROJECT='./tsconfig.mocha.json' mocha --sort"
   },
   "author": "",
   "license": "ISC",
@@ -54,6 +56,9 @@
     "ws": "^7.5.4"
   },
   "devDependencies": {
+    "chai": "^4.3.4",
+    "cross-env": "^7.0.3",
+    "mocha": "^9.1.1",
     "nodemon": "^2.0.12",
     "prettier": "2.3.2"
   }
