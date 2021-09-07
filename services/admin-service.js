@@ -119,7 +119,6 @@ exports.initialize = function () {
                                         const event = await Event.findById(bet.event).session(
                                             session
                                         );
-                                        event.slug = '';
                                         event.bets.push(bet.id);
                                         await event.save({ session });
                                     });
