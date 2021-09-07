@@ -27,6 +27,9 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: testdb
     volumes:
+      - type: bind
+        source: ../sql/initial-setup.sql
+        target: /docker-entrypoint-initdb.d/initial-setup.sql
       - postgres-data:/var/lib/postgresql/data
   redis:
     image: redis:6.0-alpine
