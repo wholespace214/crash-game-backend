@@ -16,14 +16,7 @@ Step 2: Start the docker containers needed
 docker-compose -f docker/docker-compose.yml up -d
 ```
 
-Step 3: Create a `.env` file (see `.env.example`) and start the server with:
-
-```
-# copy .env file from email
-npm run start
-```
-
-Step 4: Configure the mongo container for replication
+Step 3: Configure the mongo container for replication
 
 ```
 docker exec -it mongodb-wall bash
@@ -39,7 +32,7 @@ rs.initiate( {
 });
 ```
 
-Step 5: Run the postgresql config
+Step 4: Run the postgresql config
 
 ```
 docker exec -it docker_postgres_1 bash
@@ -50,6 +43,13 @@ CREATE TABLE IF NOT EXISTS token_balances (owner varchar(255) not null, balance 
 CREATE TABLE IF NOT EXISTS bet_reports (bet_id varchar(255) not null PRIMARY KEY, reporter varchar(255) not null, outcome smallint not null, report_timestamp timestamp not null);
 CREATE TABLE IF NOT EXISTS amm_interactions (ID SERIAL PRIMARY KEY, buyer varchar(255) NOT NULL, bet varchar(255) NOT NULL, outcome smallint NOT NULL, direction varchar(10) NOT NULL, investmentAmount bigint NOT NULL, feeAmount bigint NOT NULL, outcomeTokensBought bigint NOT NULL, trx_timestamp timestamp NOT NULL);
 CREATE TABLE IF NOT EXISTS casino_trades (ID SERIAL PRIMARY KEY, userId varchar(255) NOT NULL, crashFactor decimal NOT NULL, stakedAmount bigint NOT NULL, state smallint NOT NULL, gameId varchar(255), created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+```
+
+Step 5: Create a `.env` file (see `.env.example`) and start the server with:
+
+```
+# copy .env file from email
+npm run start
 ```
 
 # Api-Endpoints
