@@ -443,20 +443,23 @@ exports.getLoginPath = function () {
 };
 let router = null;
 exports.buildRouter = function () {
-    router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
-        authenticate: async (username, password, request, response) => {
-            return username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD;
-          },
-      cookiePassword: "ueudeiuhihd",
-    }, 
-    null, 
-    {
-        resave: false,
-        saveUninitialized: true,
-    });/**/
+    if (process.env.ENVIRONMENT === 'STAGING' || process.env.ENVIRONMENT === 'PRODUCTIVE') {
+        router = Router()
+        router.use(passport.authenticate('jwt_admin', { session: false }))
+    } else {
+        router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
+            authenticate: async (username, password, request, response) => {
+                return username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD;
+              },
+          cookiePassword: "ueudeiuhihd",
+        }, 
+        null, 
+        {
+            resave: false,
+            saveUninitialized: true,
+        });/**/
+    }
 
-    //router = Router()
-    //router.use(passport.authenticate('jwt_admin', { session: false }))
     router = AdminBroExpress.buildRouter(adminBro, router)
 };
 
