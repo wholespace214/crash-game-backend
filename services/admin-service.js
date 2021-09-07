@@ -1,7 +1,7 @@
 const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 
 // Import User, Bet and Event models
-const { User, Bet, Event } = require("@wallfair.io/wallfair-commons").models;
+const { User, Bet, Event, CategoryBetTemplate } = require("@wallfair.io/wallfair-commons").models;
 
 const generateSlug = require("../util/generateSlug");
 
@@ -359,71 +359,15 @@ exports.initialize = function () {
                                 }
                             }
                         },
-                        "new-bet-from-template": {
-                            actionType: "record",
-                            icon: "Plus",
-                            isVisible: true,
-                            handler: async (request, response, context) => {
-                                const record = context.record;
-                                return {
-                                    record: record.toJSON(),
-                                };
-                            },
-                            component: AdminBro.bundle("./components/new-bet"),
-                        },
-                        "do-new-bet-from-template": {
-                            actionType: "record",
-                            isVisible: false,
-                            handler: async (request, response, context) => {
-                                const record = context.record;
-                                const event = flatten.unflatten(record.params, {
-                                    safe: true,
-                                });
-                                let dbEvent = await eventService.getEvent(record.params._id);
-                                const bet = event.betTemplate;
-
-                                const slug = generateSlug(bet.marketQuestion);
-
-                                let createBet = new Bet({
-                                    marketQuestion: bet.marketQuestion,
-                                    description: bet.description,
-                                    hot: bet.hot,
-                                    outcomes: bet.outcomes,
-                                    duration: bet.duration,
-                                    event: record.params._id,
-                                    creator: bet.creator,
-                                    published: false,
-                                    slug: slug,
-                                });
-
-                                const session = await Bet.startSession();
-                                try {
-                                    await session.withTransaction(async () => {
-                                        createBet = await eventService.saveBet(createBet, session);
-
-                                        createBet.endDate = new Date(
-                                            createBet.date.getTime() + bet.betDuration * 1000 * 60
-                                        );
-
-                                        createBet = await eventService.saveBet(createBet, session);
-
-                                        dbEvent.bets.push(createBet);
-                                        dbEvent = await eventService.saveEvent(dbEvent, session);
-                                    });
-                                } finally {
-                                    await session.endSession();
-                                }
-                                record.params = dbEvent;
-                                record.params._doc.createdBet = createBet.id;
-                                return {
-                                    record: record.toJSON(),
-                                };
-                            },
-                            component: AdminBro.bundle("./components/new-bet"),
-                        },
                     },
                 },
             },
+            {
+                resource: CategoryBetTemplate,
+                options: {
+                    listProperties: ["_id", "marketQuestion", "category"],
+                }
+            }
         ],
         rootPath: "/admin",
         branding: {

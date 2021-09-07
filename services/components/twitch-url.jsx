@@ -1,10 +1,8 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { Box, H3, Button, Input } from "@admin-bro/design-system";
-import ShowAction, { ApiClient, useNotice, ViewHelpers } from "admin-bro";
+import { ApiClient, useNotice, ViewHelpers } from "admin-bro";
 import * as qs from "qs";
-import EditAction from "admin-bro";
-import flatten from "flat";
 
 const api = new ApiClient();
 const NOTICE_MESSAGE = {

@@ -112,12 +112,12 @@ async function main() {
     websocketService.setIO(io);
 
     // Giving server ability to parse json
-    server.use(express.json());
     server.use(passport.initialize());
     server.use(passport.session());
     adminService.buildRouter();
     server.use(adminService.getRootPath(), adminService.getRouter());
     server.use(adminService.getLoginPath(), adminService.getRouter());
+    server.use(express.json());
     
 
     // Home Route
