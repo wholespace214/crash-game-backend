@@ -1,7 +1,7 @@
 const { BetContract, Erc20 } = require("@wallfair.io/smart_contract_mock");
 
 // Import User, Bet and Event models
-const { User, Bet, Event, CategoryBetTemplate } = require("@wallfair.io/wallfair-commons").models;
+const { User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade } = require("@wallfair.io/wallfair-commons").models;
 
 const generateSlug = require("../util/generateSlug");
 
@@ -293,6 +293,15 @@ exports.initialize = function () {
                         },
                     },
                 },
+            },
+            {
+                resource: Lottery
+            },
+            {
+                resource: LotteryTicket
+            },
+            {
+                resource: Trade
             },
             {
                 resource: Event,
