@@ -1,22 +1,22 @@
 // Import the express Router to create routes
-const router = require("express").Router();
+const router = require('express').Router();
 
 // Imports from express validator to validate user input
-const { check } = require("express-validator");
+const { check } = require('express-validator');
 
 // Import controllers
-const rewardsController = require("../../controllers/rewards-controller");
+const rewardsController = require('../../controllers/rewards-controller');
 
 router.get(
-  "/questions",
+  '/questions',
   [],
-  rewardsController.getQuestions
+  rewardsController.getQuestions,
 );
 
 router.post(
-  "/answer",
+  '/answer',
   [],
-  rewardsController.postRewardAnswer
+  rewardsController.postRewardAnswer,
 );
 
 module.exports = router;
