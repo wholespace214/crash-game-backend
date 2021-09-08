@@ -22,6 +22,10 @@ exports.getUserById = async (id, session) => {
     return User.findOne({_id: id}).session(session);
 }
 
+exports.getUserByIdAndWallet = async (id, walletAddress, session) => {
+    return User.findOne({_id: id}).session(session);
+}
+
 exports.getRefByUserId = async (id) => {
     let result = [];
     await User.find({ref: id}).then(function(users) {
