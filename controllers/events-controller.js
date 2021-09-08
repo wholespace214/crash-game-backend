@@ -6,55 +6,55 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 
 // Import Event model
-const { Event } = require("@wallfair.io/wallfair-commons").models;
+const { Event } = require('@wallfair.io/wallfair-commons').models;
 
 // Import service
-const eventService           = require('../services/event-service');
-const chatMessageService           = require('../services/chat-message-service');
-const { calculateAllBetsStatus } = require("../services/event-service");
+const eventService = require('../services/event-service');
+const chatMessageService = require('../services/chat-message-service');
+const { calculateAllBetsStatus } = require('../services/event-service');
+
+const { ErrorHandler } = require('../util/error-handler');
 
 // Controller to sign up a new user
 const listEvents = async (req, res) => {
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(new Error('Invalid input passed, please check it', 422));
+        return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
     // Defining User Inputs
-    const { id }  = req.params;
+    const id = req.params.id;
     let eventList = await eventService.listEvent(id);
 
-    res
-        .status(201)
-        .json(calculateAllBetsStatus(eventList));
+    res.status(201).json(calculateAllBetsStatus(eventList));
 };
 
 const filterEvents = async (req, res) => {
-    let { category, sortby, searchQuery, type} = req.params;
-    let count = parseInt(req.params.count);
-    let page = parseInt(req.params.page);
+    const { category, sortby, searchQuery, type } = req.params;
+    let count = +req.params.count;
+    let page = +req.params.page;
 
-    let eventList = await eventService.filterEvents(type, category, count, page, sortby, searchQuery);
+    let eventList = await eventService.filterEvents(
+        type,
+        category,
+        count,
+        page,
+        sortby,
+        searchQuery
+    );
 
-    res
-        .status(201)
-        .json(eventList);
+    res.status(201).json(eventList);
 };
 
 const getEvent = async (req, res, next) => {
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(res.status(422).send('Invalid input passed, please check it'));
+        return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
-    // Defining User Inputs
-    const { id } = req.params;
-
-    res
-        .status(200)
-        .json(calculateAllBetsStatus(await eventService.getEvent(id)));
+    res.status(200).json(calculateAllBetsStatus(await eventService.getEvent(req.params.id)));
 };
 
 const createEvent = async (req, res, next) => {
@@ -63,24 +63,28 @@ const createEvent = async (req, res, next) => {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(res.status(422).send('Invalid input passed, please check it'));
+        return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
     try {
         // Defining User Inputs
         const { name, tags, streamUrl, previewImageUrl, date, slug } = req.body;
 
-        console.debug(LOG_TAG, 'Create a new Event',
-            { name: name, tags: tags, previewImageUrl: previewImageUrl, streamUrl: streamUrl, slug: slug },
-        );
-        const createEvent = new Event({
-            name:            name,
-            tags:            tags,
+        console.debug(LOG_TAG, 'Create a new Event', {
+            name: name,
+            tags: tags,
             previewImageUrl: previewImageUrl,
-            streamUrl:       streamUrl,
-            bets:            [],
-            date:            date,
-            slug:            slug
+            streamUrl: streamUrl,
+            slug: slug,
+        });
+        const createEvent = new Event({
+            name: name,
+            tags: tags,
+            previewImageUrl: previewImageUrl,
+            streamUrl: streamUrl,
+            bets: [],
+            date: date,
+            slug: slug,
         });
 
         let event = await eventService.saveEvent(createEvent);
@@ -89,8 +93,7 @@ const createEvent = async (req, res, next) => {
         res.status(201).json(event);
     } catch (err) {
         console.error(err.message);
-        let error = res.status(422).send(err.message);
-        next(error);
+        next(new ErrorHandler(422, err.message));
     }
 };
 
@@ -98,24 +101,18 @@ const getChatMessagesByEventId = async (req, res, next) => {
     // Validating User Inputs
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(res.status(422).send('Invalid input passed, please check it'));
+        return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
-    // Defining User Inputs
-    const { id } = req.params;
-    res
-        .status(200)
-        .json(await chatMessageService.getNewestChatMessagesByEvent(id));
+    res.status(200).json(await chatMessageService.getNewestChatMessagesByEvent(req.params.id));
 };
 
 const getTags = async (req, res) => {
     const tags = await eventService.getTags();
-    res
-        .status(200)
-        .json({
-            data: tags
-        })
-}
+    res.status(200).json({
+        data: tags,
+    });
+};
 
 exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;

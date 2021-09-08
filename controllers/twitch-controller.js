@@ -3,10 +3,10 @@ const twitchService = require('../services/twitch-service');
 const { validationResult } = require('express-validator');
 
 const getEventFromTwitchUrl = async (req, res, next) => {
-    console.log("body", req.body)
-    const errors  = validationResult(req);
+    console.log('body', req.body);
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return next(res.status(422).send('Invalid input passed, please check it'));
+        return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
     try {
@@ -17,8 +17,7 @@ const getEventFromTwitchUrl = async (req, res, next) => {
         res.status(201).json(event);
     } catch (err) {
         console.error(err.message);
-        let error = res.status(422).send(err.message);
-        next(error);
+        next(new ErrorHandler(422, err.message));
     }
 };
 exports.getEventFromTwitchUrl = getEventFromTwitchUrl;
