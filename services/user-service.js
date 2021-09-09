@@ -148,6 +148,7 @@ exports.increaseAmountWon = async (userId, amount) => {
         });
 
     } catch (err) {
+        console.error(err);
         throw err;
     } finally {
         await userSession.endSession();

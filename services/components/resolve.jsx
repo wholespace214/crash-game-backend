@@ -32,12 +32,13 @@ const Resolve = (props) => {
         evidenceActual = e.target.value;
     };
 
-    const showBtn = (record.params.finalOutcome === undefined || record.params.finalOutcome.length === 0) && !record.params.canceled;
+    const finalOutcomeParam = record.params.finalOutcome;
+    const showBtn = (!finalOutcomeParam || finalOutcomeParam.length === 0) && !record.params.canceled;
 
-    const finalOutcome = record.params.finalOutcome !== undefined
-            && record.params.finalOutcome.length > 0
-            && record.params.outcomes[record.params.finalOutcome].name !== undefined
-            && record.params.finalOutcome.length > 0 ? record.params.outcomes[record.params.finalOutcome].name : 'loading...';
+    const finalOutcome = finalOutcomeParam
+            && finalOutcomeParam.length > 0
+            && record.params.outcomes[+finalOutcomeParam]?.name ? 
+            record.params.outcomes[+finalOutcomeParam]?.name : 'loading...';
 
     return (
         <Box variant="grey">

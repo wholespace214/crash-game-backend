@@ -78,7 +78,7 @@ exports.clearOpenBets = async (bet, session) => {
     const betContract = new BetContract(bet.id, bet.outcomes.length);
     for (const outcome of bet.outcomes) {
         const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
-        const win = outcome.index === bet.finalOutcome;
+        const win = outcome.index === +bet.finalOutcome;
 
         for (const wallet of wallets) {
             const userId = wallet.owner;

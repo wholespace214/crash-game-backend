@@ -274,17 +274,15 @@ exports.initialize = function () {
                                         await userService.increaseAmountWon(userId, winToken);
 
                                         // send notification to this user
-                                        if (user) {
-                                            websocketService.emitBetResolveNotification(
-                                                userId,
-                                                id,
-                                                bet.marketQuestion,
-                                                bet.outcomes[indexOutcome].name,
-                                                Math.round(investedValues[userId]),
-                                                event.previewImageUrl,
-                                                winToken
-                                            );
-                                        }
+                                        websocketService.emitBetResolveNotification(
+                                            userId,
+                                            id,
+                                            bet.marketQuestion,
+                                            bet.outcomes[indexOutcome].name,
+                                            Math.round(investedValues[userId]),
+                                            event.previewImageUrl,
+                                            winToken
+                                        );
                                     }
                                 }
                                 return {
