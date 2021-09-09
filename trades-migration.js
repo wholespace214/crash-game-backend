@@ -81,35 +81,40 @@ async function run() {
             });
         });
 
-        user.closedBets.forEach((bet) => {
-            let interactions = amm.filter((am) => {
-                return am.bet === bet.betId.toString() && am.buyer === user._id.toString();
-            });
-
-            interactions.forEach((interaction) => {
-                const bigInvestment = new bigDecimal(+interaction.investmentamount);
-                const investment = parseFloat(bigInvestment.getPrettyValue(4, '.'));
-
-                const bigOutcome = new bigDecimal(+interaction.outcometokensbought);
-                const outcomeTokens = parseFloat(bigOutcome.getPrettyValue(4, '.'));
-
-                let tmp = new wallfair.models.Trade({
-                    userId: mongoose.Types.ObjectId(interaction.buyer),
-                    betId: mongoose.Types.ObjectId(interaction.bet),
-                    outcomeIndex: interaction.outcome,
-                    investmentAmount: investment,
-                    outcomeTokens: outcomeTokens,
-                    status:
-                        interaction.direction === 'SELL'
-                            ? 'sold'
-                            : bet.earnedTokens > 0
-                            ? 'rewarded'
-                            : 'closed',
+        user.closedBets
+            .filter(
+                (v, i, a) =>
+                    a.findIndex((t) => t.betId === v.betId && t.outcome === v.outcome) === i
+            )
+            .forEach((bet) => {
+                let interactions = amm.filter((am) => {
+                    return am.bet === bet.betId.toString() && am.buyer === user._id.toString();
                 });
 
-                trades.push(tmp);
+                interactions.forEach((interaction) => {
+                    const bigInvestment = new bigDecimal(+interaction.investmentamount);
+                    const investment = parseFloat(bigInvestment.getPrettyValue(4, '.'));
+
+                    const bigOutcome = new bigDecimal(+interaction.outcometokensbought);
+                    const outcomeTokens = parseFloat(bigOutcome.getPrettyValue(4, '.'));
+
+                    let tmp = new wallfair.models.Trade({
+                        userId: mongoose.Types.ObjectId(interaction.buyer),
+                        betId: mongoose.Types.ObjectId(interaction.bet),
+                        outcomeIndex: interaction.outcome,
+                        investmentAmount: investment,
+                        outcomeTokens: outcomeTokens,
+                        status:
+                            interaction.direction === 'SELL'
+                                ? 'sold'
+                                : bet.earnedTokens > 0
+                                ? 'rewarded'
+                                : 'closed',
+                    });
+
+                    trades.push(tmp);
+                });
             });
-        });
     });
 
     wallfair.models.Trade.insertMany(trades)
