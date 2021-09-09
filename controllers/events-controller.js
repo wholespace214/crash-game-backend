@@ -8,6 +8,9 @@ const { validationResult } = require('express-validator');
 // Import Event model
 const { Event } = require('@wallfair.io/wallfair-commons').models;
 
+// Import Mail Service
+const mailService = require('../services/mail-service');
+
 // Import service
 const eventService = require('../services/event-service');
 const chatMessageService = require('../services/chat-message-service');
@@ -114,9 +117,20 @@ const getTags = async (req, res) => {
     });
 };
 
+const sendEventEvaluate = async (req, res, next) => {
+    try {
+        const payload = req.body.payload;
+        await mailService.sendEventEvaluateMail(payload);
+        res.status(200).send({ status: 'OK' });
+    } catch (err) {
+        next(new ErrorHandler(422, err.message));
+    }
+};
+
 exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;
+exports.sendEventEvaluate = sendEventEvaluate;

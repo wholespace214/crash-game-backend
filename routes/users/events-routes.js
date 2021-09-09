@@ -45,4 +45,6 @@ router.get(
 
 router.get('/tags', eventController.getTags);
 
+router.post('/evaluate', eventController.sendEventEvaluate);
+
 module.exports = router;
