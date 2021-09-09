@@ -3,6 +3,7 @@ const smtpTransport = require('nodemailer-smtp-transport');
 
 const fs = require('fs');
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
+const email_evaluate = fs.readFileSync('./emails/email-evaluate.html', 'utf8');
 
 const transporter = nodemailer.createTransport(
     smtpTransport({
@@ -26,6 +27,25 @@ exports.sendConfirmMail = async (user) => {
 
     user.emailCode = emailCode;
     await user.save();
+};
+
+
+exports.sendEventEvaluateMail = async (payload) => {
+    const ratings = {
+        0: "Excellent",
+        1: "Good",
+        2: "Lame",
+        3: "Unethical"
+      };
+    const bet_question = payload.bet_question;
+    const rating = ratings[payload.rating];
+    const comment = payload.comment;
+    const generatedTemplate = email_evaluate
+        .replace('{{bet_question}}', bet_question)
+        .replace('{{rating}}', rating)
+        .replace('{{comment}}', comment);
+
+    await this.sendMail('feedback@wallfair.io', 'Event Evaluate Feedback', generatedTemplate);
 };
 
 exports.generate = (n) => {
