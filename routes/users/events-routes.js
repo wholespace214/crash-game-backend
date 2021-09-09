@@ -1,80 +1,50 @@
-const nodemailer = require('nodemailer');
-const smtpTransport = require('nodemailer-smtp-transport');
+// Import the express Router to create routes
+const router = require('express').Router();
+const { check, query } = require('express-validator');
+const eventController = require('../../controllers/events-controller');
+const betController = require('../../controllers/bets-controller');
 
-const fs = require('fs');
-const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
-const email_evaluate = fs.readFileSync('./emails/email-evaluate.html', 'utf8');
+router.get('/list', eventController.listEvents);
 
-const transporter = nodemailer.createTransport(
-    smtpTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        auth: {
-            user: process.env.GMAIL_USERNAME,
-            pass: process.env.GMAIL_PASSWORD,
-        },
-    })
+router.get('/list/:type/:category/:count/:page/:sortby', eventController.filterEvents);
+
+router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery', eventController.filterEvents);
+
+router.get(
+    '/chat-messages/:id',
+    [check('id').notEmpty()],
+    eventController.getChatMessagesByEventId
 );
 
-exports.sendConfirmMail = async (user) => {
-    const emailCode = this.generate(6);
-    const queryString = `?userId=${user.id}&code=${emailCode}`;
-    const generatedTemplate = email_confirm
-        .replace('{{query_string}}', queryString)
-        .replace('{{verify_url}}', process.env.VERIFY_URL);
+router.post(
+    '/bet/:id/outcomes/buy',
+    [check('amount').isNumeric()],
+    betController.calculateBuyOutcome
+);
 
-    await this.sendMail(user.email, 'Please confirm your email!', generatedTemplate);
+router.post(
+    '/bet/:id/outcomes/sell',
+    [check('amount').isNumeric()],
+    betController.calculateSellOutcome
+);
 
-    user.emailCode = emailCode;
-    await user.save();
-};
+router.get(
+    '/bet/:id/history',
+    [
+        check('id').notEmpty(),
+        query('direction')
+            .isIn(['BUY', 'SELL'])
+            .withMessage('Direction type must be one of values [BUY, SELL]'),
+        query('rangeType')
+            .isIn(['day', 'hour'])
+            .withMessage('Range type must be one of values [day, hour]'),
+        query('rangeValue').isInt({ min: 1 }).withMessage('Range value must be numeric and >= 1'),
+    ],
+    betController.betHistory
+);
 
+router.get('/tags', eventController.getTags);
 
-exports.sendEventEvaluateMail = async (payload) => {
-    const ratings = {
-        0: "Excellent",
-        1: "Good",
-        2: "Lame",
-        3: "Unethical"
-      };
-    const bet_question = payload.bet_question;
-    const rating = ratings[payload.rating];
-    const comment = payload.comment;
-    const generatedTemplate = email_evaluate
-        .replace('{{bet_question}}', bet_question)
-        .replace('{{rating}}', rating)
-        .replace('{{comment}}', comment);
+router.post('/evaluate', eventController.sendEventEvaluate);
 
-    await this.sendMail('rostikhr111@gmail.com', 'Event Evaluate Feedback', generatedTemplate);
-};
-
-exports.generate = (n) => {
-    var add = 1,
-        max = 12 - add;
-
-    if (n > max) {
-        return generate(max) + generate(n - max);
-    }
-
-    max = Math.pow(10, n + add);
-    var min = max / 10;
-    var number = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    return ('' + number).substring(add);
-};
-
-exports.sendMail = async (email, subject, template) => {
-    try {
-        let info = await transporter.sendMail({
-            from: '"WALLFAIR" noreply@wallfair.io',
-            to: email,
-            subject: subject,
-            html: template,
-        });
-
-        console.log('email sent: %s', info.messageId);
-    } catch (err) {
-        console.log(err);
-        console.log('email sent failed to: %s', email);
-    }
-};
+module.exports = router;
