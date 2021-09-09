@@ -185,7 +185,7 @@ const pullOutBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Pulling out Bet', id, req.user.id);
         const bet = await eventService.getBet(id);
 
-        if (await eventService.isBetTradable(bet)) {
+        if (!eventService.isBetTradable(bet)) {
             return next(
                 new ErrorHandler(
                     405,
