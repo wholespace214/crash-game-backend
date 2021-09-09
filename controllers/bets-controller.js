@@ -13,6 +13,8 @@ const bigDecimal = require('js-big-decimal');
 // Import Auth Service
 const eventService = require('../services/event-service');
 const userService = require('../services/user-service');
+const tradeService = require('../services/trade-service');
+const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 
@@ -85,83 +87,23 @@ const createBet = async (req, res, next) => {
 };
 
 const placeBet = async (req, res, next) => {
-    const LOG_TAG = '[PLACE-BET]';
     // Validating User Inputs
     const errors = validationResult(req);
 
     let { amount, outcome, minOutcomeTokens } = req.body;
-    const id = req.params.id;
 
     if (!errors.isEmpty() || amount <= 0) {
         return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
     }
 
     try {
-        amount = parseFloat(amount).toFixed(4);
-        const bigAmount = new bigDecimal(amount.toString().replace('.', ''));
-        amount = BigInt(bigAmount.getValue());
-
-        let minOutcomeTokensToBuy = 1n;
-        if (minOutcomeTokens > 1) {
-            minOutcomeTokensToBuy = BigInt(minOutcomeTokens);
-        }
-
-        const userId = req.user.id;
-        const bet = await eventService.getBet(id);
-        console.debug(LOG_TAG, 'Placing Bet', id, userId);
-
-        if (!eventService.isBetTradable(bet)) {
-            return next(
-                new ErrorHandler(
-                    405,
-                    'No further action can be performed on an event/bet that has ended!'
-                )
-            );
-        }
-
-        const user = await userService.getUserById(userId);
-
-        if (!user) {
-            console.error(LOG_TAG, `User not found with id ${userId}`);
-            return next(new ErrorHandler(404, 'User not found'));
-        }
-
-        const response = {
-            bet,
-            trade: {},
-        };
-
-        const session = await Bet.startSession();
-        try {
-            await session.withTransaction(async () => {
-                const betContract = new BetContract(id, bet.outcomes.length);
-
-                console.debug(LOG_TAG, 'Interacting with the AMM');
-
-                await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy * WFAIR.ONE);
-
-                console.debug(LOG_TAG, 'Successfully bought Tokens');
-
-                const potentialReward = await betContract.calcBuy(amount, outcome);
-
-                let trade = new Trade({
-                    userId: user._id,
-                    betId: bet._id,
-                    outcomeIndex: outcome,
-                    investmentAmount: new bigDecimal(amount).getPrettyValue("4", "."),
-                    amountRewarded: new bigDecimal(potentialReward).getPrettyValue("4", "."),
-                });
-
-                response.trade = await trade.save({session});
-
-                console.debug(LOG_TAG, 'Saved trade');
-            });
-
-            await eventService.placeBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome);
-        } finally {
-            await session.endSession();
-        }
-
+        const response = await betService.placeBet(
+            req.user.id, 
+            req.params.id, 
+            amount, 
+            outcome, 
+            minOutcomeTokens);
+            
         res.status(200).json(response);
     } catch (err) {
         console.error(err);
@@ -206,45 +148,38 @@ const pullOutBet = async (req, res, next) => {
 
         const session = await User.startSession();
         try {
-            let newBalances = undefined;
-            await session
-                .withTransaction(async () => {
-                    console.debug(LOG_TAG, 'Interacting with the AMM');
-                    const betContract = new BetContract(id, bet.outcomes.length);
+            let newBalances;
 
-                    sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
-                    console.debug(
-                        LOG_TAG,
-                        'SELL ' +
-                            userId +
-                            ' ' +
-                            sellAmount +
-                            ' ' +
-                            outcome +
-                            ' ' +
-                            requiredMinReturnAmount * WFAIR.ONE
-                    );
+            await session.withTransaction(async () => {
+                console.debug(LOG_TAG, 'Interacting with the AMM');
+                const betContract = new BetContract(id, bet.outcomes.length);
 
-                    newBalances = await betContract.sellAmount(
-                        userId,
-                        sellAmount,
-                        outcome,
+                sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
+                console.debug(
+                    LOG_TAG,
+                    'SELL ' +
+                        userId +
+                        ' ' +
+                        sellAmount +
+                        ' ' +
+                        outcome +
+                        ' ' +
                         requiredMinReturnAmount * WFAIR.ONE
-                    );
-                    console.debug(LOG_TAG, 'Successfully sold Tokens');
+                );
 
-                    await userService.sellBet(
-                        user.id,
-                        bet,
-                        sellAmount,
-                        outcome,
-                        newBalances,
-                        session
-                    );
-                })
-                .catch((err) => console.debug(err));
+                newBalances = await betContract.sellAmount(
+                    userId,
+                    sellAmount,
+                    outcome,
+                    requiredMinReturnAmount * WFAIR.ONE
+                );
+                console.debug(LOG_TAG, 'Successfully sold Tokens');
 
-            const bigAmount = new bigDecimal(newBalances.earnedTokens);
+                await tradeService.closeTrades(user.id, bet, outcome, 'sold', session);
+                console.debug(LOG_TAG, 'Trades closed successfully');
+            }).catch((err) => console.error(err));
+
+            const bigAmount = new bigDecimal(newBalances?.earnedTokens);
             await eventService.pullOutBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome, 0n);
         } catch (err) {
             console.error(err);

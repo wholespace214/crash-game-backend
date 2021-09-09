@@ -162,14 +162,15 @@ exports.initialize = function () {
                                         request.params.recordId,
                                         session
                                     );
-                                    dbBet.canceled = true;
-                                    dbBet.reasonOfCancellation = request.fields.reason;
-
-                                    userIds = await betService.refundUserHistory(dbBet, session);
-                                    await eventService.saveBet(dbBet, session);
 
                                     const betContract = new BetContract(dbBet.id);
                                     await betContract.refund();
+
+                                    dbBet.canceled = true;
+                                    dbBet.reasonOfCancellation = request.fields.reason;
+                                    await eventService.saveBet(dbBet, session);
+
+                                    userIds = await betService.refundUserHistory(dbBet, session);
                                 });
 
                                 if (dbBet) {

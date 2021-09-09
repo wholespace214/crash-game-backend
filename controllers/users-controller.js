@@ -1,27 +1,15 @@
-// Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
 dotenv.config();
-
-// Imports from express validator to validate user input
 const { validationResult } = require('express-validator');
-
-// Import Auth Service
 const authService = require('../services/auth-service');
-
-// Import User Service
 const userService = require('../services/user-service');
-
-// Import Mail Service
 const mailService = require('../services/mail-service');
-
-// Import User and Bet Models
-const { User, Trade } = require("@wallfair.io/wallfair-commons").models;
-
+const tradeService = require('../services/trade-service');
+const { User } = require("@wallfair.io/wallfair-commons").models;
 const { ErrorHandler } = require('../util/error-handler');
-
 const bigDecimal = require('js-big-decimal');
-
 const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+
 const WFAIR = new Erc20('WFAIR');
 
 // Controller to sign up a new user
@@ -260,56 +248,12 @@ const getRefList = async (req, res, next) => {
     }
 };
 
-const getClosedBetsList = async (req, res, next) => {
-    const user = req.user;
-
-    try {
-        if (user) {
-            const userId = req.user.id;
-            const user = await userService.getUserById(userId);
-            const closedBets = user.closedBets;
-
-            response.status(200).json({
-                closedBets,
-            });
-        } else {
-            return next(new ErrorHandler(404, 'User not found'));
-        }
-    } catch (err) {
-        console.error(err);
-        next(new ErrorHandler(500, err.message));
-    }
-};
-
-const getOpenBetsList = async (request, response) => {
+const getOpenBetsList = async (request, response, next) => {
   const user = request.user;
 
   try {
     if (user) {
-      const trades = await Trade.aggregate(
-        [
-          {
-            $match: {
-              userId: mongoose.Types.ObjectId(user.id)
-            },
-          },
-          {
-            $group: {
-              _id: {
-                userId: '$userId',
-                betId: '$betId',
-                outcomeIndex: '$outcomeIndex',  
-              },
-              totalInvestmentAmount: {
-                $sum: '$investmentAmount'
-              },
-              totalAmountRewarded: {
-                $sum: '$amountRewarded'
-              }
-            }
-          }
-        ]
-      );
+      const trades = await tradeService.getActiveTradesByUserId(user.id);
 
       const openBets = [];
       
@@ -318,7 +262,7 @@ const getOpenBetsList = async (request, response) => {
           betId: trade._id.betId.toString(),
           outcome: trade._id.outcomeIndex,
           investmentAmount: trade.totalInvestmentAmount,
-          outcomeAmount: trade.totalAmountRewarded,
+          outcomeAmount: trade.totalOutcomeTokens,
         });
       }
 
@@ -446,7 +390,6 @@ exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
-exports.getClosedBetsList = getClosedBetsList;
 exports.getTransactions = getTransactions;
 exports.getAMMHistory = getAMMHistory;
 exports.confirmEmail = confirmEmail;
