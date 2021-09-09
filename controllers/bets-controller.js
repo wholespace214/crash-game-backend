@@ -6,7 +6,7 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 
 // Import User and Bet model
-const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
+const { User, Bet, Trade } = require("@wallfair.io/wallfair-commons").models;
 
 const bigDecimal = require('js-big-decimal');
 
@@ -121,33 +121,40 @@ const placeBet = async (req, res, next) => {
 
         const user = await userService.getUserById(userId);
 
+        if (!user) {
+            console.error(LOG_TAG, `User not found with id ${userId}`);
+            return next(new ErrorHandler(404, 'User not found'));
+        }
+
         const response = {
             bet,
-            outcomeValue: bet.outcomes[outcome]?.name,
-            outcomeAmount: 0,
-            investedAmount: new bigDecimal(amount).getPrettyValue('4', '.'),
+            trade: {},
         };
 
         const session = await Bet.startSession();
         try {
             await session.withTransaction(async () => {
                 const betContract = new BetContract(id, bet.outcomes.length);
-                console.debug(LOG_TAG, 'Successfully bought Tokens');
-
-                if (user.openBets.indexOf(bet.id) === -1) {
-                    user.openBets.push(bet.id);
-                }
-
-                await userService.saveUser(user, session);
-                console.debug(LOG_TAG, 'Saved user');
 
                 console.debug(LOG_TAG, 'Interacting with the AMM');
+
                 await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy * WFAIR.ONE);
 
-                const balance = await betContract
-                    .getOutcomeToken(outcome)
-                    .balanceOf(userId.toString());
-                response.outcomeAmount = new bigDecimal(balance).getPrettyValue('4', '.');
+                console.debug(LOG_TAG, 'Successfully bought Tokens');
+
+                const potentialReward = await betContract.calcBuy(amount, outcome);
+
+                let trade = new Trade({
+                    userId: user._id,
+                    betId: bet._id,
+                    outcomeIndex: outcome,
+                    investmentAmount: new bigDecimal(amount).getPrettyValue("4", "."),
+                    amountRewarded: new bigDecimal(potentialReward).getPrettyValue("4", "."),
+                });
+
+                response.trade = await trade.save({session});
+
+                console.debug(LOG_TAG, 'Saved trade');
             });
 
             await eventService.placeBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome);

@@ -11,20 +11,17 @@ const authService = require('../services/auth-service');
 // Import User Service
 const userService = require('../services/user-service');
 
-// Import Event Service
-const eventService = require('../services/event-service');
-
 // Import Mail Service
 const mailService = require('../services/mail-service');
 
 // Import User and Bet Models
-const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
+const { User, Trade } = require("@wallfair.io/wallfair-commons").models;
 
 const { ErrorHandler } = require('../util/error-handler');
 
 const bigDecimal = require('js-big-decimal');
 
-const { BetContract, Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 const WFAIR = new Erc20('WFAIR');
 
 // Controller to sign up a new user
@@ -284,59 +281,57 @@ const getClosedBetsList = async (req, res, next) => {
     }
 };
 
-const getOpenBetsList = async (req, res, next) => {
-    const user = req.user;
+const getOpenBetsList = async (request, response) => {
+  const user = request.user;
 
-    try {
-        if (user) {
-            const userId = user.id;
-            const openBetIds = user.openBets.filter(
-                (value, index, self) => self.indexOf(value) === index
-            );
-            const openBets = [];
-
-            for (const openBetId of openBetIds) {
-                const wallet = new Wallet(userId);
-                const betEvent = await Bet.findById(openBetId);
-
-                //TODO For the payout function, the bet may have to be displayed as an open bet!
-                if (betEvent.finalOutcome !== undefined && betEvent.finalOutcome.length > 0) {
-                    continue;
-                }
-
-                const bet = new BetContract(openBetId, betEvent.outcomes.length);
-
-                for (const outcome of betEvent.outcomes) {
-                    const investment = await wallet.investmentBet(openBetId, outcome.index);
-                    const balance = await bet
-                        .getOutcomeToken(outcome.index)
-                        .balanceOf(userId.toString());
-
-                    if (!investment || !balance) {
-                        continue;
-                    }
-
-                    const openBet = {
-                        betId: openBetId,
-                        outcome: outcome.index,
-                        investmentAmount: new bigDecimal(investment).getPrettyValue('4', '.'),
-                        outcomeAmount: new bigDecimal(balance).getPrettyValue('4', '.'),
-                    };
-
-                    openBets.push(openBet);
-                }
+  try {
+    if (user) {
+      const trades = await Trade.aggregate(
+        [
+          {
+            $match: {
+              userId: mongoose.Types.ObjectId(user.id)
+            },
+          },
+          {
+            $group: {
+              _id: {
+                userId: '$userId',
+                betId: '$betId',
+                outcomeIndex: '$outcomeIndex',  
+              },
+              totalInvestmentAmount: {
+                $sum: '$investmentAmount'
+              },
+              totalAmountRewarded: {
+                $sum: '$amountRewarded'
+              }
             }
+          }
+        ]
+      );
 
-            res.status(200).json({
-                openBets,
-            });
-        } else {
-            return next(new ErrorHandler(404, 'User not found'));
-        }
-    } catch (err) {
-        console.error(err);
-        next(new ErrorHandler(500, err.message));
+      const openBets = [];
+      
+      for (const trade of trades) {
+        openBets.push({
+          betId: trade._id.betId.toString(),
+          outcome: trade._id.outcomeIndex,
+          investmentAmount: trade.totalInvestmentAmount,
+          outcomeAmount: trade.totalAmountRewarded,
+        });
+      }
+
+      response.status(200).json({
+        openBets,
+      });
+    } else {
+      return next(new ErrorHandler(404, 'User not found'));
     }
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(500, err.message));
+  }
 };
 
 const getTransactions = async (req, res, next) => {
