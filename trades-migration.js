@@ -62,6 +62,7 @@ async function run() {
             });
 
             interactions.forEach((interaction) => {
+                if(interaction.direction !== 'BUY') return;
                 const bigInvestment = new bigDecimal(+interaction.investmentamount);
                 const investment = parseFloat(bigInvestment.getPrettyValue(4, '.'));
 
@@ -92,6 +93,7 @@ async function run() {
                 });
 
                 interactions.forEach((interaction) => {
+                    if(interaction.direction === 'PAYOUT') return;
                     const bigInvestment = new bigDecimal(+interaction.investmentamount);
                     const investment = parseFloat(bigInvestment.getPrettyValue(4, '.'));
 
