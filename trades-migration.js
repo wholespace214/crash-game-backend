@@ -124,7 +124,7 @@ async function run() {
             console.log(e);
         })
         .finally(() => {
-            console.log('Trades imported succesfully!');
+            console.log(`${trades.length} trades imported succesfully!`);
             mongoose.connection.close();
         });
 }
