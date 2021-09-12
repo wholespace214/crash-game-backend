@@ -1,30 +1,15 @@
-// Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
 dotenv.config();
-
-// Imports from express validator to validate user input
 const { validationResult } = require('express-validator');
-
-// Import Auth Service
 const authService = require('../services/auth-service');
-
-// Import User Service
 const userService = require('../services/user-service');
-
-// Import Event Service
-const eventService = require('../services/event-service');
-
-// Import Mail Service
 const mailService = require('../services/mail-service');
-
-// Import User and Bet Models
-const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
-
+const tradeService = require('../services/trade-service');
+const { User } = require("@wallfair.io/wallfair-commons").models;
 const { ErrorHandler } = require('../util/error-handler');
-
 const bigDecimal = require('js-big-decimal');
+const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 
-const { BetContract, Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 const WFAIR = new Erc20('WFAIR');
 
 // Controller to sign up a new user
@@ -265,80 +250,34 @@ const getRefList = async (req, res, next) => {
     }
 };
 
-const getClosedBetsList = async (req, res, next) => {
-    const user = req.user;
+const getOpenBetsList = async (request, response, next) => {
+  const user = request.user;
 
-    try {
-        if (user) {
-            const userId = req.user.id;
-            const user = await userService.getUserById(userId);
-            const closedBets = user.closedBets;
+  try {
+    if (user) {
+      const trades = await tradeService.getActiveTradesByUserId(user.id);
 
-            response.status(200).json({
-                closedBets,
-            });
-        } else {
-            return next(new ErrorHandler(404, 'User not found'));
-        }
-    } catch (err) {
-        console.error(err);
-        next(new ErrorHandler(500, err.message));
+      const openBets = [];
+      
+      for (const trade of trades) {
+        openBets.push({
+          betId: trade._id.betId.toString(),
+          outcome: trade._id.outcomeIndex,
+          investmentAmount: trade.totalInvestmentAmount,
+          outcomeAmount: trade.totalOutcomeTokens,
+        });
+      }
+
+      response.status(200).json({
+        openBets,
+      });
+    } else {
+      return next(new ErrorHandler(404, 'User not found'));
     }
-};
-
-const getOpenBetsList = async (req, res, next) => {
-    const user = req.user;
-
-    try {
-        if (user) {
-            const userId = user.id;
-            const openBetIds = user.openBets.filter(
-                (value, index, self) => self.indexOf(value) === index
-            );
-            const openBets = [];
-
-            for (const openBetId of openBetIds) {
-                const wallet = new Wallet(userId);
-                const betEvent = await Bet.findById(openBetId);
-
-                //TODO For the payout function, the bet may have to be displayed as an open bet!
-                if (betEvent.finalOutcome !== undefined && betEvent.finalOutcome.length > 0) {
-                    continue;
-                }
-
-                const bet = new BetContract(openBetId, betEvent.outcomes.length);
-
-                for (const outcome of betEvent.outcomes) {
-                    const investment = await wallet.investmentBet(openBetId, outcome.index);
-                    const balance = await bet
-                        .getOutcomeToken(outcome.index)
-                        .balanceOf(userId.toString());
-
-                    if (!investment || !balance) {
-                        continue;
-                    }
-
-                    const openBet = {
-                        betId: openBetId,
-                        outcome: outcome.index,
-                        investmentAmount: new bigDecimal(investment).getPrettyValue('4', '.'),
-                        outcomeAmount: new bigDecimal(balance).getPrettyValue('4', '.'),
-                    };
-
-                    openBets.push(openBet);
-                }
-            }
-
-            res.status(200).json({
-                openBets,
-            });
-        } else {
-            return next(new ErrorHandler(404, 'User not found'));
-        }
-    } catch (err) {
-        console.error(err);
-        next(new ErrorHandler(500, err.message));
-    }
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(500, err.message));
+  }
 };
 
 const getTransactions = async (req, res, next) => {
@@ -453,7 +392,6 @@ exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
-exports.getClosedBetsList = getClosedBetsList;
 exports.getTransactions = getTransactions;
 exports.getAMMHistory = getAMMHistory;
 exports.confirmEmail = confirmEmail;

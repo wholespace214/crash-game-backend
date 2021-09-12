@@ -1,16 +1,8 @@
-// Import User model
 const { User } = require("@wallfair.io/wallfair-commons").models;
-
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios')
-
-//Import services
-const eventService = require("./event-service");
 const bigDecimal = require("js-big-decimal");
-const { BET_STATUS } = require("./event-service");
-
-//Import sc mock
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const WFAIR = new Erc20('WFAIR');
 
@@ -56,39 +48,6 @@ exports.securePassword = async (user, password ) => {
 exports.comparePassword = async (user, plainPassword ) => {
     return await bcrypt.compare(plainPassword, user.password);
 }
-
-exports.sellBet = async (userId, bet, sellAmount, outcome, newBalances, session) => {
-    const user = await this.getUserById(userId, session);
-    const openBetId = user.openBets.find(item => item === bet.id);
-    const openBet = await eventService.getBet(openBetId);
-
-    if(![BET_STATUS.active].includes(openBet.status)) {
-        throw new Error('bet had not have status active, but was: ' + openBet.status);
-    }
-
-    if(openBet !== undefined) {
-        user.openBets = filterClosedTrades(user, bet, newBalances);
-
-        user.closedBets.push(
-            {
-                betId:            bet.id,
-                outcome:          outcome ,
-                sellAmount: (sellAmount / WFAIR.ONE).toString(),
-                earnedTokens: (newBalances.earnedTokens / WFAIR.ONE).toString(),
-            });
-    }
-
-    await this.saveUser(user, session);
-}
-
-function filterClosedTrades(user, openBet, newBalances) {
-    //delete trade from openBets, if all trade closed and payed out
-    if (!newBalances.isInvested) {
-        return user.openBets.filter(item => item !== openBet.id);
-    }
-    return user.openBets;
-}
-
 
 exports.getRankByUserId = async (userId) => {
     // TODO this cant stay like this. 
@@ -137,10 +96,6 @@ exports.createUser = async (user) => {
         })
 }
 
-exports.findAllUserInvestedInBet = async (betId) => {
-    return User.find({openBets: {$contains: betId}});
-}
-
 exports.payoutUser = async (userId, bet) => {
     const betId = bet.id;
     const LOG_TAG = '[PAYOUT-BET]';
@@ -149,16 +104,6 @@ exports.payoutUser = async (userId, bet) => {
     console.debug(LOG_TAG, 'Requesting Bet Payout');
     const betContract = new BetContract(betId, bet.outcomes.length);
     await betContract.getPayout(userId);
-}
-
-exports.clearOpenBetAndAddToClosed = (user, bet, sellAmount, earnedTokens) => {
-    user.openBets = user.openBets.filter(item => item !== bet.id);
-    user.closedBets.push({
-        betId:            bet.id,
-        outcome:          bet.finalOutcome,
-        sellAmount: (BigInt(sellAmount) / WFAIR.ONE).toString(),
-        earnedTokens: (BigInt(earnedTokens) / WFAIR.ONE).toString(),
-    });
 }
 
 exports.getBalanceOf = async (userId) => {
@@ -203,6 +148,7 @@ exports.increaseAmountWon = async (userId, amount) => {
         });
 
     } catch (err) {
+        console.error(err);
         throw err;
     } finally {
         await userSession.endSession();

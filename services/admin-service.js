@@ -162,14 +162,15 @@ exports.initialize = function () {
                                         request.params.recordId,
                                         session
                                     );
-                                    dbBet.canceled = true;
-                                    dbBet.reasonOfCancellation = request.fields.reason;
-
-                                    userIds = await betService.refundUserHistory(dbBet, session);
-                                    await eventService.saveBet(dbBet, session);
 
                                     const betContract = new BetContract(dbBet.id);
                                     await betContract.refund();
+
+                                    dbBet.canceled = true;
+                                    dbBet.reasonOfCancellation = request.fields.reason;
+                                    await eventService.saveBet(dbBet, session);
+
+                                    userIds = await betService.refundUserHistory(dbBet, session);
                                 });
 
                                 if (dbBet) {
@@ -273,17 +274,15 @@ exports.initialize = function () {
                                         await userService.increaseAmountWon(userId, winToken);
 
                                         // send notification to this user
-                                        if (user) {
-                                            websocketService.emitBetResolveNotification(
-                                                userId,
-                                                id,
-                                                bet.marketQuestion,
-                                                bet.outcomes[indexOutcome].name,
-                                                Math.round(investedValues[userId]),
-                                                event.previewImageUrl,
-                                                winToken
-                                            );
-                                        }
+                                        websocketService.emitBetResolveNotification(
+                                            userId,
+                                            id,
+                                            bet.marketQuestion,
+                                            bet.outcomes[indexOutcome].name,
+                                            Math.round(investedValues[userId]),
+                                            event.previewImageUrl,
+                                            winToken
+                                        );
                                     }
                                 }
                                 return {
