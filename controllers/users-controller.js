@@ -228,7 +228,9 @@ const getUserInfo = async (req, res, next) => {
 
         const user = await User.findById(userId);
         const balance = await WFAIR.balanceOf(userId);
-        const formattedBalance = new bigDecimal(balance).getPrettyValue(4, '.');
+        const formattedBalance = new bigDecimal(balance)
+            .getPrettyValue(4, '.')
+            .replace(/[.](?=.*[.])/g, '');
         let { rank, toNextRank } = await userService.getRankByUserId(userId);
 
         res.status(200).json({
