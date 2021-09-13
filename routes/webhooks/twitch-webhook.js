@@ -1,66 +1,66 @@
 // Import the express Router to create routes
-const router = require("express").Router();
-const { check } = require("express-validator");
+const router = require('express').Router();
+const { check } = require('express-validator');
 
 // Import Event model
-const { Event } = require("@wallfair.io/wallfair-commons").models;
+const { Event } = require('@wallfair.io/wallfair-commons').models;
 
-router.post("/", async (req, res, chain) => {
-    console.log(new Date(), "TWITCH_MESSAGE", JSON.stringify(req.body));
+router.post('/', async (req, res, chain) => {
+  console.log(new Date(), 'TWITCH_MESSAGE', JSON.stringify(req.body));
 
-    // handle twitch challenges
-    if (req.header("Twitch-Eventsub-Message-Type") === "webhook_callback_verification") {
-        let type = req.header("Twitch-Eventsub-Subscription-Type");
-        let broadcaster_user_id = req.body.subscription.condition.broadcaster_user_id;
+  // handle twitch challenges
+  if (req.header('Twitch-Eventsub-Message-Type') === 'webhook_callback_verification') {
+    const type = req.header('Twitch-Eventsub-Subscription-Type');
+    const { broadcaster_user_id } = req.body.subscription.condition;
 
-        const session = await Event.startSession();
-        try {
-            await session.withTransaction(async () => {
-                let event = await Event.findOne({"metadata.twitch_id": broadcaster_user_id}).exec();
+    const session = await Event.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
-                if (type == "stream.online") {
-                    event.metadata.twitch_subscribed_online = "true";
-                    await event.save();
-                } else if (type == "stream.offline") {
-                    event.metadata.twitch_subscribed_offline = "true";
-                    await event.save();
-                }
-            });
-        } catch (err) {
-            console.log("Twitch webhook challenge error", err);
-        } finally {
-            await session.endSession();
+        if (type == 'stream.online') {
+          event.metadata.twitch_subscribed_online = 'true';
+          await event.save();
+        } else if (type == 'stream.offline') {
+          event.metadata.twitch_subscribed_offline = 'true';
+          await event.save();
         }
-
-        res.send(req.body.challenge);
+      });
+    } catch (err) {
+      console.log('Twitch webhook challenge error', err);
+    } finally {
+      await session.endSession();
     }
 
-    // handle twitch events
-    if (req.header("Twitch-Eventsub-Message-Type") === "notification") {
-        let type = req.header("Twitch-Eventsub-Subscription-Type");
-        let broadcaster_user_id = req.body.subscription.condition.broadcaster_user_id;
+    res.send(req.body.challenge);
+  }
 
-        const session = await Event.startSession();
-        try {
-            await session.withTransaction(async () => {
-                let event = await Event.findOne({"metadata.twitch_id": broadcaster_user_id}).exec();
+  // handle twitch events
+  if (req.header('Twitch-Eventsub-Message-Type') === 'notification') {
+    const type = req.header('Twitch-Eventsub-Subscription-Type');
+    const { broadcaster_user_id } = req.body.subscription.condition;
 
-                if (type == "stream.online") {
-                    event.state = "online";
-                    await event.save();
-                } else if (type == "stream.offline") {
-                    event.state = "offline";
-                    await event.save();
-                }
-            });
-        } catch (err) {
-            console.log("Twitch webhook event error", err);
-        } finally {
-            await session.endSession();
+    const session = await Event.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
+
+        if (type == 'stream.online') {
+          event.state = 'online';
+          await event.save();
+        } else if (type == 'stream.offline') {
+          event.state = 'offline';
+          await event.save();
         }
+      });
+    } catch (err) {
+      console.log('Twitch webhook event error', err);
+    } finally {
+      await session.endSession();
+    }
 
-        res.sendStatus(200);
-    } 
+    res.sendStatus(200);
+  }
 });
 
 module.exports = router;

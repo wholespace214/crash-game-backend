@@ -1,7 +1,7 @@
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
 describe('test', () => (
   it('should not fail', () => {
-    expect(true).to.eq(true)
+    expect(true).to.eq(true);
   })
-))
+));
