@@ -32,7 +32,7 @@ const postLotteryAnswer = async (req, res, next) => {
     }
 };
 
-const getQuestions = async (req, res, next) => {
+const getQuestions = async (req, res) => {
     const questions = await lotteryService.listLotteriesForUser(req.user.id);
     res.status(200).json(questions);
 };

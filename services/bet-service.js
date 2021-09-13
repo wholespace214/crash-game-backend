@@ -2,8 +2,8 @@ const userService = require('./user-service');
 const tradeService = require('./trade-service');
 const eventService = require('./event-service');
 const { User, Bet, Trade } = require('@wallfair.io/wallfair-commons').models;
-const bigDecimal = require('js-big-decimal');
 const { BetContract, Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -11,7 +11,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
   const LOG_TAG = '[CREATE-BET]';
 
   amount = parseFloat(amount).toFixed(4);
-  const bigAmount = new bigDecimal(amount.toString().replace('.', ''));
+  const bigAmount = toCleanBigDecimal(amount);
   amount = BigInt(bigAmount.getValue());
 
   let minOutcomeTokensToBuy = 1n;
@@ -56,8 +56,8 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
         userId: user._id,
         betId: bet._id,
         outcomeIndex: outcome,
-        investmentAmount: new bigDecimal(amount).getPrettyValue('4', '.'),
-        outcomeTokens: new bigDecimal(potentialReward).getPrettyValue('4', '.'),
+        investmentAmount:  toPrettyBigDecimal(amount),
+        outcomeTokens: toPrettyBigDecimal(potentialReward),
       });
 
       response.trade = await trade.save({ session });

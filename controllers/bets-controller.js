@@ -9,8 +9,6 @@ const { validationResult } = require('express-validator');
 // Import User and Bet model
 const { User, Bet, Trade } = require('@wallfair.io/wallfair-commons').models;
 
-const bigDecimal = require('js-big-decimal');
-
 // Import Auth Service
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const eventService = require('../services/event-service');
@@ -19,6 +17,7 @@ const tradeService = require('../services/trade-service');
 const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
+const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -183,8 +182,7 @@ const pullOutBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Trades closed successfully');
       }).catch((err) => console.error(err));
 
-      const bigAmount = new bigDecimal(newBalances?.earnedTokens);
-      await eventService.pullOutBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome, 0n);
+      await eventService.pullOutBet(user, bet, toPrettyBigDecimal(newBalances?.earnedTokens), outcome, 0n);
     } catch (err) {
       console.error(err);
     } finally {
@@ -215,15 +213,14 @@ const calculateBuyOutcome = async (req, res, next) => {
     const betContract = new BetContract(id, bet.outcomes.length);
 
     let buyAmount = parseFloat(amount).toFixed(4);
-    const bigAmount = new bigDecimal(buyAmount.toString().replace('.', ''));
+    const bigAmount = toCleanBigDecimal(buyAmount);
     buyAmount = BigInt(bigAmount.getValue());
 
     const result = [];
 
     for (const outcome of bet.outcomes) {
       const outcomeSellAmount = await betContract.calcBuy(buyAmount, outcome.index);
-      const bigAmount = new bigDecimal(outcomeSellAmount);
-      result.push({ index: outcome.index, outcome: bigAmount.getPrettyValue(4, '.') });
+      result.push({ index: outcome.index, outcome: toPrettyBigDecimal(outcomeSellAmount) });
     }
 
     res.status(200).json(result);
@@ -249,7 +246,7 @@ const calculateSellOutcome = async (req, res, next) => {
     const bet = await Bet.findById(id);
     const betContract = new BetContract(id, bet.outcomes.length);
     const sellAmount = parseFloat(amount).toFixed(4);
-    const bigAmount = new bigDecimal(sellAmount.toString().replace('.', ''));
+    const bigAmount = toCleanBigDecimal(sellAmount);
     const result = [];
 
     for (const outcome of bet.outcomes) {
@@ -257,8 +254,7 @@ const calculateSellOutcome = async (req, res, next) => {
         BigInt(bigAmount.getValue()),
         outcome.index,
       );
-      const bigOutcome = new bigDecimal(outcomeSellAmount);
-      result.push({ index: outcome.index, outcome: bigOutcome.getPrettyValue(4, '.') });
+      result.push({ index: outcome.index, outcome: toPrettyBigDecimal(outcomeSellAmount) });
     }
 
     res.status(200).json(result);
