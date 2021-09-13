@@ -143,7 +143,6 @@ async function main() {
   server.use('/api/user', userRoute);
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
-  server.use('/api/rewards', secureRewardsRoutes);
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
 
   server.use('/webhooks/twitch/', twitchWebhook);

@@ -1,9 +1,9 @@
 const { validationResult } = require('express-validator');
 
 const userService = require("../services/user-service");
-const rewardService = require("../services/reward-service");
+const lotteryService = require("../services/lottery-service");
 
-const postRewardAnswer = async (req, res, next) => {
+const postLotteryAnswer = async (req, res, next) => {
     const errors  = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -14,13 +14,13 @@ const postRewardAnswer = async (req, res, next) => {
         const { questionId, answerId } = req.body;
 
         const user = await userService.getUserById(req.user.id);
-        const openLotteries = await rewardService.listRewardsForUser(req.user.id);
+        const openLotteries = await lotteryService.listLotteriesForUser(req.user.id);
 
         if(!openLotteries.map(({_id}) => _id).includes(questionId)) {
             throw new Error('Cannot submit more than one lottery answer per user.');
         }
-        
-        const result = await rewardService.saveReward(questionId, answerId, user._id);
+
+        const result = await lotteryService.saveLottery(questionId, answerId, user._id);
 
         res.status(201).json({
             id: result._id
@@ -33,9 +33,9 @@ const postRewardAnswer = async (req, res, next) => {
 };
 
 const getQuestions = async (req, res, next) => {
-    const questions = await rewardService.listRewardsForUser(req.user.id);
+    const questions = await lotteryService.listLotteriesForUser(req.user.id);
     res.status(200).json(questions);
 };
 
 exports.getQuestions = getQuestions;
-exports.postRewardAnswer = postRewardAnswer;
+exports.postRewardAnswer = postLotteryAnswer;

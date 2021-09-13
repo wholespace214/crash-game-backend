@@ -627,11 +627,13 @@ Successful Result:
     "questions": [
       {
         "index": 0,
-        "name": "Yes"
+        "name": "Yes",
+        "imageUrl": "https://photostorage.mock/457y8hurbge8h79j2w8"
       },
       {
         "index": 1,
-        "name": "No"
+        "name": "No",
+        "imageUrl": "https://photostorage.mock/457f87h7n4789fh3nw8"
       }
     ],
     "createdAt": "1631517847345",
