@@ -14,6 +14,12 @@ const postRewardAnswer = async (req, res, next) => {
         const { questionId, answerId } = req.body;
 
         const user = await userService.getUserById(req.user.id);
+        const openLotteries = await rewardService.listRewardsForUser(req.user.id);
+
+        if(!openLotteries.map(({_id}) => _id).includes(questionId)) {
+            throw new Error('Cannot submit more than one lottery answer per user.');
+        }
+        
         const result = await rewardService.saveReward(questionId, answerId, user._id);
 
         res.status(201).json({
@@ -27,7 +33,7 @@ const postRewardAnswer = async (req, res, next) => {
 };
 
 const getQuestions = async (req, res, next) => {
-    const questions = await rewardService.listRewards();
+    const questions = await rewardService.listRewardsForUser(req.user.id);
     res.status(200).json(questions);
 };
 
