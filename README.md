@@ -615,3 +615,42 @@ Successful Result:
     "category": "Chess"
 }
 ```
+
+### GET http://localhost:8000/api/rewards/questions
+Successful Result:
+```json
+[
+  {
+    "closed": false,
+    "_id": "613efc97cbad81c04dbf7198",
+    "title": "Do you like wallfair?",
+    "questions": [
+      {
+        "index": 0,
+        "name": "Yes"
+      },
+      {
+        "index": 1,
+        "name": "No"
+      }
+    ],
+    "createdAt": "1631517847345",
+    "closedAt": "1631517847345" 
+  }
+]
+```
+
+### POST http://localhost:8000/api/rewards/answer
+```json
+{
+  "answerId": 1,
+  "questionId": "613efc97cbad81c04dbf7198",
+}
+```
+
+Successful Result: Lottery Ticket ID
+```json
+{
+  "id":"613f0bc91612edc558d0e5c9"
+}
+```
