@@ -3,9 +3,9 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 
 // Import services
 
-const bigDecimal = require('js-big-decimal');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const websocketService = require('./websocket-service');
+const { toPrettyBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -257,8 +257,7 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
     });
 
     chartData.forEach((entry) => {
-      const bigOutcome = new bigDecimal(entry.y);
-      entry.y = parseFloat(bigOutcome.getPrettyValue(4, '.'));
+      entry.y = parseFloat(toPrettyBigDecimal(entry.y));
     });
 
     response.push({

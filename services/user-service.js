@@ -2,8 +2,8 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const bigDecimal = require('js-big-decimal');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+const { toPrettyBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -96,7 +96,7 @@ exports.payoutUser = async (userId, bet) => {
   await betContract.getPayout(userId);
 };
 
-exports.getBalanceOf = async (userId) => new bigDecimal(await WFAIR.balanceOf(userId)).getPrettyValue(4, '.');
+exports.getBalanceOf = async (userId) => toPrettyBigDecimal(await WFAIR.balanceOf(userId));
 
 const INITIAL_LIQUIDITY = 1000n;
 

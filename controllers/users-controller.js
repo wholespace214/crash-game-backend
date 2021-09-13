@@ -3,13 +3,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
-const bigDecimal = require('js-big-decimal');
 const authService = require('../services/auth-service');
 const userService = require('../services/user-service');
 const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const { ErrorHandler } = require('../util/error-handler');
+const { toPrettyBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -214,9 +214,7 @@ const getUserInfo = async (req, res, next) => {
 
     const user = await User.findById(userId);
     const balance = await WFAIR.balanceOf(userId);
-    const formattedBalance = new bigDecimal(balance)
-      .getPrettyValue(4, '.')
-      .replace(/[.](?=.*[.])/g, '');
+    const formattedBalance = toPrettyBigDecimal(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -309,15 +307,9 @@ const getAMMHistory = async (req, res, next) => {
       const transactions = [];
 
       for (const interaction of interactions) {
-        const investmentAmount = new bigDecimal(
-          BigInt(interaction.investmentamount) / WFAIR.ONE,
-        ).getPrettyValue('4', '.');
-        const feeAmount = new bigDecimal(
-          BigInt(interaction.feeamount) / WFAIR.ONE,
-        ).getPrettyValue('4', '.');
-        const outcomeTokensBought = new bigDecimal(
-          BigInt(interaction.outcometokensbought) / WFAIR.ONE,
-        ).getPrettyValue('4', '.');
+        const investmentAmount = toPrettyBigDecimal(BigInt(interaction.investmentamount) / WFAIR.ONE);
+        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE)
+        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought) / WFAIR.ONE)
 
         transactions.push({
           ...interaction,
