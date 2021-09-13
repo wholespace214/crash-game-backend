@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
 const twitchService = require('../services/twitch-service');
-// Imports from express validator to validate user input
+const { ErrorHandler } = require('../util/error-handler');
 
 const getEventFromTwitchUrl = async (req, res, next) => {
   console.log('body', req.body);

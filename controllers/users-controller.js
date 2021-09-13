@@ -3,11 +3,11 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+const { User } = require('@wallfair.io/wallfair-commons').models;
 const authService = require('../services/auth-service');
 const userService = require('../services/user-service');
 const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
-const { User } = require('@wallfair.io/wallfair-commons').models;
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal } = require('../util/number-helper');
 
@@ -80,7 +80,7 @@ const bindWalletAddress = async (req, res, next) => {
     const walletUser = await User.findOne({ walletAddress });
 
     // if this address was already bound to another user, return 409 error
-    if (walletUser && walletUser.id != req.user.id) {
+    if (walletUser && walletUser.id !== req.user.id) {
       return next(new ErrorHandler(409, 'This wallet is already bound to another user'));
     } if (!walletUser) {
       // retrieve user who made the request
@@ -186,7 +186,7 @@ const rewardRefUserIfNotConfirmed = async (user) => {
 };
 
 // Receive all users in leaderboard
-const getLeaderboard = async (req, res, next) => {
+const getLeaderboard = async (req, res) => {
   const limit = +req.params.limit;
   const skip = +req.params.skip;
 
@@ -372,7 +372,7 @@ const updateUser = async (req, res, next) => {
   try {
     await userService.updateUser(request.params.userId, request.body);
     res.status(200).send({ status: 'OK' });
-  } catch (error) {
+  } catch (err) {
     next(new ErrorHandler(422, err.message));
   }
 };

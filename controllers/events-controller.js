@@ -20,7 +20,7 @@ const { calculateAllBetsStatus } = require('../services/event-service');
 const { ErrorHandler } = require('../util/error-handler');
 
 // Controller to sign up a new user
-const listEvents = async (req, res) => {
+const listEvents = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
