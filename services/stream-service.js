@@ -1,14 +1,8 @@
 // Import Stream model
 const { Stream } = require('@wallfair.io/wallfair-commons').models;
 
-exports.listStreams = async () => {
-    return Stream.find();
-};
+exports.listStreams = async () => Stream.find();
 
-exports.getStream = async (id) => {
-    return Stream.findOne({ _id: id });
-};
+exports.getStream = async (id) => Stream.findOne({ _id: id });
 
-exports.saveStream = async (stream) => {
-    return stream.save();
-};
+exports.saveStream = async (stream) => stream.save();
