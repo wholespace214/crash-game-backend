@@ -18,6 +18,7 @@ const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
+const { isAdmin } = require('../helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -31,12 +32,13 @@ const createBet = async (req, res, next) => {
 
   try {
     const {
-      eventId,
+      event: eventId,
       marketQuestion,
       slug,
       outcomes,
       evidenceDescription,
-      endDate,
+      date,
+      published,
     } = req.body;
     let event = await eventService.getEvent(eventId);
 
@@ -47,7 +49,8 @@ const createBet = async (req, res, next) => {
       slug,
       outcomes,
       evidenceDescription,
-      endDate: new Date(endDate),
+      date: new Date(date),
+      published,
       creator: req.user.id,
     });
 
@@ -59,8 +62,9 @@ const createBet = async (req, res, next) => {
       slug,
       outcomes: outcomesDb,
       evidenceDescription,
-      endDate,
+      date: new Date(date),
       creator: req.user.id,
+      published,
     });
 
     const session = await Bet.startSession();
@@ -86,6 +90,18 @@ const createBet = async (req, res, next) => {
     return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
+const editBet = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
+  try {
+    const updatedEntry = await betService.editBet(req.params.userId, req.body);
+    if (!updatedEntry) return res.state(500).send();
+    return res.status(200).json(updatedEntry);
+  } catch (err) {
     return next(new ErrorHandler(422, err.message));
   }
 };
@@ -336,6 +352,7 @@ const betHistory = async (req, res, next) => {
 };
 
 exports.createBet = createBet;
+exports.editBet = editBet;
 exports.placeBet = placeBet;
 exports.pullOutBet = pullOutBet;
 exports.calculateBuyOutcome = calculateBuyOutcome;

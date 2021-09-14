@@ -45,14 +45,28 @@ router.post(
 router.post(
   '/bet/create',
   [
-    check('eventId').isString().notEmpty(),
+    check('event').isString().notEmpty(),
     check('marketQuestion').isString().notEmpty().isLength({ max: 255 }),
     check('slug').isString().notEmpty().isLength({ max: 255 }),
-    check('outcomes').isArray({min:0}),
+    check('outcomes').isArray({ min: 0 }),
     check('evidenceDescription').isLength({ max: 1200 }),
-    check('endDate').notEmpty(),
+    check('date').notEmpty(),
+    check('published').default(true),
   ],
   betController.createBet,
+);
+router.post(
+  '/bet/:id',
+  [
+    check('event').isString(),
+    check('marketQuestion').isString().isLength({ max: 255 }),
+    check('slug').isString().isLength({ max: 255 }),
+    check('outcomes').isArray({ min: 0 }),
+    check('evidenceDescription').isLength({ max: 1200 }),
+    check('date'),
+    check('published'),
+  ],
+  betController.editBet,
 );
 
 router.post(
