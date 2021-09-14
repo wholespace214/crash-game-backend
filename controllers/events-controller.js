@@ -75,33 +75,41 @@ const createEvent = async (req, res, next) => {
   try {
     // Defining User Inputs
     const {
-      name, tags, streamUrl, previewImageUrl, date, slug,
+      name,
+      // TODO SEO optimized URL piece
+      streamUrl,
+      previewImageUrl,
+      category,
+      tags = [],
+      endDate,
     } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
-      tags,
-      previewImageUrl,
+      // TODO SEO optimized URL piece
       streamUrl,
-      slug,
+      previewImageUrl,
+      category,
+      tags,
+      endDate,
     });
-    const createEvent = new Event({
+    const createdEvent = new Event({
       name,
-      tags,
-      previewImageUrl,
+      // TODO SEO optimized URL piece
       streamUrl,
-      bets: [],
-      date,
-      slug,
+      previewImageUrl,
+      category,
+      tags,
+      endDate,
     });
 
-    const event = await eventService.saveEvent(createEvent);
-    console.debug(LOG_TAG, 'Successfully saved');
+    const event = await eventService.saveEvent(createdEvent);
+    console.debug(LOG_TAG, 'Successfully created a new Event');
 
-    res.status(201).json(event);
+    return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
-    next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
