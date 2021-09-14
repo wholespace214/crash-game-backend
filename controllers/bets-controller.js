@@ -98,7 +98,7 @@ const editBet = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   try {
-    const updatedEntry = await betService.editBet(req.params.userId, req.body);
+    const updatedEntry = await betService.editBet(req.params.betId, req.body);
     if (!updatedEntry) return res.status(500).send();
     return res.status(200).json(updatedEntry);
   } catch (err) {

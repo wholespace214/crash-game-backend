@@ -56,7 +56,7 @@ router.post(
   betController.createBet,
 );
 router.post(
-  '/bet/:id',
+  '/bet/:betId',
   [
     check('event').isString(),
     check('marketQuestion').isString().isLength({ max: 255 }),
