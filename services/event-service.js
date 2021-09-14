@@ -113,7 +113,10 @@ exports.getEvent = async (id) => Event.findOne({ _id: id })
   .map(calculateAllBetsStatus)
   .map(filterPublishedBets);
 
-exports.getBet = async (id, session) => Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
+exports.getBet = async (id, session) => Bet
+  .findOne({ _id: id })
+  .session(session)
+  .map(calculateBetStatus);
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   if (bet) {
@@ -150,6 +153,11 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 
 exports.isBetTradable = (bet) => bet.status === BET_STATUS.active;
 
+/**
+ *
+ * @param Object bet
+ * @param String userId
+ */
 exports.betCreated = async (bet, userId) => {
   if (bet) {
     const eventId = bet.event;
