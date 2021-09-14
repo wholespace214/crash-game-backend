@@ -15,13 +15,13 @@ router.get('/get/:id', [check('id').notEmpty()], eventController.getEvent);
 router.post(
   '/create',
   [
-    check('name').notEmpty(),
+    check('name').notEmpty().isLength({ max: 255 }),
     // TODO SEO optimized URL piece
-    check('streamUrl').notEmpty(),
-    check('previewImageUrl').notEmpty(),
+    check('streamUrl').notEmpty().isLength({ max: 500 }),
+    check('previewImageUrl').notEmpty().isLength({ max: 255 }),
     check('category').notEmpty(),
     check('tags').isArray(),
-    check('endDate').notEmpty(),
+    check('date').notEmpty(),
   ],
   eventController.createEvent,
 );
