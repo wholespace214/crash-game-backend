@@ -7,6 +7,8 @@ const { toPrettyBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
 
+const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
+
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
@@ -119,6 +121,15 @@ exports.updateUser = async (userId, updatedUser) => {
   }
   if (updatedUser.profilePicture) {
     user.profilePicture = updatedUser.profilePicture;
+  }
+
+  const preferences = updatedUser.preferences;
+  if (preferences) {
+    const valid = CURRENCIES.includes(preferences.currency);
+    if (!valid) {
+      throw new Error(`User validation failed. Invalid currency ${preferences.currency}`);
+    }
+    user.preferences.currency = preferences.currency;
   }
   await user.save();
 };

@@ -229,6 +229,7 @@ const getUserInfo = async (req, res, next) => {
       rank,
       toNextRank,
       amountWon: user.amountWon,
+      preferences: user.preferences,
     });
   } catch (err) {
     next(new ErrorHandler(422, 'Account information loading failed'));
@@ -370,7 +371,7 @@ const updateUser = async (req, res, next) => {
   }
 
   try {
-    await userService.updateUser(request.params.userId, request.body);
+    await userService.updateUser(req.params.userId, req.body);
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
