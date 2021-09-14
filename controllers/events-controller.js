@@ -124,7 +124,7 @@ const editEvent = async (req, res, next) => {
 
   try {
     const updatedEntry = await eventService.editEvent(req.params.userId, req.body);
-    if (!updatedEntry) return res.state(500).send();
+    if (!updatedEntry) return res.status(500).send();
     return res.status(200).json(updatedEntry);
   } catch (err) {
     return next(new ErrorHandler(422, err.message));
