@@ -123,7 +123,7 @@ const editEvent = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   try {
-    const updatedEntry = await eventService.editEvent(req.params.userId, req.body);
+    const updatedEntry = await eventService.editEvent(req.params.id, req.body);
     if (!updatedEntry) return res.status(500).send();
     return res.status(200).json(updatedEntry);
   } catch (err) {
