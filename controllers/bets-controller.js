@@ -7,7 +7,7 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 
 // Import User and Bet model
-const { User, Bet, Trade } = require('@wallfair.io/wallfair-commons').models;
+const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
 
 // Import Auth Service
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
@@ -18,6 +18,7 @@ const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
+const { isAdmin } = require('../helper');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -31,43 +32,48 @@ const createBet = async (req, res, next) => {
 
   try {
     const {
-      eventId, marketQuestion, description, hot, outcomes, endDate, slug,
+      event: eventId,
+      marketQuestion,
+      slug,
+      outcomes,
+      evidenceDescription,
+      date,
+      published,
     } = req.body;
     let event = await eventService.getEvent(eventId);
 
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
-      marketQuestion,
-      hot,
-      outcomes,
-      endDate,
       event: eventId,
-      creator: req.user.id,
+      marketQuestion,
       slug,
+      outcomes,
+      evidenceDescription,
+      date: new Date(date),
+      published,
+      creator: req.user.id,
     });
 
     const outcomesDb = outcomes.map((outcome, index) => ({ index, name: outcome.value }));
 
-    const createBet = new Bet({
-      marketQuestion,
-      description,
-      hot,
-      outcomes: outcomesDb,
-      date: endDate,
+    const createdBet = new Bet({
       event: eventId,
-      creator: req.user.id,
+      marketQuestion,
       slug,
+      outcomes: outcomesDb,
+      evidenceDescription,
+      date: new Date(date),
+      creator: req.user.id,
+      published,
     });
 
     const session = await Bet.startSession();
     try {
       await session.withTransaction(async () => {
         console.debug(LOG_TAG, 'Save Bet to MongoDB');
-        await eventService.saveBet(createBet, session);
+        await eventService.saveBet(createdBet, session);
 
-        if (!event.bets) {
-          event.bets = [];
-        }
+        if (!event.bets) event.bets = [];
 
         console.debug(LOG_TAG, 'Save Bet to Event');
         event.bets.push(createBet);
@@ -81,10 +87,22 @@ const createBet = async (req, res, next) => {
       await session.endSession();
     }
 
-    res.status(201).json(event);
+    return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
-    next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
+const editBet = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
+  try {
+    const updatedEntry = await betService.editBet(req.params.betId, req.body);
+    if (!updatedEntry) return res.status(500).send();
+    return res.status(200).json(updatedEntry);
+  } catch (err) {
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
@@ -334,6 +352,7 @@ const betHistory = async (req, res, next) => {
 };
 
 exports.createBet = createBet;
+exports.editBet = editBet;
 exports.placeBet = placeBet;
 exports.pullOutBet = pullOutBet;
 exports.calculateBuyOutcome = calculateBuyOutcome;

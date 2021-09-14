@@ -15,13 +15,14 @@ router.get('/get/:id', [check('id').notEmpty()], eventController.getEvent);
 router.post(
   '/create',
   [
-    check('name').notEmpty().isLength({ max: 255 }),
+    check('name').notEmpty().isString().isLength({ max: 255 }),
     check('slug'),
-    check('streamUrl').notEmpty().isLength({ max: 500 }),
-    check('previewImageUrl').notEmpty().isLength({ max: 255 }),
+    check('streamUrl').isString().notEmpty().isLength({ max: 500 }),
+    check('previewImageUrl').isString().notEmpty().isLength({ max: 255 }),
     check('category').notEmpty(),
     check('tags').isArray(),
     check('date').notEmpty(),
+    check('type').isString().notEmpty(),
   ],
   eventController.createEvent,
 );
@@ -36,6 +37,7 @@ router.post(
     check('category'),
     check('tags'),
     check('date'),
+    check('type'),
   ],
   eventController.editEvent,
 );
@@ -43,14 +45,28 @@ router.post(
 router.post(
   '/bet/create',
   [
-    check('eventId').notEmpty(),
-    check('marketQuestion').notEmpty(),
-    check('description'),
-    check('hot'),
-    check('outcomes').isArray(),
-    check('endDate'),
+    check('event').isString().notEmpty(),
+    check('marketQuestion').isString().notEmpty().isLength({ max: 255 }),
+    check('slug').isString().notEmpty().isLength({ max: 255 }),
+    check('outcomes').isArray({ min: 0 }),
+    check('evidenceDescription').isLength({ max: 1200 }),
+    check('date').notEmpty(),
+    check('published').default(true),
   ],
   betController.createBet,
+);
+router.post(
+  '/bet/:betId',
+  [
+    check('event').isString(),
+    check('marketQuestion').isString().isLength({ max: 255 }),
+    check('slug').isString().isLength({ max: 255 }),
+    check('outcomes').isArray({ min: 0 }),
+    check('evidenceDescription').isLength({ max: 1200 }),
+    check('date'),
+    check('published'),
+  ],
+  betController.editBet,
 );
 
 router.post(

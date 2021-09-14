@@ -172,8 +172,8 @@ exports.provideLiquidityToBet = async (createBet) => {
 };
 
 exports.saveEvent = async (event, session) => event.save({ session });
-exports.editEvent = async (userId, userData) => {
-  const updatedEvent = await Event.findByIdAndUpdate(userId, userData, { new: true });
+exports.editEvent = async (eventId, userData) => {
+  const updatedEvent = await Event.findByIdAndUpdate(eventId, userData, { new: true });
   return updatedEvent;
 };
 

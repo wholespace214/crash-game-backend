@@ -308,8 +308,8 @@ const getAMMHistory = async (req, res, next) => {
 
       for (const interaction of interactions) {
         const investmentAmount = toPrettyBigDecimal(BigInt(interaction.investmentamount) / WFAIR.ONE);
-        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE)
-        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought) / WFAIR.ONE)
+        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE);
+        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought) / WFAIR.ONE);
 
         transactions.push({
           ...interaction,

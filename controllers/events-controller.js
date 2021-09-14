@@ -85,6 +85,7 @@ const createEvent = async (req, res, next) => {
       category,
       tags = [],
       date,
+      type,
     } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
@@ -95,6 +96,7 @@ const createEvent = async (req, res, next) => {
       category,
       tags,
       date,
+      type,
     });
     const createdEvent = new Event({
       name,
@@ -103,7 +105,8 @@ const createEvent = async (req, res, next) => {
       previewImageUrl,
       category,
       tags,
-      date,
+      date: new Date(date),
+      type,
     });
 
     const event = await eventService.saveEvent(createdEvent);
@@ -120,8 +123,8 @@ const editEvent = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   try {
-    const updatedEntry = await eventService.editEvent(req.params.userId, req.body);
-    if (!updatedEntry) return res.state(500).send();
+    const updatedEntry = await eventService.editEvent(req.params.id, req.body);
+    if (!updatedEntry) return res.status(500).send();
     return res.status(200).json(updatedEntry);
   } catch (err) {
     return next(new ErrorHandler(422, err.message));
