@@ -18,6 +18,7 @@ const chatMessageService = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
+const { isAdmin } = require('../helper');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -64,9 +65,7 @@ const getEvent = async (req, res, next) => {
 };
 
 const createEvent = async (req, res, next) => {
-  if (req.user.admin === false && req.params.userId !== req.user.id) {
-    return next(new ErrorHandler(403, 'Action not allowed'));
-  }
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   // Validating User Inputs
   const LOG_TAG = '[CREATE-EVENT]';
