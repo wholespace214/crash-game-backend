@@ -32,7 +32,7 @@ const createBet = async (req, res, next) => {
   try {
     const {
       eventId,
-      name, // TODO Name isn't defined by mongoose
+      marketQuestion,
       slug,
       outcomes,
       evidenceDescription,
@@ -43,7 +43,7 @@ const createBet = async (req, res, next) => {
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
       event: eventId,
-      name, // TODO Name isn't defined by mongoose
+      marketQuestion,
       slug,
       outcomes,
       evidenceDescription,
@@ -55,7 +55,7 @@ const createBet = async (req, res, next) => {
 
     const createdBet = new Bet({
       event: eventId,
-      name,
+      marketQuestion,
       slug,
       outcomes: outcomesDb,
       evidenceDescription,

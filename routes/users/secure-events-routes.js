@@ -44,7 +44,7 @@ router.post(
   '/bet/create',
   [
     check('eventId').notEmpty(),
-    check('name').notEmpty().isLength({ max: 255 }), // TODO Name isn't defined by mongoose
+    check('marketQuestion').notEmpty().isLength({ max: 255 }),
     check('slug').notEmpty().isLength({ max: 255 }),
     check('outcomes'),
     check('evidenceDescription').isLength({ max: 1200 }),
