@@ -18,6 +18,7 @@ const chatMessageService = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
+const { isAdmin } = require('../helper');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -64,6 +65,8 @@ const getEvent = async (req, res, next) => {
 };
 
 const createEvent = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
   // Validating User Inputs
   const LOG_TAG = '[CREATE-EVENT]';
 
@@ -75,33 +78,53 @@ const createEvent = async (req, res, next) => {
   try {
     // Defining User Inputs
     const {
-      name, tags, streamUrl, previewImageUrl, date, slug,
+      name,
+      slug,
+      streamUrl,
+      previewImageUrl,
+      category,
+      tags = [],
+      date,
     } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
-      tags,
-      previewImageUrl,
-      streamUrl,
       slug,
-    });
-    const createEvent = new Event({
-      name,
-      tags,
-      previewImageUrl,
       streamUrl,
-      bets: [],
+      previewImageUrl,
+      category,
+      tags,
       date,
+    });
+    const createdEvent = new Event({
+      name,
       slug,
+      streamUrl,
+      previewImageUrl,
+      category,
+      tags,
+      date,
     });
 
-    const event = await eventService.saveEvent(createEvent);
-    console.debug(LOG_TAG, 'Successfully saved');
+    const event = await eventService.saveEvent(createdEvent);
+    console.debug(LOG_TAG, 'Successfully created a new Event');
 
-    res.status(201).json(event);
+    return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
-    next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
+const editEvent = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
+  try {
+    const updatedEntry = await eventService.editEvent(req.params.userId, req.body);
+    if (!updatedEntry) return res.state(500).send();
+    return res.status(200).json(updatedEntry);
+  } catch (err) {
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
@@ -136,6 +159,7 @@ exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.editEvent = editEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
