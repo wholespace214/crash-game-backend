@@ -16,7 +16,7 @@ router.post(
   '/create',
   [
     check('name').notEmpty().isLength({ max: 255 }),
-    // TODO SEO optimized URL piece
+    check('slug'),
     check('streamUrl').notEmpty().isLength({ max: 500 }),
     check('previewImageUrl').notEmpty().isLength({ max: 255 }),
     check('category').notEmpty(),
@@ -24,6 +24,20 @@ router.post(
     check('date').notEmpty(),
   ],
   eventController.createEvent,
+);
+
+router.post(
+  '/:id',
+  [
+    check('name').isLength({ max: 255 }),
+    check('slug'),
+    check('streamUrl').isLength({ max: 500 }),
+    check('previewImageUrl').isLength({ max: 255 }),
+    check('category'),
+    check('tags'),
+    check('date'),
+  ],
+  eventController.editEvent,
 );
 
 router.post(

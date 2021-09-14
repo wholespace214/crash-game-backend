@@ -116,6 +116,18 @@ const createEvent = async (req, res, next) => {
   }
 };
 
+const editEvent = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
+  try {
+    const updatedEntry = await eventService.editEvent(req.params.userId, req.body);
+    if (!updatedEntry) return res.state(500).send();
+    return res.status(200).json(updatedEntry);
+  } catch (err) {
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
 const getChatMessagesByEventId = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -147,6 +159,7 @@ exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.editEvent = editEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
