@@ -56,7 +56,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
         userId: user._id,
         betId: bet._id,
         outcomeIndex: outcome,
-        investmentAmount:  toPrettyBigDecimal(amount),
+        investmentAmount: toPrettyBigDecimal(amount),
         outcomeTokens: toPrettyBigDecimal(potentialReward),
       });
 

@@ -103,7 +103,7 @@ const createEvent = async (req, res, next) => {
       previewImageUrl,
       category,
       tags,
-      date,
+      date: new Date(date),
     });
 
     const event = await eventService.saveEvent(createdEvent);

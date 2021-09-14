@@ -7,7 +7,7 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 
 // Import User and Bet model
-const { User, Bet, Trade } = require('@wallfair.io/wallfair-commons').models;
+const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
 
 // Import Auth Service
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
@@ -32,7 +32,7 @@ const createBet = async (req, res, next) => {
   try {
     const {
       eventId,
-      name,
+      name, // TODO Name isn't defined by mongoose
       slug,
       outcomes,
       evidenceDescription,
@@ -43,11 +43,11 @@ const createBet = async (req, res, next) => {
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
       event: eventId,
-      name,
+      name, // TODO Name isn't defined by mongoose
       slug,
       outcomes,
       evidenceDescription,
-      endDate,
+      endDate: new Date(endDate),
       creator: req.user.id,
     });
 
@@ -69,9 +69,7 @@ const createBet = async (req, res, next) => {
         console.debug(LOG_TAG, 'Save Bet to MongoDB');
         await eventService.saveBet(createdBet, session);
 
-        if (!event.bets) {
-          event.bets = [];
-        }
+        if (!event.bets) event.bets = [];
 
         console.debug(LOG_TAG, 'Save Bet to Event');
         event.bets.push(createBet);

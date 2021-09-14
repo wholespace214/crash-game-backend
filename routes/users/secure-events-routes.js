@@ -44,11 +44,11 @@ router.post(
   '/bet/create',
   [
     check('eventId').notEmpty(),
-    check('marketQuestion').notEmpty(),
-    check('description'),
-    check('hot'),
-    check('outcomes').isArray(),
-    check('endDate'),
+    check('name').notEmpty().isLength({ max: 255 }), // TODO Name isn't defined by mongoose
+    check('slug').notEmpty().isLength({ max: 255 }),
+    check('outcomes'),
+    check('evidenceDescription').isLength({ max: 1200 }),
+    check('endDate').notEmpty(),
   ],
   betController.createBet,
 );
