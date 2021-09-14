@@ -153,6 +153,11 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 
 exports.isBetTradable = (bet) => bet.status === BET_STATUS.active;
 
+/**
+ *
+ * @param Object bet
+ * @param String userId
+ */
 exports.betCreated = async (bet, userId) => {
   if (bet) {
     const eventId = bet.event;

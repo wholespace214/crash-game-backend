@@ -56,13 +56,11 @@ const createBet = async (req, res, next) => {
       creator: req.user.id,
     });
 
-    const outcomesDb = outcomes.map((outcome, index) => ({ index, name: outcome.value }));
-
     const createdBet = new Bet({
       event: eventId,
       marketQuestion,
       slug,
-      outcomes: outcomesDb,
+      outcomes: outcomes.map((outcome, index) => ({ index, name: outcome.value })),
       evidenceDescription,
       date: new Date(date),
       creator: req.user.id,
@@ -73,18 +71,18 @@ const createBet = async (req, res, next) => {
     try {
       await session.withTransaction(async () => {
         console.debug(LOG_TAG, 'Save Bet to MongoDB');
-        await eventService.saveBet(createdBet, session);
+        const dbBet = await eventService.saveBet(createdBet, session);
 
         if (!event.bets) event.bets = [];
 
         console.debug(LOG_TAG, 'Save Bet to Event');
-        event.bets.push(createBet);
+        event.bets.push(dbBet._id);
         event = await eventService.saveEvent(event, session);
 
-        await eventService.provideLiquidityToBet(createBet);
+        await eventService.provideLiquidityToBet(createdBet);
       });
 
-      await eventService.betCreated(createBet, req.user.id);
+      await eventService.betCreated(createdBet, req.user.id);
     } finally {
       await session.endSession();
     }
