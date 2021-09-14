@@ -64,6 +64,10 @@ const getEvent = async (req, res, next) => {
 };
 
 const createEvent = async (req, res, next) => {
+  if (req.user.admin === false && req.params.userId !== req.user.id) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
   // Validating User Inputs
   const LOG_TAG = '[CREATE-EVENT]';
 
