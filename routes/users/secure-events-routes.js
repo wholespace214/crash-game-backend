@@ -14,8 +14,30 @@ router.get('/get/:id', [check('id').notEmpty()], eventController.getEvent);
 
 router.post(
   '/create',
-  [check('name'), check('tags'), check('streamUrl'), check('previewImageUrl'), check('date')],
+  [
+    check('name').notEmpty().isLength({ max: 255 }),
+    check('slug'),
+    check('streamUrl').notEmpty().isLength({ max: 500 }),
+    check('previewImageUrl').notEmpty().isLength({ max: 255 }),
+    check('category').notEmpty(),
+    check('tags').isArray(),
+    check('date').notEmpty(),
+  ],
   eventController.createEvent,
+);
+
+router.post(
+  '/:id',
+  [
+    check('name').isLength({ max: 255 }),
+    check('slug'),
+    check('streamUrl').isLength({ max: 500 }),
+    check('previewImageUrl').isLength({ max: 255 }),
+    check('category'),
+    check('tags'),
+    check('date'),
+  ],
+  eventController.editEvent,
 );
 
 router.post(
