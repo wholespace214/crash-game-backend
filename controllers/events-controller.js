@@ -85,6 +85,7 @@ const createEvent = async (req, res, next) => {
       category,
       tags = [],
       date,
+      type,
     } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
@@ -95,6 +96,7 @@ const createEvent = async (req, res, next) => {
       category,
       tags,
       date,
+      type,
     });
     const createdEvent = new Event({
       name,
@@ -104,6 +106,7 @@ const createEvent = async (req, res, next) => {
       category,
       tags,
       date: new Date(date),
+      type,
     });
 
     const event = await eventService.saveEvent(createdEvent);

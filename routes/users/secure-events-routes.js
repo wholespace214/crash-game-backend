@@ -22,6 +22,7 @@ router.post(
     check('category').notEmpty(),
     check('tags').isArray(),
     check('date').notEmpty(),
+    check('type').notEmpty(),
   ],
   eventController.createEvent,
 );
@@ -36,6 +37,7 @@ router.post(
     check('category'),
     check('tags'),
     check('date'),
+    check('type'),
   ],
   eventController.editEvent,
 );
