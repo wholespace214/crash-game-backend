@@ -31,39 +31,43 @@ const createBet = async (req, res, next) => {
 
   try {
     const {
-      eventId, marketQuestion, description, hot, outcomes, endDate, slug,
+      eventId,
+      name,
+      slug,
+      outcomes,
+      evidenceDescription,
+      endDate,
     } = req.body;
     let event = await eventService.getEvent(eventId);
 
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
-      marketQuestion,
-      hot,
-      outcomes,
-      endDate,
       event: eventId,
-      creator: req.user.id,
+      name,
       slug,
+      outcomes,
+      evidenceDescription,
+      endDate,
+      creator: req.user.id,
     });
 
     const outcomesDb = outcomes.map((outcome, index) => ({ index, name: outcome.value }));
 
-    const createBet = new Bet({
-      marketQuestion,
-      description,
-      hot,
-      outcomes: outcomesDb,
-      date: endDate,
+    const createdBet = new Bet({
       event: eventId,
-      creator: req.user.id,
+      name,
       slug,
+      outcomes: outcomesDb,
+      evidenceDescription,
+      endDate,
+      creator: req.user.id,
     });
 
     const session = await Bet.startSession();
     try {
       await session.withTransaction(async () => {
         console.debug(LOG_TAG, 'Save Bet to MongoDB');
-        await eventService.saveBet(createBet, session);
+        await eventService.saveBet(createdBet, session);
 
         if (!event.bets) {
           event.bets = [];
@@ -81,10 +85,10 @@ const createBet = async (req, res, next) => {
       await session.endSession();
     }
 
-    res.status(201).json(event);
+    return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
-    next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
