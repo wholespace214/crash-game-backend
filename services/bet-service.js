@@ -8,7 +8,7 @@ const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper
 const WFAIR = new Erc20('WFAIR');
 
 exports.editBet = async (betId, betData) => {
-  const updatedEvent = await Event.findByIdAndUpdate(betId, betData, { new: true });
+  const updatedEvent = await Bet.findByIdAndUpdate(betId, betData, { new: true });
   return updatedEvent;
 };
 
