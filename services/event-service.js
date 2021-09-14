@@ -113,7 +113,10 @@ exports.getEvent = async (id) => Event.findOne({ _id: id })
   .map(calculateAllBetsStatus)
   .map(filterPublishedBets);
 
-exports.getBet = async (id, session) => Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
+exports.getBet = async (id, session) => Bet
+  .findOne({ _id: id })
+  .session(session)
+  .map(calculateBetStatus);
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   if (bet) {

@@ -40,7 +40,9 @@ const createBet = async (req, res, next) => {
       date,
       published,
     } = req.body;
+
     let event = await eventService.getEvent(eventId);
+    if (!event) return next(new ErrorHandler(404, 'Event not found'));
 
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
@@ -86,7 +88,7 @@ const createBet = async (req, res, next) => {
     } finally {
       await session.endSession();
     }
-
+    await event.save();
     return res.status(201).json(event);
   } catch (err) {
     console.error(err.message);
@@ -125,10 +127,10 @@ const placeBet = async (req, res, next) => {
       minOutcomeTokens,
     );
 
-    res.status(200).json(response);
+    return res.status(200).json(response);
   } catch (err) {
     console.error(err);
-    next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
