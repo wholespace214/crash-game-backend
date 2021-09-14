@@ -76,31 +76,31 @@ const createEvent = async (req, res, next) => {
     // Defining User Inputs
     const {
       name,
-      // TODO SEO optimized URL piece
+      slug,
       streamUrl,
       previewImageUrl,
       category,
       tags = [],
-      endDate,
+      date,
     } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
-      // TODO SEO optimized URL piece
+      slug,
       streamUrl,
       previewImageUrl,
       category,
       tags,
-      endDate,
+      date,
     });
     const createdEvent = new Event({
       name,
-      // TODO SEO optimized URL piece
+      slug,
       streamUrl,
       previewImageUrl,
       category,
       tags,
-      endDate,
+      date,
     });
 
     const event = await eventService.saveEvent(createdEvent);
