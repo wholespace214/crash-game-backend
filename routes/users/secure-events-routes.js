@@ -15,14 +15,14 @@ router.get('/get/:id', [check('id').notEmpty()], eventController.getEvent);
 router.post(
   '/create',
   [
-    check('name').notEmpty().isLength({ max: 255 }),
+    check('name').notEmpty().isString().isLength({ max: 255 }),
     check('slug'),
-    check('streamUrl').notEmpty().isLength({ max: 500 }),
-    check('previewImageUrl').notEmpty().isLength({ max: 255 }),
+    check('streamUrl').isString().notEmpty().isLength({ max: 500 }),
+    check('previewImageUrl').isString().notEmpty().isLength({ max: 255 }),
     check('category').notEmpty(),
     check('tags').isArray(),
     check('date').notEmpty(),
-    check('type').notEmpty(),
+    check('type').isString().notEmpty(),
   ],
   eventController.createEvent,
 );
@@ -45,10 +45,10 @@ router.post(
 router.post(
   '/bet/create',
   [
-    check('eventId').notEmpty(),
-    check('marketQuestion').notEmpty().isLength({ max: 255 }),
-    check('slug').notEmpty().isLength({ max: 255 }),
-    check('outcomes'),
+    check('eventId').isString().notEmpty(),
+    check('marketQuestion').isString().notEmpty().isLength({ max: 255 }),
+    check('slug').isString().notEmpty().isLength({ max: 255 }),
+    check('outcomes').isArray({min:0}),
     check('evidenceDescription').isLength({ max: 1200 }),
     check('endDate').notEmpty(),
   ],
