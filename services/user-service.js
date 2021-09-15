@@ -23,6 +23,11 @@ exports.getRefByUserId = async (id) => {
   return result;
 };
 
+exports.getUsersToNotify = async (eventId, notificationSettings) => {
+  //TODO: use eventId to find users with this event bookmarked
+  return User.find({notificationSettings})
+}
+
 exports.saveUser = async (user, session) => user.save({ session });
 
 exports.rewardRefUser = async (ref) => {
