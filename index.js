@@ -1,5 +1,6 @@
 // Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
+const notificationsController = require('./controllers/notifications-controller')
 
 dotenv.config();
 
@@ -108,6 +109,17 @@ async function main() {
   });
 
   subClient.subscribe('message');
+
+  subClient.on('notification', (channel, message) => {
+    try {
+      const messageObj = JSON.parse(message);
+      notificationsController[messageObj.data.type](messageObj.data)
+    } catch (err) {
+      console.error(err)
+    }
+  })
+
+  subClient.subscribe('notification');
 
   websocketService.setIO(io);
 
