@@ -229,6 +229,7 @@ const getUserInfo = async (req, res, next) => {
       rank,
       toNextRank,
       amountWon: user.amountWon,
+      preferences: user.preferences,
     });
   } catch (err) {
     next(new ErrorHandler(422, 'Account information loading failed'));
