@@ -100,7 +100,7 @@ exports.payoutUser = async (userId, bet) => {
 
 exports.getBalanceOf = async (userId) => toPrettyBigDecimal(await WFAIR.balanceOf(userId));
 
-const INITIAL_LIQUIDITY = 1000n;
+const INITIAL_LIQUIDITY = 5000n;
 
 exports.mintUser = async (userId, amount) => {
   await WFAIR.mint(userId, amount ? BigInt(amount) * WFAIR.ONE : INITIAL_LIQUIDITY * WFAIR.ONE);
