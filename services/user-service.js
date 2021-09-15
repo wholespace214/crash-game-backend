@@ -122,6 +122,9 @@ exports.updateUser = async (userId, updatedUser) => {
   if (updatedUser.profilePicture) {
     user.profilePicture = updatedUser.profilePicture;
   }
+  if(updatedUser.notificationSettings){
+    user.notificationSettings = updatedUser.notificationSettings
+  }
 
   const { preferences } = updatedUser;
   if (preferences) {
