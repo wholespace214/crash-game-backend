@@ -67,6 +67,10 @@ const notifyResolve = async (data) => {
   }
 }
 
+const defaultNotification = async (message) => {
+  console.log(`This is a notification sent by a fallthrough method`, message)
+}
+
 exports[notificationTypes.EVENT_RESOLVE] = notifyResolve;
 exports[notificationTypes.EVENT_NEW_BET] = notifyNewBet;
 exports[notificationTypes.EVENT_NEW_REWARD] = notifyNewReward;
@@ -74,3 +78,4 @@ exports[notificationTypes.EVENT_ONLINE] = notifyEventOnline;
 exports[notificationTypes.EVENT_OFFLINE] = notifyEventOffline;
 exports[notificationTypes.EVENT_BET_PLACED] = notifyPlaceBet;
 exports[notificationTypes.EVENT_BET_CASHED_OUT] = notifyPlaceBet;
+exports.defaultNotification = defaultNotification;

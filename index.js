@@ -113,13 +113,18 @@ async function main() {
   subClient.on('notification', (channel, message) => {
     try {
       const messageObj = JSON.parse(message);
-      notificationsController[messageObj.data.type](messageObj.data)
+      if(messageObj.data.type && notificationsController[messageObj.data.type]){
+        notificationsController[messageObj.data.type](messageObj.data)
+      } else {
+        notificationsController.defaultNotification(message)
+      }
+
     } catch (err) {
       console.error(err)
     }
   })
 
-  subClient.subscribe('notification');
+  //subClient.subscribe('notification');
 
   websocketService.setIO(io);
 
