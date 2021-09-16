@@ -10,7 +10,7 @@ const userController = require('../../controllers/users-controller');
 router.post(
   '/bindWalletAddress',
   [check('walletAddress').notEmpty()],
-  userController.bindWalletAddress,
+  userController.bindWalletAddress
 );
 
 router.post(
@@ -19,18 +19,18 @@ router.post(
     [
       check('name').notEmpty(),
       check('username').notEmpty(),
-      check('username').isLength({ min: 3 }),
+      check('username').isLength({ min: 3, max: 25 }),
       check('name').isLength({ min: 3 }),
     ],
     check('email').isEmail(),
   ]),
-  userController.saveAdditionalInformation,
+  userController.saveAdditionalInformation
 );
 
 router.post(
   '/acceptConditions',
   [check('conditions').isArray({ min: 3, max: 3 })],
-  userController.saveAcceptConditions,
+  userController.saveAcceptConditions
 );
 
 router.get('/refList', userController.getRefList);
@@ -43,7 +43,17 @@ router.get('/history', userController.getAMMHistory);
 
 router.get('/resend-confirm', userController.resendConfirmEmail);
 
-router.patch('/:userId', userController.updateUser);
+router.patch(
+  '/:userId',
+  oneOf([
+    [
+      check('username').isLength({ min: 3, max: 25 }),
+      check('name').isLength({ min: 3 }),
+      check('email').isEmail(),
+    ],
+  ]),
+  userController.updateUser
+);
 
 router.get('/:userId', userController.getUserInfo);
 
