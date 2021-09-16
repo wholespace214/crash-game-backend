@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-export default {
+module.exports = {
   /** logs won't be displayed on NODE_ENV production */
   info(message, ...args) {
     if (process.env.NODE_ENV === 'development') console.log('INFO', message, args);
