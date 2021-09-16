@@ -60,7 +60,7 @@ const createBet = async (req, res, next) => {
       event: eventId,
       marketQuestion,
       slug,
-      outcomes: outcomes.map(({name}, index) => ({ index, name })),
+      outcomes: outcomes.map(({ name }, index) => ({ index, name })),
       evidenceDescription,
       date: new Date(date),
       creator: req.user.id,

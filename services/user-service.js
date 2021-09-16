@@ -123,7 +123,7 @@ exports.updateUser = async (userId, updatedUser) => {
     user.profilePicture = updatedUser.profilePicture;
   }
 
-  const preferences = updatedUser.preferences;
+  const { preferences } = updatedUser;
   if (preferences) {
     const valid = CURRENCIES.includes(preferences.currency);
     if (!valid) {
