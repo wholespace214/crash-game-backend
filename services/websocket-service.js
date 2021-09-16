@@ -201,6 +201,17 @@ const emitEventCancelNotification = (userId, eventId, eventName, cancellationDes
 };
 exports.emitEventCancelNotification = emitEventCancelNotification;
 
+const emitEventOnline = (event) => {
+  emitToAllByEventId(event.id, notificationTypes.EVENT_ONLINE, event)
+}
+exports.emitEventOnline = emitEventOnline
+
+const emitEventOffline = (event) => {
+  emitToAllByEventId(event.id, notificationTypes.EVENT_OFFLINE, event)
+}
+exports.emitEventOffline = emitEventOffline
+
+
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in user room ${userId}`);
   // io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
