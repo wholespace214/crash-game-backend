@@ -133,6 +133,7 @@ async function main() {
   const eventRoutes = require('./routes/users/events-routes');
   const secureUserRoute = require('./routes/users/secure-users-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
+  const chatRoutes = require('./routes/users/chat-routes');
 
   server.use(cors());
 
@@ -146,6 +147,8 @@ async function main() {
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
 
   server.use('/webhooks/twitch/', twitchWebhook);
+
+  server.use('/api/chat', chatRoutes);
 
   // Error handler middleware
   server.use((err, req, res, next) => {

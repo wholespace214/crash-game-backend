@@ -185,7 +185,7 @@ const getChatMessagesByEventId = async (req, res, next) => {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
   }
 
-  res.status(200).json(await chatMessageService.getNewestChatMessagesByEvent(req.params.id));
+  res.status(200).json(await chatMessageService.getLatestChatMessagesByRoom(req.params.id));
 };
 
 const getTags = async (req, res) => {

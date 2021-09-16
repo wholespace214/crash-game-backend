@@ -120,33 +120,31 @@ exports.getBet = async (id, session) => Bet
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   if (bet) {
-    const userId = user.id;
     const eventId = bet.event;
     const betId = bet._id;
 
     await websocketService.emitPlaceBetToAllByEventId(
       eventId,
-      userId,
       betId,
+      user,
       investmentAmount,
-      outcome,
+      outcome
     );
   }
 };
 
 exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
   if (bet) {
-    const userId = user.id;
     const eventId = bet.event;
     const betId = bet._id;
 
     await websocketService.emitPullOutBetToAllByEventId(
       eventId,
-      userId,
       betId,
+      user,
       amount,
       outcome,
-      currentPrice,
+      currentPrice
     );
   }
 };
