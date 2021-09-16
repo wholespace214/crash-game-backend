@@ -656,3 +656,26 @@ Successful Result: Lottery Ticket ID
   "id":"613f0bc91612edc558d0e5c9"
 }
 ```
+
+### GET http://localhost:8000/api/bet-template
+
+Successful Result: Lottery Ticket ID
+```json
+[{
+  "_id": "613f0bc91612edc558d0e5c9",
+  "marketQuestion": "Who will win?",
+  "name": "winner template",
+  "category": "counter-strike",
+  "outcomes": [
+    {
+      "index": 0,
+      "name": "Team A",
+    },
+    {
+      "index": 1,
+      "name": "Team B",
+    }
+  ]
+}]
+```
+
