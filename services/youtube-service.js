@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
+const logger = require('../util/logger');
 
 const { OAuth2 } = google.auth;
 
@@ -9,9 +10,6 @@ const { OAuth2 } = google.auth;
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
 const TOKEN_DIR = `${process.cwd()}/.credentials/`;
 const TOKEN_PATH = `${TOKEN_DIR}youtube-nodejs-quickstart.json`;
-
-// eslint-disable-next-line no-console
-const logger = { log(msg, ...args) { console.log(msg, args); } };
 
 /**
  * Store token to disk be used in later program executions.
