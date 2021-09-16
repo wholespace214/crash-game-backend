@@ -59,6 +59,7 @@ const getNewToken = (
         logger.info('Error while trying to retrieve access token', err);
         return;
       }
+      // eslint-disable-next-line no-param-reassign
       oauth2Client.credentials = token;
       storeToken(token);
       callback(oauth2Client);
@@ -73,7 +74,10 @@ const getNewToken = (
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
+function authorize(
+  /** @type {import('google-auth-library').Credentials} */ credentials,
+  callback,
+) {
   const clientSecret = credentials.installed.client_secret;
   const clientId = credentials.installed.client_id;
   const redirectUrl = credentials.installed.redirect_uris[0];
