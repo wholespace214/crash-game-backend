@@ -3,6 +3,9 @@
 .eslintcache
 .credentials
 
+# Add a local folder for different stuff
+temp
+
 # dependencies
 node_modules
 

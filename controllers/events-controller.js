@@ -18,6 +18,8 @@ const chatMessageService = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
+const logger = require('../util/logger');
+const youtubeApi = require('../apis/youtube-api');
 const { isAdmin } = require('../helper');
 
 // Controller to sign up a new user
@@ -119,6 +121,23 @@ const createEvent = async (req, res, next) => {
   }
 };
 
+const createEventFromYoutube = async (req, res, next) => {
+  try {
+    if (!req.body.youtubeVideoId) {
+      return next(new ErrorHandler(404, 'No Video ID given'));
+    }
+    const videoData = youtubeApi.getVideosById(req.body.youtubeVideoId);
+    if (!videoData) {
+      return next(new ErrorHandler(404, 'Video not found'));
+    }
+    console.log(videoData);
+    return videoData;
+  } catch (err) {
+    logger.error(err);
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
 const editEvent = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
@@ -162,6 +181,7 @@ exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.createEventFromYoutube = createEventFromYoutube;
 exports.editEvent = editEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;
