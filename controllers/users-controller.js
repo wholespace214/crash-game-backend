@@ -82,7 +82,8 @@ const bindWalletAddress = async (req, res, next) => {
     // if this address was already bound to another user, return 409 error
     if (walletUser && walletUser.id !== req.user.id) {
       return next(new ErrorHandler(409, 'This wallet is already bound to another user'));
-    } if (!walletUser) {
+    }
+    if (!walletUser) {
       // retrieve user who made the request
       let user = await userService.getUserById(req.user.id);
 
@@ -308,9 +309,13 @@ const getAMMHistory = async (req, res, next) => {
       const transactions = [];
 
       for (const interaction of interactions) {
-        const investmentAmount = toPrettyBigDecimal(BigInt(interaction.investmentamount) / WFAIR.ONE);
+        const investmentAmount = toPrettyBigDecimal(
+          BigInt(interaction.investmentamount) / WFAIR.ONE
+        );
         const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE);
-        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought) / WFAIR.ONE);
+        const outcomeTokensBought = toPrettyBigDecimal(
+          BigInt(interaction.outcometokensbought) / WFAIR.ONE
+        );
 
         transactions.push({
           ...interaction,
@@ -368,6 +373,12 @@ const resendConfirmEmail = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   if (req.user.admin === false && req.params.userId !== req.user.id) {
     return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = errors.errors[0].nestedErrors[0];
+    return next(new ErrorHandler(400, `${error?.param}: ${error?.value} - ${error?.msg}`));
   }
 
   try {
