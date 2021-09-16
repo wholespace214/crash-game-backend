@@ -7,9 +7,11 @@ const { OAuth2 } = google.auth;
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-const TOKEN_DIR = `${process.env.HOME || process.env.HOMEPATH
-    || process.env.USERPROFILE}/.credentials/`;
+const TOKEN_DIR = `${process.cwd()}/.credentials/`;
 const TOKEN_PATH = `${TOKEN_DIR}youtube-nodejs-quickstart.json`;
+
+// eslint-disable-next-line no-console
+const logger = { log(msg, ...args) { console.log(msg, args); } };
 
 /**
  * Store token to disk be used in later program executions.
@@ -26,7 +28,7 @@ const storeToken = (token) => {
   }
   fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
     if (err) throw err;
-    console.log(`Token stored to ${TOKEN_PATH}`);
+    logger.info(`Token stored to ${TOKEN_PATH}`);
   });
 };
 
@@ -35,15 +37,17 @@ const storeToken = (token) => {
  * execute the given callback with the authorized OAuth2 client.
  *
  * @param {google.auth.OAuth2} oauth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback to call with the authorized
- *     client.
+ * @param {getEventsCallback} callback The callback to call with the authorized client.
  */
-const getNewToken = (oauth2Client, callback) => {
+const getNewToken = (
+  /** @type {import('googleapis-common').OAuth2Client} */ oauth2Client,
+  callback,
+) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
   });
-  console.log('Authorize this app by visiting this url: ', authUrl);
+  logger.info('Authorize this app by visiting this url: ', authUrl);
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -52,7 +56,7 @@ const getNewToken = (oauth2Client, callback) => {
     rl.close();
     oauth2Client.getToken(code, (err, token) => {
       if (err) {
-        console.log('Error while trying to retrieve access token', err);
+        logger.info('Error while trying to retrieve access token', err);
         return;
       }
       oauth2Client.credentials = token;
@@ -91,7 +95,7 @@ function authorize(credentials, callback) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function getChannel(auth) {
+const getChannel = (auth) => {
   const service = google.youtube('v3');
   service.channels.list({
     auth,
@@ -99,26 +103,26 @@ function getChannel(auth) {
     forUsername: 'GoogleDevelopers',
   }, (err, response) => {
     if (err) {
-      console.log(`The API returned an error: ${err}`);
+      logger.info(`The API returned an error: ${err}`);
       return;
     }
     const channels = response.data.items;
     if (channels.length === 0) {
-      console.log('No channel found.');
+      logger.info('No channel found.');
     } else {
-      console.log('This channel\'s ID is %s. Its title is \'%s\', and '
+      logger.info('This channel\'s ID is %s. Its title is \'%s\', and '
                   + 'it has %s views.',
       channels[0].id,
       channels[0].snippet.title,
       channels[0].statistics.viewCount);
     }
   });
-}
+};
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', (err, content) => {
   if (err) {
-    console.log(`Error loading client secret file: ${err}`);
+    logger.info(`Error loading client secret file: ${err}`);
     return;
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
