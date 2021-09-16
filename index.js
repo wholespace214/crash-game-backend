@@ -8,6 +8,8 @@ const express = require('express');
 const http = require('http');
 const { connectMongoDB } = require('./mongodb');
 const { handleError } = require('./util/error-handler');
+const userV2Routes = require('./routes/v2/user/protected-user-routes');
+const v2Routes = require('./routes/v2');
 
 async function main() {
   const mongoDBConnection = await connectMongoDB();
@@ -34,8 +36,8 @@ async function main() {
   require('./util/auth');
 
   // Initialise server using express
-  const server = express();
-  const httpServer = http.createServer(server);
+  const app = express();
+  const httpServer = http.createServer(app);
 
   // Create socket.io server
   const socketioJwt = require('socketio-jwt');
@@ -87,16 +89,15 @@ async function main() {
   websocketService.setIO(io);
 
   // Giving server ability to parse json
-  server.use(passport.initialize());
-  server.use(passport.session());
   adminService.buildRouter();
-  server.use(adminService.getRootPath(), adminService.getRouter());
-  server.use(adminService.getLoginPath(), adminService.getRouter());
-  server.use(express.json({ limit: '1mb' }));
-  server.use(express.urlencoded({ limit: '1mb', extended: true }));
+
+  app.use(adminService.getRootPath(), adminService.getRouter());
+  app.use(adminService.getLoginPath(), adminService.getRouter());
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
   // Home Route
-  server.get('/', (req, res) => {
+  app.get('/', (req, res) => {
     res.status(200).send({
       message: 'Blockchain meets Prediction Markets made Simple. - Wallfair.',
     });
@@ -112,29 +113,30 @@ async function main() {
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
 
-  server.use(cors());
+  app.use(cors());
 
   // Using Routes
-  server.use('/api/event', eventRoutes);
-  server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
+  app.use('/api/v2', v2Routes);
+  app.use('/api/event', eventRoutes);
+  app.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
 
-  server.use('/api/user', userRoute);
-  server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
+  app.use('/v2/api/user', userV2Routes);
+  app.use('/api/user', userRoute);
+  app.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
-  server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
-  server.use(
+  app.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
+  app.use(
     '/api/bet-template',
     passport.authenticate('jwt', { session: false }),
     secureBetTemplateRoute
   );
 
-  server.use('/webhooks/twitch/', twitchWebhook);
+  app.use('/webhooks/twitch/', twitchWebhook);
 
-  server.use('/api/chat', chatRoutes);
+  app.use('/api/chat', chatRoutes);
 
   // Error handler middleware
-  // eslint-disable-next-line no-unused-vars
-  server.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     handleError(err, res);
   });
 

@@ -1,6 +1,8 @@
 const wallfair = require('@wallfair.io/wallfair-commons');
 const mongoose = require('mongoose');
 
+const logger = require('../util/logger');
+
 let mongoURL = process.env.DB_CONNECTION;
 if (process.env.ENVIRONMENT === 'STAGING') {
   mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
@@ -16,10 +18,10 @@ exports.connectMongoDB = async () => {
     useUnifiedTopology: true,
     useNewUrlParser: true,
   });
-  console.log('Connection to Mongo-DB successful');
+  logger.info('Connection to Mongo-DB successful');
 
   wallfair.initModels(connection);
-  console.log('Mongoose models initialized');
+  logger.info('Mongoose models initialized');
 
   return connection;
 };
