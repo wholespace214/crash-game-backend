@@ -16,118 +16,114 @@ const getVideosById = async (/** @type string[] */videoIds) => {
   try {
     if (!videoIds || !videoIds.length) throw new Error('No or empty array of "videoIds" given');
     /**
-        {
-          "kind": "youtube#videoListResponse",
-          "etag": "c3rXvhNhLAZNxfNxR1qkA4d6wzY",
-          "items": [
-            {
-              "kind": "youtube#video",
-              "etag": "vGbDnXod4IwjwPyi4Khc82Zo3j8",
-              "id": "BYQ8S5xtY68",
-              "snippet": {
-                "publishedAt": "2021-06-12T20:08:48Z",
-                "channelId": "UCzcRQ3vRNr6fJ1A9rqFn7QA",
-                "title": "AVATAR: FRONTIERS OF PANDORA Trailer (2022)",
-                "description": "AVATAR: Frontiers of Pandora Trailer (2022) 4K Ultra HD\n© 2021 - Ubisoft",
-                "thumbnails": {
-                  "default": {
-                    "url": "https://i.ytimg.com/vi/BYQ8S5xtY68/default.jpg",
-                    "width": 120,
-                    "height": 90
-                  },
-                  "medium": {
-                    "url": "https://i.ytimg.com/vi/BYQ8S5xtY68/mqdefault.jpg",
-                    "width": 320,
-                    "height": 180
-                  },
-                  "high": {
-                    "url": "https://i.ytimg.com/vi/BYQ8S5xtY68/hqdefault.jpg",
-                    "width": 480,
-                    "height": 360
-                  },
-                  "standard": {
-                    "url": "https://i.ytimg.com/vi/BYQ8S5xtY68/sddefault.jpg",
-                    "width": 640,
-                    "height": 480
-                  },
-                  "maxres": {
-                    "url": "https://i.ytimg.com/vi/BYQ8S5xtY68/maxresdefault.jpg",
-                    "width": 1280,
-                    "height": 720
-                  }
-                },
-                "channelTitle": "ONE Media",
-                "tags": [
-                  "One Media",
-                  "One",
-                  "Cinema",
-                  "Trailer",
-                  "Official",
-                  "Movie",
-                  "Film",
-                  "2022",
-                  "AVATAR Frontiers of Pandora Trailer",
-                  "Avatar",
-                  "Video",
-                  "Game",
-                  "Avatar 2",
-                  "Frondiers of Pandora",
-                  "Pandora",
-                  "4K",
-                  "Ultra HD"
-                ],
-                "categoryId": "1",
-                "liveBroadcastContent": "none",
-                "defaultLanguage": "en",
-                "localized": {
-                  "title": "AVATAR: FRONTIERS OF PANDORA Trailer (2022)",
-                  "description": "AVATAR: Frontiers of Pandora Trailer (2022) 4K Ultra HD\n© 2021 - Ubisoft"
-                },
-                "defaultAudioLanguage": "en"
-              },
-              "contentDetails": {
-                "duration": "PT2M46S",
-                "dimension": "2d",
-                "definition": "hd",
-                "caption": "false",
-                "licensedContent": true,
-                "contentRating": {},
-                "projection": "rectangular"
-              },
-              "status": {
-                "uploadStatus": "processed",
-                "privacyStatus": "public",
-                "license": "youtube",
-                "embeddable": true,
-                "publicStatsViewable": true,
-                "madeForKids": false
-              },
-              "statistics": {
-                "viewCount": "6262045",
-                "likeCount": "53579",
-                "dislikeCount": "4452",
-                "favoriteCount": "0",
-                "commentCount": "3130"
-              },
-              "player": {
-                "embedHtml": "\u003ciframe width=\"480\" height=\"270\" src=\"//www.youtube.com/embed/BYQ8S5xtY68\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen\u003e\u003c/iframe\u003e"
-              },
-              "topicDetails": {
-                "topicCategories": [
-                  "https://en.wikipedia.org/wiki/Action-adventure_game",
-                  "https://en.wikipedia.org/wiki/Action_game",
-                  "https://en.wikipedia.org/wiki/Role-playing_video_game",
-                  "https://en.wikipedia.org/wiki/Video_game_culture"
-                ]
-              },
-              "recordingDetails": {}
-            }
-          ],
-          "pageInfo": {
-            "totalResults": 1,
-            "resultsPerPage": 1
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "zLQ0kqoxGEuGWhRPMDfz-nsCwDw",
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "hdH_zplS7K_BhE5UAQgMqJAAgmo",
+      "id": "4sJQ8uMmti4",
+      "snippet": {
+        "publishedAt": "2021-09-16T09:06:05Z",
+        "channelId": "UCZkcxFIsqW5htimoUQKA0iA",
+        "title": "🎙 Pressetalk mit Leon Goretzka, Oliver Kahn und Hasan Salihamidzic zur Vertragsverlängerung",
+        "description": "Leon Goretzka hat ein neues Arbeitspapier beim FC Bayern unterschrieben und bis 2026 verlängert. Schau dir jetzt den Pressetalk dazu live an und höre dir an, was Goretzka, Kahn und Salihamidzic dazu sagen.\n\n► #MiaSanMia - Abonnieren & die Glocke aktivieren 🔔: https://fc.bayern/YouTubeAbo\n\nFacebook: https://www.facebook.com/FCBayern\nTwitter: https://twitter.com/fcbayern\nInstagram: https://www.instagram.com/fcbayern\nTikTok: https://www.tiktok.com/@fcbayern\nSnapchat: https://fc.bayern/FCBayernSnaps\nWebsite: https://fcbayern.com\nFC Bayern.tv: https://fcbayern.com/fcbayerntv\nFC Bayern.tv live: https://fcbayern.com/fcbayerntv/de/fcbayerntvlive",
+        "thumbnails": {
+          "default": {
+            "url": "https://i.ytimg.com/vi/4sJQ8uMmti4/default_live.jpg",
+            "width": 120,
+            "height": 90
+          },
+          "medium": {
+            "url": "https://i.ytimg.com/vi/4sJQ8uMmti4/mqdefault_live.jpg",
+            "width": 320,
+            "height": 180
+          },
+          "high": {
+            "url": "https://i.ytimg.com/vi/4sJQ8uMmti4/hqdefault_live.jpg",
+            "width": 480,
+            "height": 360
+          },
+          "standard": {
+            "url": "https://i.ytimg.com/vi/4sJQ8uMmti4/sddefault_live.jpg",
+            "width": 640,
+            "height": 480
+          },
+          "maxres": {
+            "url": "https://i.ytimg.com/vi/4sJQ8uMmti4/maxresdefault_live.jpg",
+            "width": 1280,
+            "height": 720
           }
-        }
+        },
+        "channelTitle": "FC Bayern München",
+        "tags": [
+          "FC Bayern München",
+          "Bayern Munich",
+          "FCB",
+          "FC Bayern",
+          "Fußball",
+          "Football",
+          "Soccer",
+          "Pressetalk",
+          "Pressekonferenz",
+          "Hasan Salihamidzic",
+          "Salihamidzic",
+          "Oliver Kahn",
+          "Kahn",
+          "Leon Goretzka",
+          "Goretzka",
+          "Goretzka 2026",
+          "Vertrag",
+          "Vertragsverlängerung",
+          "2026",
+          "LG2026"
+        ],
+        "categoryId": "17",
+        "liveBroadcastContent": "upcoming",
+        "defaultLanguage": "en",
+        "localized": {
+          "title": "🎙 Pressetalk mit Leon Goretzka, Oliver Kahn und Hasan Salihamidzic zur Vertragsverlängerung",
+          "description": "Leon Goretzka hat ein neues Arbeitspapier beim FC Bayern unterschrieben und bis 2026 verlängert. Schau dir jetzt den Pressetalk dazu live an und höre dir an, was Goretzka, Kahn und Salihamidzic dazu sagen.\n\n► #MiaSanMia - Abonnieren & die Glocke aktivieren 🔔: https://fc.bayern/YouTubeAbo\n\nFacebook: https://www.facebook.com/FCBayern\nTwitter: https://twitter.com/fcbayern\nInstagram: https://www.instagram.com/fcbayern\nTikTok: https://www.tiktok.com/@fcbayern\nSnapchat: https://fc.bayern/FCBayernSnaps\nWebsite: https://fcbayern.com\nFC Bayern.tv: https://fcbayern.com/fcbayerntv\nFC Bayern.tv live: https://fcbayern.com/fcbayerntv/de/fcbayerntvlive"
+        },
+        "defaultAudioLanguage": "de"
+      },
+      "contentDetails": {
+        "duration": "P0D",
+        "dimension": "2d",
+        "definition": "sd",
+        "caption": "false",
+        "licensedContent": true,
+        "contentRating": {},
+        "projection": "rectangular"
+      },
+      "status": {
+        "uploadStatus": "uploaded",
+        "privacyStatus": "public",
+        "license": "youtube",
+        "embeddable": true,
+        "publicStatsViewable": true,
+        "madeForKids": false
+      },
+      "statistics": {
+        "viewCount": "0",
+        "likeCount": "49",
+        "dislikeCount": "1",
+        "favoriteCount": "0",
+        "commentCount": "0"
+      },
+      "player": {
+        "embedHtml": "\u003ciframe width=\"480\" height=\"360\" src=\"//www.youtube.com/embed/4sJQ8uMmti4\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen\u003e\u003c/iframe\u003e"
+      },
+      "recordingDetails": {}
+    }
+  ],
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  }
+}
+
        */
     return ytApi.videos.list({
       part: ['snippet,contentDetails,player,recordingDetails,statistics,status,topicDetails'],

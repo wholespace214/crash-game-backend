@@ -46,10 +46,5 @@ router.get(
 router.get('/tags', eventController.getTags);
 
 router.post('/evaluate', eventController.sendEventEvaluate);
-router.post(
-  '/create-from-yoututbe',
-  [check('youtubeVideoId').isString().notEmpty()],
-  eventController.createEventFromYoutube,
-);
 
 module.exports = router;
