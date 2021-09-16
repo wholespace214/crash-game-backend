@@ -1,2 +1,26 @@
 {
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/conf": true,
+    "**/config": true,
+    "**/coverge": true
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.autoSave": "onFocusChange",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "eslint.validate": ["javascript", "typescript", "json"],
+  "git.autofetch": true,
+  "eslint.options": {
+    "configFile": ".eslintrc.js"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.fixAll.prettier": true
+  },
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": true,
+  "editor.rulers": [80, 100]
 }
