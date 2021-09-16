@@ -6,29 +6,8 @@ dotenv.config();
 // Import express
 const express = require('express');
 const http = require('http');
-
-// Import mongoose to connect to Database
-const mongoose = require('mongoose');
-
-// Import Models from Wallfair Commons
-const wallfair = require('@wallfair.io/wallfair-commons');
+const { connectMongoDB } = require('./mongodb');
 const { handleError } = require('./util/error-handler');
-
-let mongoURL = process.env.DB_CONNECTION;
-
-// Connection to Database
-async function connectMongoDB() {
-  const connection = await mongoose.connect(mongoURL, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  });
-  console.log('Connection to Mongo-DB successful');
-
-  wallfair.initModels(connection);
-  console.log('Mongoose models initialized');
-
-  return connection;
-}
 
 async function main() {
   const mongoDBConnection = await connectMongoDB();
