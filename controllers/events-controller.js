@@ -151,9 +151,8 @@ const createEventFromYoutube = async (req, res, next) => {
       ),
       category: req.body.category,
       tags: streamItem.snippet.tags.map((tag) => (({ name: tag }))),
-      // TODO - We're not getting the real date of when the event stars from the API
+      // TODO - We're not getting the real date of when the event starts from the API.
       date: new Date(),
-      // TODO
       type: req.body.type,
     });
 
