@@ -18,7 +18,9 @@ const chatMessageService = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
-const { isAdmin } = require('../helper');
+const logger = require('../util/logger');
+const youtubeApi = require('../apis/youtube-api');
+const { isAdmin, createYouTubeVideoUrlFromId } = require('../helper');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -119,6 +121,51 @@ const createEvent = async (req, res, next) => {
   }
 };
 
+const createEventFromYoutube = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+
+  const LOG_TAG = '[CREATE-EVENT]';
+
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
+    }
+
+    if (!req.body.youtubeVideoId) return next(new ErrorHandler(404, 'No Video ID given'));
+
+    const { data } = await youtubeApi.getVideosById(req.body.youtubeVideoId);
+    if (!data || data.items?.length === 0) {
+      return next(new ErrorHandler(404, 'Video not found'));
+    }
+    // get stream item
+    const streamItem = data.items[0];
+    const createdEvent = new Event({
+      name: streamItem.snippet.title,
+      slug: req.body.youtubeVideoId,
+      streamUrl: createYouTubeVideoUrlFromId(req.body.youtubeVideoId),
+      previewImageUrl: (
+        streamItem.snippet.thumbnails?.maxres.url
+        || streamItem.snippet.thumbnails?.default.url
+        || ''
+      ),
+      category: req.body.category,
+      tags: streamItem.snippet.tags.map((tag) => (({ name: tag }))),
+      // TODO - We're not getting the real date of when the event starts from the API.
+      date: new Date(),
+      type: req.body.type,
+    });
+
+    const event = await eventService.saveEvent(createdEvent);
+    console.debug(LOG_TAG, 'Successfully created a new Event');
+
+    return res.status(201).json(event);
+  } catch (err) {
+    logger.error(err);
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
 const editEvent = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
@@ -162,6 +209,7 @@ exports.listEvents = listEvents;
 exports.filterEvents = filterEvents;
 exports.getEvent = getEvent;
 exports.createEvent = createEvent;
+exports.createEventFromYoutube = createEventFromYoutube;
 exports.editEvent = editEvent;
 exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;

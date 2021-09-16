@@ -28,6 +28,16 @@ router.post(
 );
 
 router.post(
+  '/create-from-yoututbe',
+  [
+    check('youtubeVideoId').isString().notEmpty(),
+    check('type').isString().notEmpty(),
+    check('category').notEmpty(),
+  ],
+  eventController.createEventFromYoutube,
+);
+
+router.post(
   '/:id',
   [
     check('name').isLength({ max: 255 }),
@@ -55,6 +65,7 @@ router.post(
   ],
   betController.createBet,
 );
+
 router.post(
   '/bet/:betId',
   [
