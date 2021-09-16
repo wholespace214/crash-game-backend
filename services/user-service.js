@@ -6,14 +6,15 @@ const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { toPrettyBigDecimal } = require('../util/number-helper');
 
 const WFAIR = new Erc20('WFAIR');
-
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
+const REFERRAL_REWARD_AMOUNT = 500;
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 
-exports.getUserByIdAndWallet = async (id, walletAddress, session) => User.findOne({ _id: id }).session(session);
+exports.getUserByIdAndWallet = async (id, walletAddress, session) =>
+  User.findOne({ _id: id }).session(session);
 
 exports.getRefByUserId = async (id) => {
   const result = [];
@@ -30,7 +31,7 @@ exports.rewardRefUser = async (ref) => {
     return;
   }
   console.debug('try to reward ref');
-  await this.mintUser(ref, 50);
+  await this.mintUser(ref, REFERRAL_REWARD_AMOUNT);
 };
 
 exports.securePassword = async (user, password) => {
@@ -40,7 +41,8 @@ exports.securePassword = async (user, password) => {
   });
 };
 
-exports.comparePassword = async (user, plainPassword) => await bcrypt.compare(plainPassword, user.password);
+exports.comparePassword = async (user, plainPassword) =>
+  await bcrypt.compare(plainPassword, user.password);
 
 exports.getRankByUserId = async (userId) => {
   // TODO this cant stay like this.
