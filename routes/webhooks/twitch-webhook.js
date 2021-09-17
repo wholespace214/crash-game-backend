@@ -1,6 +1,7 @@
 // Import the express Router to create routes
 const router = require('express').Router();
 const { check } = require('express-validator');
+const websocketService = require("../../services/websocket-service");
 
 // Import Event model
 const { Event } = require('@wallfair.io/wallfair-commons').models;
@@ -20,7 +21,8 @@ router.post('/', async (req, res, chain) => {
 
         if (type == 'stream.online') {
           event.metadata.twitch_subscribed_online = 'true';
-          await event.save();
+          const ev = await event.save();
+          websocketService.emitEventOnline(ev)
         } else if (type == 'stream.offline') {
           event.metadata.twitch_subscribed_offline = 'true';
           await event.save();
