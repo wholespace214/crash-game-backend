@@ -5,13 +5,14 @@ const websocketService = require('../services/websocket-service');
 const betsActiveNotification = async () => {
   const now = new Date();
   const nowPlus1Min = new Date(+now + 60_000);
-
-  const url = process.env.CLIENT_URL;
-
   const users = await User.find({}, { id: 1, phone: 1 }).exec();
 
-  const bets = await Bet.find({ date: { $gt: now, $lt: nowPlus1Min }, activeNotificationSend: { $ne: true } }, {})
-    .populate('event').exec();
+  const bets = await Bet.find(
+    { date: { $gt: now, $lt: nowPlus1Min }, activeNotificationSend: { $ne: true } },
+    {}
+  )
+    .populate('event')
+    .exec();
 
   for (const bet of bets) {
     // console.log(bet);

@@ -21,14 +21,7 @@ exports.BET_STATUS = BET_STATUS;
 const calculateBetStatus = (bet) => {
   let status = BET_STATUS.active;
 
-  const {
-    date = undefined,
-    endDate = undefined,
-    evidenceActual = '',
-    evidenceDescription = '',
-    resolved = false,
-    canceled = false,
-  } = bet;
+  const { date = undefined, endDate = undefined, resolved = false, canceled = false } = bet;
 
   const now = new Date();
   if (date && Date.parse(date) >= now) {
@@ -75,7 +68,8 @@ const filterPublishedBets = (eventOrArray) => {
 };
 exports.filterPublishedBets = filterPublishedBets;
 
-exports.listEvent = async (linkedTo) => Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
+exports.listEvent = async () =>
+  Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 
 exports.filterEvents = async (
   type = 'all',
@@ -83,7 +77,7 @@ exports.filterEvents = async (
   count = 10,
   page = 1,
   sortby = 'name',
-  searchQuery,
+  searchQuery
 ) => {
   const query = {};
 
@@ -108,15 +102,11 @@ exports.filterEvents = async (
     .lean();
 };
 
-exports.getEvent = async (id) => Event.findOne({ _id: id })
-  .populate('bets')
-  .map(calculateAllBetsStatus)
-  .map(filterPublishedBets);
+exports.getEvent = async (id) =>
+  Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 
-exports.getBet = async (id, session) => Bet
-  .findOne({ _id: id })
-  .session(session)
-  .map(calculateBetStatus);
+exports.getBet = async (id, session) =>
+  Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
 
 exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   if (bet) {
@@ -185,13 +175,13 @@ exports.editEvent = async (eventId, userData) => {
 
 exports.saveBet = async (bet, session) => bet.save({ session });
 
-exports.getTags = async (params = {}) => Event.distinct('tags.name').exec();
+exports.getTags = async () => Event.distinct('tags.name').exec();
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
   const response = [];
   const tmpChartData = [];
-  let startDate; let
-    tmpDay;
+  let startDate;
+  let tmpDay;
 
   switch (rangeType) {
     case 'hour':
@@ -202,7 +192,7 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
         startDate.getDate(),
         startDate.getHours(),
         0,
-        0,
+        0
       );
 
       for (let i = 1; i <= rangeValue; i++) {

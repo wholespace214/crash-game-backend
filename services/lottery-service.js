@@ -2,7 +2,7 @@ const _ = require('lodash');
 const mongoose = require('mongoose');
 const { Lottery, LotteryTicket } = require('@wallfair.io/wallfair-commons').models;
 
-exports.listLotteries = async () => Lottery.find({ });
+exports.listLotteries = async () => Lottery.find({});
 
 exports.listLotteriesForUser = async (userId) => {
   const completedTickets = await LotteryTicket.find({ userId: mongoose.Types.ObjectId(userId) });

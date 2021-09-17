@@ -13,7 +13,6 @@ const mongoose = require('mongoose');
 // Import Models from Wallfair Commons
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
-const notificationsController = require('./controllers/notifications-controller');
 
 let mongoURL = process.env.DB_CONNECTION;
 if (process.env.ENVIRONMENT === 'STAGING') {
@@ -108,8 +107,9 @@ async function main() {
     io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
   });
 
-  subClient.subscribe('message');
+  const notificationsController = require('./controllers/notifications-controller');
 
+  subClient.subscribe('message');
   subClient.on('notification', (channel, message) => {
     try {
       const messageObj = JSON.parse(message);
@@ -173,6 +173,7 @@ async function main() {
   server.use('/api/chat', chatRoutes);
 
   // Error handler middleware
+  // eslint-disable-next-line no-unused-vars
   server.use((err, req, res, next) => {
     handleError(err, res);
   });

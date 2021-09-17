@@ -4,7 +4,8 @@ const ExtractJWT = require('passport-jwt').ExtractJwt;
 // Import User Service
 const userService = require('../services/user-service');
 
-passport.use('jwt',
+passport.use(
+  'jwt',
   new JWTstrategy(
     {
       secretOrKey: process.env.JWT_KEY,
@@ -17,9 +18,11 @@ passport.use('jwt',
       } catch (error) {
         done(error);
       }
-    },
-  ));
-passport.use('jwt_admin',
+    }
+  )
+);
+passport.use(
+  'jwt_admin',
   new JWTstrategy(
     {
       secretOrKey: process.env.JWT_KEY,
@@ -35,5 +38,6 @@ passport.use('jwt_admin',
       } catch (error) {
         done(error);
       }
-    },
-  ));
+    }
+  )
+);

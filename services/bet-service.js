@@ -98,7 +98,7 @@ exports.clearOpenBets = async (bet, session) => {
         bet,
         outcome.index,
         win ? 'rewarded' : 'closed',
-        session,
+        session
       );
     }
   }
@@ -122,13 +122,7 @@ exports.refundUserHistory = async (bet, session) => {
         userIds.push(userId);
       }
 
-      await tradeService.closeTrades(
-        userId,
-        bet,
-        outcome.index,
-        'closed',
-        session,
-      );
+      await tradeService.closeTrades(userId, bet, outcome.index, 'closed', session);
     }
   }
 

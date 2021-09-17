@@ -13,13 +13,13 @@ router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery', eventContr
 router.post(
   '/bet/:id/outcomes/buy',
   [check('amount').isNumeric()],
-  betController.calculateBuyOutcome,
+  betController.calculateBuyOutcome
 );
 
 router.post(
   '/bet/:id/outcomes/sell',
   [check('amount').isNumeric()],
-  betController.calculateSellOutcome,
+  betController.calculateSellOutcome
 );
 
 router.get(
@@ -34,7 +34,7 @@ router.get(
       .withMessage('Range type must be one of values [day, hour]'),
     query('rangeValue').isInt({ min: 1 }).withMessage('Range value must be numeric and >= 1'),
   ],
-  betController.betHistory,
+  betController.betHistory
 );
 
 router.get('/tags', eventController.getTags);
