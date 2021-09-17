@@ -1,6 +1,5 @@
 // Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
-const notificationsController = require('./controllers/notifications-controller')
 
 dotenv.config();
 
@@ -14,6 +13,7 @@ const mongoose = require('mongoose');
 // Import Models from Wallfair Commons
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
+const notificationsController = require('./controllers/notifications-controller');
 
 let mongoURL = process.env.DB_CONNECTION;
 if (process.env.ENVIRONMENT === 'STAGING') {
@@ -113,18 +113,17 @@ async function main() {
   subClient.on('notification', (channel, message) => {
     try {
       const messageObj = JSON.parse(message);
-      if(messageObj.data.type && notificationsController[messageObj.data.type]){
-        notificationsController[messageObj.data.type](messageObj.data)
+      if (messageObj.data.type && notificationsController[messageObj.data.type]) {
+        notificationsController[messageObj.data.type](messageObj.data);
       } else {
-        notificationsController.defaultNotification(message)
+        notificationsController.defaultNotification(message);
       }
-
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  })
+  });
 
-  //subClient.subscribe('notification');
+  // subClient.subscribe('notification');
 
   websocketService.setIO(io);
 
@@ -163,7 +162,11 @@ async function main() {
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
-  server.use('/api/bet-template', passport.authenticate('jwt', { session: false }), secureBetTemplateRoute);
+  server.use(
+    '/api/bet-template',
+    passport.authenticate('jwt', { session: false }),
+    secureBetTemplateRoute
+  );
 
   server.use('/webhooks/twitch/', twitchWebhook);
 
@@ -174,29 +177,22 @@ async function main() {
     handleError(err, res);
   });
 
-  io.use(socketioJwt.authorize({
-    secret: process.env.JWT_KEY,
-    handshake: true,
-  }));
+  io.use(
+    socketioJwt.authorize({
+      secret: process.env.JWT_KEY,
+      handshake: true,
+    })
+  );
 
   io.on('connection', (socket) => {
     const { userId } = socket.decoded_token;
 
-    socket.on(
-      'chatMessage',
-      (data) => {
-        websocketService.handleChatMessage(socket, data, userId);
-      },
-    );
-    socket.on(
-      'joinRoom',
-      (data) => websocketService.handleJoinRoom(socket, data, userId),
-    );
+    socket.on('chatMessage', (data) => {
+      websocketService.handleChatMessage(socket, data, userId);
+    });
+    socket.on('joinRoom', (data) => websocketService.handleJoinRoom(socket, data, userId));
 
-    socket.on(
-      'leaveRoom',
-      (data) => websocketService.handleLeaveRoom(socket, data, userId),
-    );
+    socket.on('leaveRoom', (data) => websocketService.handleLeaveRoom(socket, data, userId));
   });
 
   // Let server run and listen
