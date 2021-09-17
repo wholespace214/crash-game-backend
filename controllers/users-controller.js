@@ -389,6 +389,25 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+const updateUserPreferences = async (req, res, next) => {
+  if (req.user.admin === false && req.params.userId !== req.user.id) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = errors.errors[0].nestedErrors[0];
+    return next(new ErrorHandler(400, `${error?.param}: ${error?.value} - ${error?.msg}`));
+  }
+
+  try {
+    await userService.updateUserPreferences(req.params.userId, req.body.preferences);
+    res.status(200).send({ status: 'OK' });
+  } catch (err) {
+    next(new ErrorHandler(422, err.message));
+  }
+};
+
 exports.login = login;
 exports.verfiySms = verfiySms;
 exports.bindWalletAddress = bindWalletAddress;
@@ -402,4 +421,5 @@ exports.getAMMHistory = getAMMHistory;
 exports.confirmEmail = confirmEmail;
 exports.resendConfirmEmail = resendConfirmEmail;
 exports.updateUser = updateUser;
+exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
