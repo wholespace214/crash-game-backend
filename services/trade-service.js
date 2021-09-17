@@ -10,6 +10,7 @@ exports.getActiveTradesByUserId = async (userId) =>
         status: 'active',
       },
     },
+    { $sort: { createdAt: -1 } },
     {
       $group: {
         _id: {
@@ -22,6 +23,9 @@ exports.getActiveTradesByUserId = async (userId) =>
         },
         totalOutcomeTokens: {
           $sum: '$outcomeTokens',
+        },
+        date: {
+          $max: '$createdAt',
         },
       },
     },
