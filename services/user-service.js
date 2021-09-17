@@ -132,8 +132,12 @@ exports.updateUser = async (userId, updatedUser) => {
   if (updatedUser.notificationSettings) {
     user.notificationSettings = updatedUser.notificationSettings;
   }
+  await user.save();
+};
 
-  const { preferences } = updatedUser;
+exports.updateUserPreferences = async (userId, preferences) => {
+  let user = await User.findById(userId);
+
   if (preferences) {
     const valid = CURRENCIES.includes(preferences.currency);
     if (!valid) {
@@ -141,7 +145,8 @@ exports.updateUser = async (userId, updatedUser) => {
     }
     user.preferences.currency = preferences.currency;
   }
-  await user.save();
+
+  return await user.save();
 };
 
 exports.increaseAmountWon = async (userId, amount) => {

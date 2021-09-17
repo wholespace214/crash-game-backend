@@ -55,6 +55,12 @@ router.patch(
   userController.updateUser
 );
 
+router.patch(
+  '/:userId/preferences',
+  [check('preferences').notEmpty()],
+  userController.updateUserPreferences
+);
+
 router.get('/:userId', userController.getUserInfo);
 
 module.exports = router;
