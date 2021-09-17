@@ -27,9 +27,9 @@ return res.status(500).send()
 
   },
 
-  async verifyEmail(req,res) {
+  async verifyEmail(req, res) {
     try {
-      const user = await userApi.verifyEmail(email);
+      const user = await userApi.verifyEmail(req.body.email);
 if(!user) throw new Error("Couldn't verify email. EMail not found")
   return res.status(200).json(user);
 
@@ -39,7 +39,7 @@ if(!user) throw new Error("Couldn't verify email. EMail not found")
 return res.status(500).send()
   },
 
-  async getAll(req, res, next) {
+  async getAll(req, res) {
     return res.status(200).json(fakeDb);
   },
 };
