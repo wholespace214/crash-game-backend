@@ -1,10 +1,7 @@
 const passport = require('passport');
 const Strategy = require('passport-local');
 const crypto = require('crypto');
-
-const fakeDb = {
-  dbirke: 'foobar',
-};
+const userApi = require('../apis/user-api');
 
 exports.initAuth = async (/** @type import('express').Express */ app) => {
   // Configure the local strategy for use by Passport.
@@ -13,11 +10,18 @@ exports.initAuth = async (/** @type import('express').Express */ app) => {
   // (`username` and `password`) submitted by the user.  The function must verify
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
-  passport.use(new Strategy((username, password, cb) => {
-    if (fakeDb[username] && fakeDb[username] === password) {
-      cb(null, { username: fakeDb[username], foo: 222, id: '0815' });
-    }
-    cb('User not found');
+  passport.use(new Strategy(async (IdEmailPhoneOrUsername, password, cb) => {
+    const currentUser= await userApi.getUserByIdEmailPhoneOrUsername(IdEmailPhoneOrUsername)
+    if(!currentUser) return cb("Couldn't find user")
+
+    crypto.pbkdf2(password, row.salt, 10000, 32, 'sha256', (err, hashedPassword)=> {
+        if (err) { return cb(err); }
+        if (!crypto.timingSafeEqual(row.hashed_password, hashedPassword)) {
+          return cb(null, false, { message: 'Incorrect password.' });
+        }
+
+        return cb(null, currentUser);
+      });
   }));
 
   // Configure Passport authenticated session persistence.
