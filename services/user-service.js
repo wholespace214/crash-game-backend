@@ -145,6 +145,8 @@ exports.updateUserPreferences = async (userId, preferences) => {
     }
     user.preferences.currency = preferences.currency;
   }
+
+  return await user.save();
 };
 
 exports.increaseAmountWon = async (userId, amount) => {

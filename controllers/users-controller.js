@@ -396,13 +396,13 @@ const updateUserPreferences = async (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = errors.errors[0].nestedErrors[0];
+    const error = errors.errors[0];
     return next(new ErrorHandler(400, `${error?.param}: ${error?.value} - ${error?.msg}`));
   }
 
   try {
-    await userService.updateUserPreferences(req.params.userId, req.body.preferences);
-    res.status(200).send({ status: 'OK' });
+    const user = await userService.updateUserPreferences(req.params.userId, req.body.preferences);
+    res.status(200).send({ user });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
   }
