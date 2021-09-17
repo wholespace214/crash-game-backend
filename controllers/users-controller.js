@@ -266,6 +266,7 @@ const getOpenBetsList = async (request, response, next) => {
           outcome: trade._id.outcomeIndex,
           investmentAmount: trade.totalInvestmentAmount,
           outcomeAmount: trade.totalOutcomeTokens,
+          lastDate: trade.date,
         });
       }
 
@@ -309,13 +310,9 @@ const getAMMHistory = async (req, res, next) => {
       const transactions = [];
 
       for (const interaction of interactions) {
-        const investmentAmount = toPrettyBigDecimal(
-          BigInt(interaction.investmentamount) / WFAIR.ONE
-        );
-        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount) / WFAIR.ONE);
-        const outcomeTokensBought = toPrettyBigDecimal(
-          BigInt(interaction.outcometokensbought) / WFAIR.ONE
-        );
+        const investmentAmount = toPrettyBigDecimal(BigInt(interaction.investmentamount));
+        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount));
+        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought));
 
         transactions.push({
           ...interaction,
