@@ -39,6 +39,7 @@ const createBet = async (req, res, next) => {
       evidenceDescription,
       date,
       published,
+      endDate,
     } = req.body;
 
     let event = await eventService.getEvent(eventId);
@@ -54,6 +55,7 @@ const createBet = async (req, res, next) => {
       date: new Date(date),
       published,
       creator: req.user.id,
+      endDate: new Date(endDate),
     });
 
     const createdBet = new Bet({
@@ -65,6 +67,7 @@ const createBet = async (req, res, next) => {
       date: new Date(date),
       creator: req.user.id,
       published,
+      endDate: new Date(endDate),
     });
 
     const session = await Bet.startSession();
