@@ -1,4 +1,3 @@
-// const passport = require('passport');
 const router = require('express').Router();
 
 const publicUserRoutes = require('./public-user-routes');

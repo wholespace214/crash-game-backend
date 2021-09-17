@@ -1,6 +1,7 @@
 const logger = require('../util/logger');
 const userApi = require('../apis/user-api');
 const { ErrorHandler } = require('../util/error-handler');
+const authServiceV2 = require('./auth-service-v2');
 
 module.exports = {
   async createUser(req, res) {
@@ -40,7 +41,14 @@ module.exports = {
     }
   },
 
-  async getAll(req, res) {
-    return res.status(200).json(fakeDb);
+  async login(req, res, next) {
+    try {
+      const user = await authServiceV2.doLogin(req.body.username, req.body.password);
+      if (!user) return next(new ErrorHandler(403, "Couldn't verify user"));
+      return res.status(200).json(user);
+    } catch (err) {
+      logger.error(err);
+      return res.status(500).send();
+    }
   },
 };
