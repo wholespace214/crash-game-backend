@@ -4,10 +4,12 @@ module.exports = {
     commonjs: true,
     es2021: true,
   },
-  extends: ['eslint:recommended'],
-  parser: 'babel-eslint',
+  extends: [
+    'airbnb-base',
+  ],
   parserOptions: {
     ecmaVersion: 12,
+    extraFileExtensions: ['.json'],
     sourceType: 'module',
     ecmaFeatures: {
       modules: true,

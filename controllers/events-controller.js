@@ -1,5 +1,6 @@
 // Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
+
 dotenv.config();
 
 // Imports from express validator to validate user input
@@ -36,7 +37,9 @@ const listEvents = async (req, res, next) => {
 };
 
 const filterEvents = async (req, res) => {
-  const { category, sortby, searchQuery, type } = req.params;
+  const {
+    category, sortby, searchQuery, type,
+  } = req.params;
   const count = +req.params.count;
   const page = +req.params.page;
 
@@ -46,7 +49,7 @@ const filterEvents = async (req, res) => {
     count,
     page,
     sortby,
-    searchQuery
+    searchQuery,
   );
 
   res.status(201).json(eventList);
@@ -86,7 +89,9 @@ const createEvent = async (req, res, next) => {
 
   try {
     // Defining User Inputs
-    const { name, slug, streamUrl, previewImageUrl, category, tags = [], date, type } = req.body;
+    const {
+      name, slug, streamUrl, previewImageUrl, category, tags = [], date, type,
+    } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,

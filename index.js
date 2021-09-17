@@ -6,10 +6,36 @@ dotenv.config();
 // Import express
 const express = require('express');
 const http = require('http');
-const { connectMongoDB } = require('./mongodb');
+
+// Import mongoose to connect to Database
+const mongoose = require('mongoose');
+
+// Import Models from Wallfair Commons
+const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
-const userV2Routes = require('./routes/v2/user/protected-user-routes');
-const v2Routes = require('./routes/v2');
+
+let mongoURL = process.env.DB_CONNECTION;
+if (process.env.ENVIRONMENT === 'STAGING') {
+  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
+  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/staging.crt';
+} else if (process.env.ENVIRONMENT === 'PRODUCTIVE') {
+  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
+  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/productive.crt';
+}
+
+// Connection to Database
+async function connectMongoDB() {
+  const connection = await mongoose.connect(mongoURL, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  });
+  console.log('Connection to Mongo-DB successful');
+
+  wallfair.initModels(connection);
+  console.log('Mongoose models initialized');
+
+  return connection;
+}
 
 async function main() {
   const mongoDBConnection = await connectMongoDB();
@@ -36,8 +62,8 @@ async function main() {
   require('./util/auth');
 
   // Initialise server using express
-  const app = express();
-  const httpServer = http.createServer(app);
+  const server = express();
+  const httpServer = http.createServer(server);
 
   // Create socket.io server
   const socketioJwt = require('socketio-jwt');
@@ -89,15 +115,17 @@ async function main() {
   websocketService.setIO(io);
 
   // Giving server ability to parse json
+  server.use(passport.initialize());
+  server.use(passport.session());
   adminService.buildRouter();
 
-  app.use(adminService.getRootPath(), adminService.getRouter());
-  app.use(adminService.getLoginPath(), adminService.getRouter());
-  app.use(express.json({ limit: '1mb' }));
-  app.use(express.urlencoded({ limit: '1mb', extended: true }));
+  server.use(adminService.getRootPath(), adminService.getRouter());
+  server.use(adminService.getLoginPath(), adminService.getRouter());
+  server.use(express.json({ limit: '1mb' }));
+  server.use(express.urlencoded({ limit: '1mb', extended: true }));
 
   // Home Route
-  app.get('/', (req, res) => {
+  server.get('/', (req, res) => {
     res.status(200).send({
       message: 'Blockchain meets Prediction Markets made Simple. - Wallfair.',
     });
@@ -113,30 +141,29 @@ async function main() {
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
 
-  app.use(cors());
+  server.use(cors());
 
   // Using Routes
-  app.use('/api/v2', v2Routes);
-  app.use('/api/event', eventRoutes);
-  app.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
+  server.use('/api/event', eventRoutes);
+  server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
 
-  app.use('/v2/api/user', userV2Routes);
-  app.use('/api/user', userRoute);
-  app.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
+  server.use('/api/user', userRoute);
+  server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
-  app.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
-  app.use(
+  server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
+  server.use(
     '/api/bet-template',
     passport.authenticate('jwt', { session: false }),
-    secureBetTemplateRoute
+    secureBetTemplateRoute,
   );
 
-  app.use('/webhooks/twitch/', twitchWebhook);
+  server.use('/webhooks/twitch/', twitchWebhook);
 
   app.use('/api/chat', chatRoutes);
 
   // Error handler middleware
-  app.use((err, req, res) => {
+  // eslint-disable-next-line no-unused-vars
+  server.use((err, req, res, next) => {
     handleError(err, res);
   });
 
@@ -144,7 +171,7 @@ async function main() {
     socketioJwt.authorize({
       secret: process.env.JWT_KEY,
       handshake: true,
-    })
+    }),
   );
 
   io.on('connection', (socket) => {

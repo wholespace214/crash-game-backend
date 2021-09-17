@@ -14,8 +14,8 @@ const userApi = require('../apis/user-api');
  */
 exports.doLogin = async (userIdentifier) => {
   // Check if user with phone already exists
-  const currentUser = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier)
-  if (!currentUser) return {}
+  const currentUser = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
+  if (!currentUser) return {};
   // const verification = await twilio.verify
   //   .services(process.env.TWILIO_SID)
   //   .verifications.create({ to: phone, channel: 'sms' });
@@ -71,5 +71,4 @@ exports.verifyLogin = async (phone, smsToken) => {
   return user;
 };
 
-exports.generateJwt = async (user) =>
-  jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);
+exports.generateJwt = async (user) => jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);

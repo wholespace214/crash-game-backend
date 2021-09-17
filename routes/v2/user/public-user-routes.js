@@ -9,15 +9,15 @@ router.post(
     check('phone').notEmpty(),
     check('username').notEmpty(),
     check('email').notEmpty(),
-    check('password').notEmpty().isLength({min:8,max:255}),
+    check('password').notEmpty().isLength({ min: 8, max: 255 }),
   ],
-  userServiceV2.createUser
+  userServiceV2.createUser,
 );
 
 router.post(
-  "/verify-email",
-  [check('email').notEmpty(),],
-  userServiceV2.verifyEmail
+  '/verify-email',
+  [check('email').notEmpty()],
+  userServiceV2.verifyEmail,
 );
 
 module.exports = router;

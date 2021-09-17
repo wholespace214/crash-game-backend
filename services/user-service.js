@@ -14,8 +14,7 @@ exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).sessi
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 
-exports.getUserByIdAndWallet = async (id, walletAddress, session) =>
-  User.findOne({ _id: id }).session(session);
+exports.getUserByIdAndWallet = async (id, walletAddress, session) => User.findOne({ _id: id }).session(session);
 
 exports.getRefByUserId = async (id) => {
   const result = [];
@@ -25,11 +24,9 @@ exports.getRefByUserId = async (id) => {
   return result;
 };
 
-exports.getUsersToNotify = async (eventId, notificationSettings) => {
-  //TODO: use eventId to find users with this event bookmarked
-  return User.find({ notificationSettings });
-};
-
+exports.getUsersToNotify = async (eventId, notificationSettings) =>
+  // TODO: use eventId to find users with this event bookmarked
+  User.find({ notificationSettings });
 exports.saveUser = async (user, session) => user.save({ session });
 
 exports.rewardUserAction = async (ref, amount) => {
@@ -45,8 +42,7 @@ exports.securePassword = async (user, password) => {
   });
 };
 
-exports.comparePassword = async (user, plainPassword) =>
-  await bcrypt.compare(plainPassword, user.password);
+exports.comparePassword = async (user, plainPassword) => await bcrypt.compare(plainPassword, user.password);
 
 exports.getRankByUserId = async (userId) => {
   // TODO this cant stay like this.
@@ -167,7 +163,7 @@ exports.updateUser = async (userId, updatedUser) => {
 };
 
 exports.updateUserPreferences = async (userId, preferences) => {
-  let user = await User.findById(userId);
+  const user = await User.findById(userId);
 
   if (preferences) {
     const valid = CURRENCIES.includes(preferences.currency);

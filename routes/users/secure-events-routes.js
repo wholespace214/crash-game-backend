@@ -24,7 +24,7 @@ router.post(
     check('date').notEmpty(),
     check('type').isString().notEmpty(),
   ],
-  eventController.createEvent
+  eventController.createEvent,
 );
 
 router.post(
@@ -34,7 +34,7 @@ router.post(
     check('type').isString().notEmpty(),
     check('category').notEmpty(),
   ],
-  eventController.createEventFromYoutube
+  eventController.createEventFromYoutube,
 );
 
 router.post(
@@ -49,7 +49,7 @@ router.post(
     check('date'),
     check('type'),
   ],
-  eventController.editEvent
+  eventController.editEvent,
 );
 
 router.post(
@@ -63,7 +63,7 @@ router.post(
     check('date').notEmpty(),
     check('published').default(true),
   ],
-  betController.createBet
+  betController.createBet,
 );
 
 router.post(
@@ -77,13 +77,13 @@ router.post(
     check('date'),
     check('published'),
   ],
-  betController.editBet
+  betController.editBet,
 );
 
 router.post(
   '/extract/twitch',
   [check('streamUrl').notEmpty()],
-  twitchController.getEventFromTwitchUrl
+  twitchController.getEventFromTwitchUrl,
 );
 
 router.post(
@@ -93,7 +93,7 @@ router.post(
     check('outcome').isNumeric(),
     check('minOutcomeTokens').isNumeric().default(0).optional(),
   ],
-  betController.placeBet
+  betController.placeBet,
 );
 
 router.post(
@@ -103,7 +103,7 @@ router.post(
     check('outcome').isNumeric(),
     check('minReturnAmount').isNumeric().default(Number.MAX_SAFE_INTEGER).optional(),
   ],
-  betController.pullOutBet
+  betController.pullOutBet,
 );
 
 router.get('/bet/:id/payout', betController.payoutBet);

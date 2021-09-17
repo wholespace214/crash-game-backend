@@ -11,17 +11,17 @@ exports.initAuth = async (/** @type import('express').Express */ app) => {
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(async (IdEmailPhoneOrUsername, password, cb) => {
-    const currentUser= await userApi.getUserByIdEmailPhoneOrUsername(IdEmailPhoneOrUsername)
-    if(!currentUser) return cb("Couldn't find user")
+    const currentUser = await userApi.getUserByIdEmailPhoneOrUsername(IdEmailPhoneOrUsername);
+    if (!currentUser) return cb("Couldn't find user");
 
-    crypto.pbkdf2(password, row.salt, 10000, 32, 'sha256', (err, hashedPassword)=> {
-        if (err) { return cb(err); }
-        if (!crypto.timingSafeEqual(row.hashed_password, hashedPassword)) {
-          return cb(null, false, { message: 'Incorrect password.' });
-        }
+    crypto.pbkdf2(password, row.salt, 10000, 32, 'sha256', (err, hashedPassword) => {
+      if (err) { return cb(err); }
+      if (!crypto.timingSafeEqual(row.hashed_password, hashedPassword)) {
+        return cb(null, false, { message: 'Incorrect password.' });
+      }
 
-        return cb(null, currentUser);
-      });
+      return cb(null, currentUser);
+    });
   }));
 
   // Configure Passport authenticated session persistence.

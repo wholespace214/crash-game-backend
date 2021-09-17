@@ -12,7 +12,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
  * @param {Date} userData.date
  * @param {String} userData.password
  */
-const createUser=(userData)=>User.save(userData)
+const createUser = async (userData) => await new User(userData).save();
 
 /**
  * @param {String} id
@@ -27,31 +27,39 @@ const createUser=(userData)=>User.save(userData)
  * @param {Date} userData.date
  * @param {String} userData.password
  */
-const updateUser=(userData)=>User.save(userData)
+const updateUser = async (userData) => await User.findOneAndUpdate({
+  _id: userData.id,
+}, userData, { new: true }).exec();
 
 /** @param {String} userId */
-const getOne=(userId)=>User.findOne({_id:userId}).exec();
+const getOne = (userId) => User.findOne({ _id: userId }).exec();
 
 /** @param {String} IdEmailPhoneOrUsername */
-const getUserByIdEmailPhoneOrUsername=(IdEmailPhoneOrUsername)=>User.findOne({$or: [
-  { _id: IdEmailPhoneOrUsername },
-  { username: IdEmailPhoneOrUsername },
-  { phone: IdEmailPhoneOrUsername },
-  { email: IdEmailPhoneOrUsername },
-],}).exec();
+const getUserByIdEmailPhoneOrUsername = (IdEmailPhoneOrUsername) => User
+  .findOne({
+    $or: [
+      { _id: IdEmailPhoneOrUsername },
+      { username: IdEmailPhoneOrUsername },
+      { phone: IdEmailPhoneOrUsername },
+      { email: IdEmailPhoneOrUsername },
+    ],
+  })
+  .exec();
 
-const verifyEmail =async (email)=>{
-  return  User.findOneAndUpdate(
-        { email },
-        { $set: { confirmed: true} },
-        { new: true },
-      ).exec();
-}
+const verifyEmail = async (email) => {
+  console.log(User || undefined);
+  return await User.findOneAndUpdate(
+    { email },
+    { $set: { confirmed: true } },
+    { new: true },
+  )
+    .exec();
+};
 
 module.exports = {
   createUser,
   updateUser,
-getOne,
-getUserByIdEmailPhoneOrUsername,
-verifyEmail,
+  getOne,
+  getUserByIdEmailPhoneOrUsername,
+  verifyEmail,
 };
