@@ -17,14 +17,14 @@ exports.setPubClient = (newpub) => (pubClient = newpub);
 exports.handleChatMessage = async function (socket, data, userId) {
   try {
     const responseData = { ...data, userId, date: new Date() };
-    const { eventId } = data;
+    const { roomId } = data;
     const { message } = data;
 
-    console.debug(LOG_TAG, `user ${userId} sends message "${message}"`);
+    console.debug(LOG_TAG, `user ${userId} sends message "${message}" to room ${roomId}`);
 
     await persist(data);
 
-    emitToAllByEventId(eventId, 'chatMessage', responseData);
+    emitToAllByEventId(roomId, 'chatMessage', responseData);
   } catch (error) {
     console.error(error);
     console.log(LOG_TAG, 'failed to handle message', data);
@@ -33,12 +33,12 @@ exports.handleChatMessage = async function (socket, data, userId) {
 
 exports.handleJoinRoom = async function (socket, data) {
   try {
-    const { eventId, userId } = data;
+    const { roomId, userId } = data;
 
-    if (eventId) {
-      await socket.join(eventId);
+    if (roomId) {
+      await socket.join(roomId);
     } else {
-      console.debug(LOG_TAG, 'no event id in handle join data', data);
+      console.debug(LOG_TAG, 'no room id in handle join data', data);
     }
 
     if (userId) {
@@ -54,12 +54,12 @@ exports.handleJoinRoom = async function (socket, data) {
 
 exports.handleLeaveRoom = async function (socket, data) {
   try {
-    const { eventId, userId } = data;
+    const { roomId, userId } = data;
 
-    if (eventId) {
-      await socket.leave(eventId);
+    if (roomId) {
+      await socket.leave(roomId);
     } else {
-      console.debug(LOG_TAG, 'no event id in handle leave data', data);
+      console.debug(LOG_TAG, 'no room id in handle leave data', data);
     }
 
     if (userId) {
@@ -73,15 +73,16 @@ exports.handleLeaveRoom = async function (socket, data) {
   }
 };
 
-exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outcome) => {
+exports.emitPlaceBetToAllByEventId = async (eventId, betId, user, amount, outcome) => {
   const message = 'dummy';
   const betPlacedData = {
-    eventId,
+    roomId: eventId,
     betId,
+    type: 'BET_PLACE',
     amount: amount.toString(),
     outcome,
     message,
-    userId,
+    user,
     date: new Date(),
   };
 
@@ -90,21 +91,22 @@ exports.emitPlaceBetToAllByEventId = async (eventId, userId, betId, amount, outc
 
 exports.emitPullOutBetToAllByEventId = async (
   eventId,
-  userId,
   betId,
+  user,
   amount,
   outcome,
-  currentPrice,
+  currentPrice
 ) => {
   const message = 'dummy';
   const betPulledOutData = {
-    eventId,
+    roomId: eventId,
     betId,
+    type: 'BET_PULLOUT',
     amount: amount.toString(),
     outcome,
     currentPrice: currentPrice.toString(),
     message,
-    userId,
+    user,
     date: new Date(),
   };
 
@@ -114,8 +116,9 @@ exports.emitPullOutBetToAllByEventId = async (
 exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
   const message = 'dummy';
   const betCreationData = {
-    eventId,
+    roomId: eventId,
     betId,
+    type: 'BET_CREATE',
     title,
     message,
     userId,
@@ -126,15 +129,12 @@ exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
 };
 
 const handleBetMessage = async (eventId, emitEventName, data) => {
-  await persist(data);
+  // await persist(data); TODO: Check if we need to persist these types of messages
   emitToAllByEventId(eventId, emitEventName, data);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
-  console.debug(
-    LOG_TAG,
-    `emitting event "${emitEventName}" to all in event room ${eventId}`,
-  );
+  console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
   // io.of('/').to(eventId.toString()).emit(emitEventName, data);
   pubClient.publish(
     'message',
@@ -142,7 +142,7 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
       to: eventId.toString(),
       event: emitEventName,
       data: { date: new Date(), ...data },
-    }),
+    })
   );
 };
 
@@ -167,7 +167,7 @@ const emitBetResolveNotification = (
   betOutcome,
   amountTraded,
   eventPhotoUrl,
-  tokensWon,
+  tokensWon
 ) => {
   let message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You traded ${amountTraded} WFAIR.`;
   if (tokensWon > 0) {
@@ -202,6 +202,6 @@ const emitToAllByUserId = (userId, emitEventName, data) => {
       to: userId.toString(),
       event: emitEventName,
       data: { date: new Date(), ...data },
-    }),
+    })
   );
 };

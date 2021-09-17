@@ -178,16 +178,6 @@ const editEvent = async (req, res, next) => {
   }
 };
 
-const getChatMessagesByEventId = async (req, res, next) => {
-  // Validating User Inputs
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
-  }
-
-  res.status(200).json(await chatMessageService.getNewestChatMessagesByEvent(req.params.id));
-};
-
 const getTags = async (req, res) => {
   const tags = await eventService.getTags();
   res.status(200).json({
@@ -211,6 +201,5 @@ exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.createEventFromYoutube = createEventFromYoutube;
 exports.editEvent = editEvent;
-exports.getChatMessagesByEventId = getChatMessagesByEventId;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
