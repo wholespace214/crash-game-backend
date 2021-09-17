@@ -132,6 +132,7 @@ async function main() {
   const secureRewardsRoutes = require('./routes/users/secure-rewards-routes');
   const eventRoutes = require('./routes/users/events-routes');
   const secureUserRoute = require('./routes/users/secure-users-routes');
+  const secureBetTemplateRoute = require('./routes/users/secure-bet-template-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
 
   server.use(cors());
@@ -144,6 +145,7 @@ async function main() {
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
 
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
+  server.use('/api/bet-template', passport.authenticate('jwt', { session: false }), secureBetTemplateRoute);
 
   server.use('/webhooks/twitch/', twitchWebhook);
 
