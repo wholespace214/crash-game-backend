@@ -1,7 +1,6 @@
 const ChatMessageService = require('./chat-message-service');
 
 const LOG_TAG = '[SOCKET] ';
-let io = null;
 let pubClient = null;
 
 const persist = async (data) => {
@@ -160,9 +159,10 @@ const notificationTypes = {
   EVENT_BET_CASHED_OUT: 'Notification/EVENT_BET_CASHED_OUT',
 };
 
-exports.notificationTypes = notificationTypes
+exports.notificationTypes = notificationTypes;
 
 const emitEventStartNotification = (userId, eventId, eventName) => {
+  console.log(userId, eventId, eventName);
   // const message = `The event ${eventName} begins in 60s. Place your token.`;
   // emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
 };
@@ -196,21 +196,21 @@ const emitBetResolveNotification = (
 exports.emitBetResolveNotification = emitBetResolveNotification;
 
 const emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
+  console.log(userId, eventId, eventName, cancellationDescription);
   // const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
   // emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
 };
 exports.emitEventCancelNotification = emitEventCancelNotification;
 
 const emitEventOnline = (event) => {
-  emitToAllByEventId(event.id, notificationTypes.EVENT_ONLINE, event)
-}
-exports.emitEventOnline = emitEventOnline
+  emitToAllByEventId(event.id, notificationTypes.EVENT_ONLINE, event);
+};
+exports.emitEventOnline = emitEventOnline;
 
 const emitEventOffline = (event) => {
-  emitToAllByEventId(event.id, notificationTypes.EVENT_OFFLINE, event)
-}
-exports.emitEventOffline = emitEventOffline
-
+  emitToAllByEventId(event.id, notificationTypes.EVENT_OFFLINE, event);
+};
+exports.emitEventOffline = emitEventOffline;
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in user room ${userId}`);

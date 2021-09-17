@@ -12,7 +12,7 @@ const ytApi = google.youtube({
  * @param Array.<string> videoId
  * @returns Object
  */
-const getVideosById = async (/** @type string[] */videoIds) => {
+const getVideosById = async (/** @type string[] */ videoIds) => {
   try {
     if (!videoIds || !videoIds.length) throw new Error('No or empty array of "videoIds" given');
     /**

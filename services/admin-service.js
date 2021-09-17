@@ -1,16 +1,10 @@
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 
 // Import User, Bet and Event models
-const {
-  User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade,
-} = require('@wallfair.io/wallfair-commons').models;
+const { User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade } =
+  require('@wallfair.io/wallfair-commons').models;
 
 const WFAIR = new Erc20('WFAIR');
-
-// Import services
-
-const generator = require('generate-password');
-
 const flatten = require('flat');
 
 const AdminBro = require('admin-bro');
@@ -43,13 +37,7 @@ exports.initialize = function () {
       {
         resource: User,
         options: {
-          listProperties: [
-            '_id',
-            'email',
-            'name',
-            'phone',
-            'profilePictureUrl',
-          ],
+          listProperties: ['_id', 'email', 'name', 'phone', 'profilePictureUrl'],
           actions: {
             mint: {
               actionType: 'record',
@@ -72,10 +60,7 @@ exports.initialize = function () {
               isVisible: false,
               handler: async (request, response, context) => {
                 const addBalance = request.fields.add;
-                await userService.mintUser(
-                  context.record.params._id,
-                  addBalance,
-                );
+                await userService.mintUser(context.record.params._id, addBalance);
                 return {
                   record: context.record.toJSON(context.currentAdmin),
                 };
@@ -111,9 +96,7 @@ exports.initialize = function () {
                   await session.withTransaction(async () => {
                     bet.id = bet._id;
                     await eventService.provideLiquidityToBet(bet);
-                    const event = await Event.findById(bet.event).session(
-                      session,
-                    );
+                    const event = await Event.findById(bet.event).session(session);
                     event.bets.push(bet.id);
                     await event.save({ session });
                   });
@@ -150,10 +133,7 @@ exports.initialize = function () {
                 let userIds = [];
 
                 await session.withTransaction(async () => {
-                  dbBet = await eventService.getBet(
-                    request.params.recordId,
-                    session,
-                  );
+                  dbBet = await eventService.getBet(request.params.recordId, session);
 
                   const betContract = new BetContract(dbBet.id);
                   await betContract.refund();
@@ -169,7 +149,12 @@ exports.initialize = function () {
                   const event = await eventService.getEvent(dbBet.event);
 
                   for (const userId of userIds) {
-                    websocketService.emitEventCancelNotification(userId, dbBet.event, event.name, dbBet.reasonOfCancellation);
+                    websocketService.emitEventCancelNotification(
+                      userId,
+                      dbBet.event,
+                      event.name,
+                      dbBet.reasonOfCancellation
+                    );
                   }
                 }
 
@@ -207,7 +192,8 @@ exports.initialize = function () {
                 const { evidenceDescription } = request.fields;
 
                 if (bet.status !== 'active' && bet.status !== 'closed') {
-                  context.record.params.message = 'Event can only be resolved if it is active or closed';
+                  context.record.params.message =
+                    'Event can only be resolved if it is active or closed';
                   return {
                     record: context.record.toJSON(context.currentAdmin),
                   };
@@ -229,7 +215,7 @@ exports.initialize = function () {
                     const betContract = new BetContract(id);
                     resolveResults = await betContract.resolveAndPayout(
                       'Wallfair Admin User',
-                      indexOutcome,
+                      indexOutcome
                     );
                     ammInteraction = await betContract.getUserAmmInteractions();
                   });
@@ -242,10 +228,15 @@ exports.initialize = function () {
                   const investedValues = {}; // userId -> value
                   for (const interaction of ammInteraction) {
                     const amount = Number(interaction.amount) / Number(WFAIR.ONE);
-                    if (interaction.direction === 'BUY') { // when user bought, add this amount to value invested
-                      investedValues[interaction.buyer] = investedValues[interaction.buyer] ? investedValues[interaction.buyer] + amount : amount;
-                    } else if (interaction.direction === 'SELL') { // when user sells, decrease amount invested
-                      investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
+                    if (interaction.direction === 'BUY') {
+                      // when user bought, add this amount to value invested
+                      investedValues[interaction.buyer] = investedValues[interaction.buyer]
+                        ? investedValues[interaction.buyer] + amount
+                        : amount;
+                    } else if (interaction.direction === 'SELL') {
+                      // when user sells, decrease amount invested
+                      investedValues[interaction.buyer] =
+                        investedValues[interaction.buyer] - amount;
                     }
                   }
 
@@ -271,7 +262,7 @@ exports.initialize = function () {
                       bet.outcomes[indexOutcome].name,
                       Math.round(investedValues[userId]),
                       event.previewImageUrl,
-                      winToken,
+                      winToken
                     );
                   }
                 }
@@ -296,8 +287,25 @@ exports.initialize = function () {
         resource: Event,
         options: {
           listProperties: ['_id', 'name', 'type', 'category'],
-          editProperties: ['name', 'slug', 'type', 'category', 'previewImageUrl', 'streamUrl', 'tags'],
-          showProperties: ['name', 'slug', 'type', 'category', 'tags', 'previewImageUrl', 'streamUrl', 'metadata'],
+          editProperties: [
+            'name',
+            'slug',
+            'type',
+            'category',
+            'previewImageUrl',
+            'streamUrl',
+            'tags',
+          ],
+          showProperties: [
+            'name',
+            'slug',
+            'type',
+            'category',
+            'tags',
+            'previewImageUrl',
+            'streamUrl',
+            'metadata',
+          ],
           properties: {
             slug: {
               components: {
@@ -321,7 +329,7 @@ exports.initialize = function () {
             'do-import-event-from-twitch-url': {
               actionType: 'resource',
               isVisible: false,
-              handler: async (request, response, context) => {
+              handler: async (request) => {
                 let { twitch_url } = request.payload;
                 if (twitch_url.lastIndexOf('/') == -1) {
                   twitch_url = `https://www.twitch.tv/${twitch_url}`;
@@ -374,7 +382,6 @@ const twitchService = require('./twitch-service');
 const websocketService = require('./websocket-service');
 const betService = require('./bet-service');
 const eventService = require('./event-service');
-const generateSlug = require('../util/generateSlug');
 const userService = require('./user-service');
 
 exports.getRootPath = function () {
@@ -390,15 +397,19 @@ exports.buildRouter = function () {
     router = Router();
     router.use(passport.authenticate('jwt_admin', { session: false }));
   } else {
-    router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
-      authenticate: async (username, password, request, response) => username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD,
-      cookiePassword: 'ueudeiuhihd',
-    },
-    null,
-    {
-      resave: false,
-      saveUninitialized: true,
-    });/**/
+    router = AdminBroExpress.buildAuthenticatedRouter(
+      adminBro,
+      {
+        authenticate: async (username, password) =>
+          username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD,
+        cookiePassword: 'ueudeiuhihd',
+      },
+      null,
+      {
+        resave: false,
+        saveUninitialized: true,
+      }
+    ); /**/
   }
 
   router = AdminBroExpress.buildRouter(adminBro, router);

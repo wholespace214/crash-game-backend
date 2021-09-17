@@ -16,18 +16,24 @@ const findAndSubscribe = async () => {
             { 'metadata.twitch_subscribed_online': 'false' },
             { 'metadata.twitch_subscribed_offline': 'false' },
           ],
-        },
-      ).limit(5).exec();
+        }
+      )
+        .limit(5)
+        .exec();
 
       for (const unsubscribedEvent of unsubscribedEvents) {
         console.log(new Date(), 'Subscribe on twitch for event', unsubscribedEvent.name);
 
         // subscribe for online events
-        const onlineSubscriptionStatus = await twitchService.subscribeForOnlineNotifications(unsubscribedEvent.metadata.twitch_id);
+        const onlineSubscriptionStatus = await twitchService.subscribeForOnlineNotifications(
+          unsubscribedEvent.metadata.twitch_id
+        );
         unsubscribedEvent.metadata.twitch_subscribed_online = onlineSubscriptionStatus;
 
         // subscribe for offline events
-        offlineSubscriptionStatus = await twitchService.subscribeForOfflineNotifications(unsubscribedEvent.metadata.twitch_id);
+        offlineSubscriptionStatus = await twitchService.subscribeForOfflineNotifications(
+          unsubscribedEvent.metadata.twitch_id
+        );
         unsubscribedEvent.metadata.twitch_subscribed_offline = offlineSubscriptionStatus;
 
         await unsubscribedEvent.save();

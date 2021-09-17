@@ -26,8 +26,8 @@ exports.getRefByUserId = async (id) => {
 
 exports.getUsersToNotify = async (eventId, notificationSettings) => {
   //TODO: use eventId to find users with this event bookmarked
-  return User.find({notificationSettings})
-}
+  return User.find({ notificationSettings });
+};
 
 exports.saveUser = async (user, session) => user.save({ session });
 
@@ -129,8 +129,8 @@ exports.updateUser = async (userId, updatedUser) => {
   if (updatedUser.profilePicture) {
     user.profilePicture = updatedUser.profilePicture;
   }
-  if(updatedUser.notificationSettings){
-    user.notificationSettings = updatedUser.notificationSettings
+  if (updatedUser.notificationSettings) {
+    user.notificationSettings = updatedUser.notificationSettings;
   }
 
   const { preferences } = updatedUser;

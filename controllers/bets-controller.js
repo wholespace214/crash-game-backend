@@ -1,6 +1,5 @@
 // Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
-
 dotenv.config();
 
 // Imports from express validator to validate user input
@@ -125,7 +124,7 @@ const placeBet = async (req, res, next) => {
       req.params.id,
       amount,
       outcome,
-      minOutcomeTokens,
+      minOutcomeTokens
     );
 
     return res.status(200).json(response);
@@ -160,10 +159,7 @@ const pullOutBet = async (req, res, next) => {
 
     if (!eventService.isBetTradable(bet)) {
       return next(
-        new ErrorHandler(
-          405,
-          'No further action can be performed on an event/bet that has ended!',
-        ),
+        new ErrorHandler(405, 'No further action can be performed on an event/bet that has ended!')
       );
     }
 
@@ -174,36 +170,37 @@ const pullOutBet = async (req, res, next) => {
     try {
       let newBalances;
 
-      await session.withTransaction(async () => {
-        console.debug(LOG_TAG, 'Interacting with the AMM');
-        const betContract = new BetContract(id, bet.outcomes.length);
+      await session
+        .withTransaction(async () => {
+          console.debug(LOG_TAG, 'Interacting with the AMM');
+          const betContract = new BetContract(id, bet.outcomes.length);
 
-        sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
-        console.debug(
-          LOG_TAG,
-          `SELL ${
-            userId
-          } ${
-            sellAmount
-          } ${
-            outcome
-          } ${
-            requiredMinReturnAmount * WFAIR.ONE}`,
-        );
+          sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
+          console.debug(
+            LOG_TAG,
+            `SELL ${userId} ${sellAmount} ${outcome} ${requiredMinReturnAmount * WFAIR.ONE}`
+          );
 
-        newBalances = await betContract.sellAmount(
-          userId,
-          sellAmount,
-          outcome,
-          requiredMinReturnAmount * WFAIR.ONE,
-        );
-        console.debug(LOG_TAG, 'Successfully sold Tokens');
+          newBalances = await betContract.sellAmount(
+            userId,
+            sellAmount,
+            outcome,
+            requiredMinReturnAmount * WFAIR.ONE
+          );
+          console.debug(LOG_TAG, 'Successfully sold Tokens');
 
-        await tradeService.closeTrades(user.id, bet, outcome, 'sold', session);
-        console.debug(LOG_TAG, 'Trades closed successfully');
-      }).catch((err) => console.error(err));
+          await tradeService.closeTrades(user.id, bet, outcome, 'sold', session);
+          console.debug(LOG_TAG, 'Trades closed successfully');
+        })
+        .catch((err) => console.error(err));
 
-      await eventService.pullOutBet(user, bet, toPrettyBigDecimal(newBalances?.earnedTokens), outcome, 0n);
+      await eventService.pullOutBet(
+        user,
+        bet,
+        toPrettyBigDecimal(newBalances?.earnedTokens),
+        outcome,
+        0n
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -218,8 +215,6 @@ const pullOutBet = async (req, res, next) => {
 };
 
 const calculateBuyOutcome = async (req, res, next) => {
-  const LOG_TAG = '[CALCULATE-BUY-OUTCOME]';
-  // Validating User Inputs
   const errors = validationResult(req);
 
   const { amount } = req.body;
@@ -252,8 +247,6 @@ const calculateBuyOutcome = async (req, res, next) => {
 };
 
 const calculateSellOutcome = async (req, res, next) => {
-  const LOG_TAG = '[CALCULATE-SELL-OUTCOME]';
-  // Validating User Inputs
   const errors = validationResult(req);
 
   const { amount } = req.body;
@@ -273,7 +266,7 @@ const calculateSellOutcome = async (req, res, next) => {
     for (const outcome of bet.outcomes) {
       const outcomeSellAmount = await betContract.calcSellFromAmount(
         BigInt(bigAmount.getValue()),
-        outcome.index,
+        outcome.index
       );
       result.push({ index: outcome.index, outcome: toPrettyBigDecimal(outcomeSellAmount) });
     }
@@ -344,7 +337,7 @@ const betHistory = async (req, res, next) => {
       bet,
       direction,
       rangeType,
-      rangeValue,
+      rangeValue
     );
 
     res.status(200).json(interactionsList);

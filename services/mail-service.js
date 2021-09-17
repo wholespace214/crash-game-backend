@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport(
       user: process.env.GMAIL_USERNAME,
       pass: process.env.GMAIL_PASSWORD,
     },
-  }),
+  })
 );
 
 exports.sendConfirmMail = async (user) => {
@@ -60,7 +60,7 @@ exports.generate = (n) => {
   const min = max / 10;
   const number = Math.floor(Math.random() * (max - min + 1)) + min;
 
-  return (`${number}`).substring(add);
+  return `${number}`.substring(add);
 };
 
 exports.sendMail = async (email, subject, template) => {

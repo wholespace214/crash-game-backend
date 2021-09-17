@@ -10,10 +10,6 @@ const userService = require('./user-service');
 // Import twilio client
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 
-const { Erc20 } = require('@wallfair.io/smart_contract_mock');
-
-const WFAIR = new Erc20('WFAIR');
-
 exports.doLogin = async (phone, ref) => {
   // Check if user with phone already exists
   const existingUser = await userService.getUserByPhone(phone);
@@ -73,4 +69,5 @@ exports.verifyLogin = async (phone, smsToken) => {
   return user;
 };
 
-exports.generateJwt = async (user) => jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);
+exports.generateJwt = async (user) =>
+  jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);

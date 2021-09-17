@@ -63,7 +63,7 @@ const getTwitchUser = async (twitchUsername) => {
 
 const getTwitchTags = async (broadcaster_id) => {
   const tagsData = await twitchRequest(
-    `https://api.twitch.tv/helix/streams/tags?broadcaster_id=${broadcaster_id}`,
+    `https://api.twitch.tv/helix/streams/tags?broadcaster_id=${broadcaster_id}`
   );
 
   return tagsData.data.map((i) => ({ name: i.localization_names['en-us'] }));
@@ -71,7 +71,7 @@ const getTwitchTags = async (broadcaster_id) => {
 
 const getTwitchChannel = async (broadcaster_id) => {
   const channelData = await twitchRequest(
-    `https://api.twitch.tv/helix/channels?broadcaster_id=${broadcaster_id}`,
+    `https://api.twitch.tv/helix/channels?broadcaster_id=${broadcaster_id}`
   );
   return channelData.data[0];
 };
@@ -134,7 +134,7 @@ const getEventFromTwitchUrl = async (streamUrl) => {
 const subscribeForOnlineNotifications = async (broadcaster_user_id) => {
   if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
     console.log(
-      'WARNING: Attempted to subscribe to twich events without backend properly configured.',
+      'WARNING: Attempted to subscribe to twich events without backend properly configured.'
     );
     return;
   }
@@ -176,7 +176,7 @@ const subscribeForOnlineNotifications = async (broadcaster_user_id) => {
 const subscribeForOfflineNotifications = async (broadcaster_user_id) => {
   if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
     console.log(
-      'WARNING: Attempted to subscribe to twitch events without backend properly configured.',
+      'WARNING: Attempted to subscribe to twitch events without backend properly configured.'
     );
     return;
   }
@@ -217,9 +217,7 @@ const subscribeForOfflineNotifications = async (broadcaster_user_id) => {
 
 const removeSubscription = async (subscription_id) => {
   if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
-    console.log(
-      'WARNING: Attempted to remove twitch event without backend properly configured.',
-    );
+    console.log('WARNING: Attempted to remove twitch event without backend properly configured.');
     return;
   }
 
@@ -233,7 +231,7 @@ const removeSubscription = async (subscription_id) => {
           'Client-Id': clientId,
           Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
     return response.data;
   } catch (err) {
@@ -244,13 +242,13 @@ const removeSubscription = async (subscription_id) => {
 const listSubscriptions = async () => {
   if (!process.env.BACKEND_URL || !process.env.TWITCH_CALLBACK_SECRET) {
     console.log(
-      'WARNING: Attempted to list twitch subscriptions without backend properly configured.',
+      'WARNING: Attempted to list twitch subscriptions without backend properly configured.'
     );
     return;
   }
 
   const subscriptionsList = await twitchRequest(
-    'https://api.twitch.tv/helix/eventsub/subscriptions',
+    'https://api.twitch.tv/helix/eventsub/subscriptions'
   );
 
   return subscriptionsList.data;
@@ -276,18 +274,3 @@ module.exports = {
   listSubscriptions,
   removeAllSubscriptions,
 };
-
-// for quick cli tests:
-const main = async () => {
-  // console.log(await getEventFromTwitchUrl("https://www.twitch.tv/wackyjacky101"));
-  // console.log(await removeSubscription('9d973e0a-cd4e-4888-aa70-89a3f5b36264'));
-  // console.log(await subscribeForOfflineNotifications('91103221'));
-  // console.log(await subscribeForOnlineNotifications('91103221'));
-  // console.log(await listSubscriptions());
-  // setTimeout(async () => {
-  //     console.log('start removing');
-  //     console.log('Removed all? ', await removeAllSubscriptions());
-  // }, 6000);
-};
-
-// main();

@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 dotenv.config();
+
 const { validationResult } = require('express-validator');
 const chatMessageService = require('../services/chat-message-service');
 const { ErrorHandler } = require('../util/error-handler');

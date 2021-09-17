@@ -1,6 +1,5 @@
 // Import and configure dotenv to enable use of environmental variable
 const dotenv = require('dotenv');
-
 dotenv.config();
 
 // Imports from express validator to validate user input
@@ -14,7 +13,6 @@ const mailService = require('../services/mail-service');
 
 // Import service
 const eventService = require('../services/event-service');
-const chatMessageService = require('../services/chat-message-service');
 const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
@@ -38,9 +36,7 @@ const listEvents = async (req, res, next) => {
 };
 
 const filterEvents = async (req, res) => {
-  const {
-    category, sortby, searchQuery, type,
-  } = req.params;
+  const { category, sortby, searchQuery, type } = req.params;
   const count = +req.params.count;
   const page = +req.params.page;
 
@@ -50,7 +46,7 @@ const filterEvents = async (req, res) => {
     count,
     page,
     sortby,
-    searchQuery,
+    searchQuery
   );
 
   res.status(201).json(eventList);
@@ -79,16 +75,7 @@ const createEvent = async (req, res, next) => {
 
   try {
     // Defining User Inputs
-    const {
-      name,
-      slug,
-      streamUrl,
-      previewImageUrl,
-      category,
-      tags = [],
-      date,
-      type,
-    } = req.body;
+    const { name, slug, streamUrl, previewImageUrl, category, tags = [], date, type } = req.body;
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
@@ -144,13 +131,12 @@ const createEventFromYoutube = async (req, res, next) => {
       name: streamItem.snippet.title,
       slug: req.body.youtubeVideoId,
       streamUrl: createYouTubeVideoUrlFromId(req.body.youtubeVideoId),
-      previewImageUrl: (
-        streamItem.snippet.thumbnails?.maxres.url
-        || streamItem.snippet.thumbnails?.default.url
-        || ''
-      ),
+      previewImageUrl:
+        streamItem.snippet.thumbnails?.maxres.url ||
+        streamItem.snippet.thumbnails?.default.url ||
+        '',
       category: req.body.category,
-      tags: streamItem.snippet.tags.map((tag) => (({ name: tag }))),
+      tags: streamItem.snippet.tags.map((tag) => ({ name: tag })),
       // TODO - We're not getting the real date of when the event starts from the API.
       date: new Date(),
       type: req.body.type,
