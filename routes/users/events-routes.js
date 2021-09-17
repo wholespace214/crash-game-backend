@@ -10,12 +10,6 @@ router.get('/list/:type/:category/:count/:page/:sortby', eventController.filterE
 
 router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery', eventController.filterEvents);
 
-router.get(
-  '/chat-messages/:id',
-  [check('id').notEmpty()],
-  eventController.getChatMessagesByEventId,
-);
-
 router.post(
   '/bet/:id/outcomes/buy',
   [check('amount').isNumeric()],
