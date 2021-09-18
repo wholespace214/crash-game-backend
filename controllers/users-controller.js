@@ -10,6 +10,7 @@ const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal } = require('../util/number-helper');
+const { WFAIR_REWARDS } = require('../util/constants');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -178,7 +179,7 @@ const saveAcceptConditions = async (req, res, next) => {
 
 const rewardRefUserIfNotConfirmed = async (user) => {
   if (!user.confirmed) {
-    await userService.rewardRefUser(user.ref);
+    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
     await userService.createUser(user);
     user.confirmed = true;
   }
@@ -351,6 +352,7 @@ const confirmEmail = async (req, res, next) => {
   if (user.emailCode === code) {
     user.emailConfirmed = true;
     await user.save();
+    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.confirmEmail);
     res.status(200).send({ status: 'OK' });
   } else {
     next(new ErrorHandler(422, 'The email code is invalid'));
