@@ -28,7 +28,7 @@ router.post(
 );
 
 router.post(
-  '/create-from-yoututbe',
+  '/create-from-youtube',
   [
     check('youtubeVideoId').isString().notEmpty(),
     check('type').isString().notEmpty(),
