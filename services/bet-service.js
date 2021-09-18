@@ -70,7 +70,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
       console.debug(LOG_TAG, 'Trade saved successfully');
     });
 
-    await eventService.placeBet(user, bet, bigAmount.getPrettyValue(4, '.'), outcome);
+    await eventService.placeBet(user, bet, toPrettyBigDecimal(amount), outcome);
     return response;
   } catch (err) {
     console.error(LOG_TAG, err);
