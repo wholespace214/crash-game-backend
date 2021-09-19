@@ -16,4 +16,5 @@ console.log(
     .replace("$TWITCH_CALLBACK_SECRET", process.env.TWITCH_CALLBACK_SECRET)
     .replace("$ADMIN_USERNAME", process.env.ADMIN_USERNAME)
     .replace("$ADMIN_PASSWORD", process.env.ADMIN_PASSWORD)
+    .replace("$GOOGLE_API_KEY", process.env.GOOGLE_API_KEY)
     );

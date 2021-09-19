@@ -90,6 +90,9 @@ services:
   - key: ADMIN_PASSWORD
     scope: RUN_AND_BUILD_TIME
     value: $ADMIN_PASSWORD
+  - key: GOOGLE_API_KEY
+    scope: RUN_AND_BUILD_TIME
+    value: $GOOGLE_API_KEY
   http_port: 80
   image:
     registry_type: DOCR

@@ -27,6 +27,7 @@ jobs:
       TWITCH_CALLBACK_SECRET: ${{ secrets.TWITCH_CALLBACK_SECRET }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
