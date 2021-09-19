@@ -142,17 +142,14 @@ const createEventFromYoutube = async (req, res, next) => {
       videoId = streamUrl.substring(streamUrl.lastIndexOf("v=")+2);
     }
 
-    console.log(streamUrl, videoId)
-   
-
-    const { data } = await youtubeService.getVideosById(videoId);
+    const data = await youtubeService.getVideosById(videoId);
     if (!data || data.items?.length === 0) {
       return next(new ErrorHandler(404, 'Video not found'));
     }
     // get stream item
     const streamItem = data.items[0];
     const createdEvent = new Event({
-      name: streamItem.snippet.title,
+      name: streamItem.snippet.channelTitle,
       slug: videoId,
       streamUrl,
       previewImageUrl:

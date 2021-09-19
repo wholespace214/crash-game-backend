@@ -125,10 +125,11 @@ const getVideosById = async (/** @type string[] */ videoIds) => {
 }
 
        */
-    return ytApi.videos.list({
+    let response = await ytApi.videos.list({
       part: ['snippet,contentDetails,player,recordingDetails,statistics,status,topicDetails'],
       id: videoIds,
     });
+    return response.data;
   } catch (err) {
     logger.error(err);
     return undefined;
