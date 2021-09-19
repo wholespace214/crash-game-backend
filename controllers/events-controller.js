@@ -17,8 +17,8 @@ const { calculateAllBetsStatus } = require('../services/event-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const logger = require('../util/logger');
-const youtubeApi = require('../apis/youtube-api');
-const { isAdmin, createYouTubeVideoUrlFromId } = require('../helper');
+const youtubeService = require('../services/youtube-service');
+const { isAdmin } = require('../helper');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -74,7 +74,7 @@ const getEvent = async (req, res, next) => {
 };
 
 const createEvent = async (req, res, next) => {
-  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed')); 
 
   // Validating User Inputs
   const LOG_TAG = '[CREATE-EVENT]';
@@ -132,7 +132,20 @@ const createEventFromYoutube = async (req, res, next) => {
 
     if (!req.body.youtubeVideoId) return next(new ErrorHandler(404, 'No Video ID given'));
 
-    const { data } = await youtubeApi.getVideosById(req.body.youtubeVideoId);
+    // TODO properly parse URL
+    let streamUrl = req.body.youtubeVideoId;
+    let videoId = req.body.youtubeVideoId;
+
+    if (streamUrl.indexOf("/") == -1) {
+      streamUrl = `https://www.youtube.com/watch?v=${req.body.youtubeVideoId}`;
+    } else {
+      videoId = streamUrl.substring(streamUrl.lastIndexOf("v=")+2);
+    }
+
+    console.log(streamUrl, videoId)
+   
+
+    const { data } = await youtubeService.getVideosById(videoId);
     if (!data || data.items?.length === 0) {
       return next(new ErrorHandler(404, 'Video not found'));
     }
@@ -140,8 +153,8 @@ const createEventFromYoutube = async (req, res, next) => {
     const streamItem = data.items[0];
     const createdEvent = new Event({
       name: streamItem.snippet.title,
-      slug: req.body.youtubeVideoId,
-      streamUrl: createYouTubeVideoUrlFromId(req.body.youtubeVideoId),
+      slug: videoId,
+      streamUrl,
       previewImageUrl:
         streamItem.snippet.thumbnails?.maxres.url ||
         streamItem.snippet.thumbnails?.default.url ||
