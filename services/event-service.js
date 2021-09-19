@@ -98,6 +98,7 @@ exports.filterEvents = async (
   return Event.find(query)
     .limit(count)
     .skip(count * (page - 1))
+    .collation({ locale: 'en' })
     .sort(sortby)
     .lean();
 };
