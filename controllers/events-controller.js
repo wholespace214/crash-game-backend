@@ -52,6 +52,17 @@ const filterEvents = async (req, res) => {
   res.status(201).json(eventList);
 };
 
+const getCoverEvent = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
+  }
+
+  let event = await eventService.getCoverEvent(req.params.type);
+
+  res.status(200).json(calculateAllBetsStatus(event));
+};
+
 const getEvent = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -189,3 +200,4 @@ exports.createEventFromYoutube = createEventFromYoutube;
 exports.editEvent = editEvent;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
+exports.getCoverEvent = getCoverEvent;
