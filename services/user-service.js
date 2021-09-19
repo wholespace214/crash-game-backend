@@ -4,10 +4,10 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { toPrettyBigDecimal } = require('../util/number-helper');
+const { WFAIR_REWARDS } = require('../util/constants');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
-const REFERRAL_REWARD_AMOUNT = 500;
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 
@@ -31,12 +31,10 @@ exports.getUsersToNotify = async (eventId, notificationSettings) => {
 
 exports.saveUser = async (user, session) => user.save({ session });
 
-exports.rewardRefUser = async (ref) => {
-  if (ref === undefined || ref === null) {
-    return;
+exports.rewardUserAction = async (ref, amount) => {
+  if (ref) {
+    await this.mintUser(ref, amount);
   }
-  console.debug('try to reward ref');
-  await this.mintUser(ref, REFERRAL_REWARD_AMOUNT);
 };
 
 exports.securePassword = async (user, password) => {
@@ -127,6 +125,9 @@ exports.updateUser = async (userId, updatedUser) => {
     user.username = updatedUser.username;
   }
   if (updatedUser.profilePicture) {
+    if (!user.profilePicture) {
+      await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
+    }
     user.profilePicture = updatedUser.profilePicture;
   }
   if (updatedUser.notificationSettings) {
