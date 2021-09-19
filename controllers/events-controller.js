@@ -134,37 +134,12 @@ const createEventFromYoutube = async (req, res, next) => {
 
     // TODO properly parse URL
     let streamUrl = req.body.youtubeVideoId;
-    let videoId = req.body.youtubeVideoId;
 
     if (streamUrl.indexOf("/") == -1) {
       streamUrl = `https://www.youtube.com/watch?v=${req.body.youtubeVideoId}`;
-    } else {
-      videoId = streamUrl.substring(streamUrl.lastIndexOf("v=")+2);
-    }
+    } 
 
-    const data = await youtubeService.getVideosById(videoId);
-    if (!data || data.items?.length === 0) {
-      return next(new ErrorHandler(404, 'Video not found'));
-    }
-    // get stream item
-    const streamItem = data.items[0];
-    const createdEvent = new Event({
-      name: streamItem.snippet.channelTitle,
-      slug: videoId,
-      streamUrl,
-      previewImageUrl:
-        streamItem.snippet.thumbnails?.maxres.url ||
-        streamItem.snippet.thumbnails?.default.url ||
-        '',
-      category: req.body.category,
-      tags: streamItem.snippet.tags.map((tag) => ({ name: tag })),
-      // TODO - We're not getting the real date of when the event starts from the API.
-      date: new Date(),
-      type: req.body.type,
-    });
-
-    const event = await eventService.saveEvent(createdEvent);
-    console.debug(LOG_TAG, 'Successfully created a new Event');
+    let event = await youtubeService.getEventFromYoutubeUrl(streamUrl, req.body.category);
 
     return res.status(201).json(event);
   } catch (err) {
