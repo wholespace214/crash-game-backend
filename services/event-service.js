@@ -106,6 +106,23 @@ exports.filterEvents = async (
 exports.getEvent = async (id) =>
   Event.findOne({ _id: id }).populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
 
+exports.getCoverEvent = async (type) => {
+  // TODO Sort events by number of UniversalEvent associated with it
+  if (type === "streamed") {
+    return Event
+      .find({type, state: "online"})
+      .sort({date: -1})
+      .limit(1)
+      .lean();
+  } else {
+    return Event
+      .find({type})
+      .sort({date: -1})
+      .limit(1)
+      .lean();
+  }
+}
+
 exports.getBet = async (id, session) =>
   Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
 

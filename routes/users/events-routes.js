@@ -10,6 +10,11 @@ router.get('/list/:type/:category/:count/:page/:sortby', eventController.filterE
 
 router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery', eventController.filterEvents);
 
+router.get(
+  '/cover/:type', 
+  [check('type').notEmpty()],
+  eventController.getCoverEvent);
+
 router.post(
   '/bet/:id/outcomes/buy',
   [check('amount').isNumeric()],
