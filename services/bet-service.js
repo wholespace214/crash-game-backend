@@ -3,6 +3,7 @@ const tradeService = require('./trade-service');
 const eventService = require('./event-service');
 const websocketService = require('./websocket-service');
 const { Bet, Trade, Event } = require('@wallfair.io/wallfair-commons').models;
+const { publishEvent, notificationEvents } = require('./notification-service');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 
@@ -72,6 +73,11 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
     });
 
     await eventService.placeBet(user, bet, toPrettyBigDecimal(amount), outcome);
+    publishEvent(notificationEvents.EVENT_BET_PLACED, {
+      producer: 'user',
+      producerId: userId,
+      data: { bet, trade: response.trade },
+    });
     return response;
   } catch (err) {
     console.error(LOG_TAG, err);
@@ -131,6 +137,15 @@ exports.refundUserHistory = async (bet, session) => {
     }
   }
 
+  publishEvent(notificationEvents.EVENT_BET_CANCELED, {
+    producer: 'system',
+    producerId: 'notification-service',
+    data: {
+      bet,
+      userIds,
+    },
+  });
+
   return userIds;
 };
 
@@ -172,11 +187,14 @@ exports.resolve = async ({
       await this.clearOpenBets(bet, session);
       await bet.save({ session });
       const betContract = new BetContract(betId);
-      resolveResults = await betContract.resolveAndPayout(
-        reporter,
-        outcomeIndex
-      );
+      resolveResults = await betContract.resolveAndPayout(reporter, outcomeIndex);
       ammInteraction = await betContract.getUserAmmInteractions();
+    });
+
+    publishEvent(notificationEvents.EVENT_BET_RESOLVED, {
+      producer: 'system',
+      producerId: 'notification-service',
+      data: { bet, event },
     });
   } catch (err) {
     console.debug(err);
@@ -194,8 +212,7 @@ exports.resolve = async ({
           : amount;
       } else if (interaction.direction === 'SELL') {
         // when user sells, decrease amount invested
-        investedValues[interaction.buyer] =
-          investedValues[interaction.buyer] - amount;
+        investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
       }
     }
     console.log(LOG_TAG, 'Finding investments', investedValues);
@@ -210,14 +227,20 @@ exports.resolve = async ({
         continue;
       }
 
-      console.log(LOG_TAG, 'Awarding winnings', {userId, winToken});
+      console.log(LOG_TAG, 'Awarding winnings', { userId, winToken });
 
       // update the balance of tokens won of a user, to be used for leaderboards
       // must be done inside transaction
       await userService.increaseAmountWon(userId, winToken);
+      publishEvent(notificationEvents.EVENT_USER_REWARD, {
+        producer: 'system',
+        producerId: 'notification-service',
+        data: { bet, event, userId, winToken: winToken.toString() },
+      });
 
       // send notification to this user
-      return websocketService.emitBetResolveNotification( // eslint-disable-line no-unsafe-finally
+      // eslint-disable-next-line no-unsafe-finally
+      return websocketService.emitBetResolveNotification(
         userId,
         betId,
         bet.marketQuestion,
@@ -228,4 +251,4 @@ exports.resolve = async ({
       );
     }
   }
-}
+};

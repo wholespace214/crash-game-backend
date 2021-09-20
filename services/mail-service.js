@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
 
 const fs = require('fs');
+const { publishEvent, notificationEvents } = require('./notification-service');
 
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
 const email_evaluate = fs.readFileSync('./emails/email-evaluate.html', 'utf8');
@@ -44,8 +45,17 @@ exports.sendEventEvaluateMail = async (payload) => {
     .replace('{{bet_question}}', bet_question)
     .replace('{{rating}}', rating)
     .replace('{{comment}}', comment);
-
   await this.sendMail('feedback@wallfair.io', 'Event Evaluate Feedback', generatedTemplate);
+
+  publishEvent(notificationEvents.EVENT_BET_EVALUATED, {
+    producer: 'system',
+    producerId: 'notification-service',
+    data: {
+      bet_question,
+      rating,
+      comment,
+    },
+  });
 };
 
 exports.generate = (n) => {

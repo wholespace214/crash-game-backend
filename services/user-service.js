@@ -5,6 +5,7 @@ const axios = require('axios');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { toPrettyBigDecimal } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
+const { publishEvent, notificationEvents } = require('./notification-service');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -118,21 +119,50 @@ exports.getTotalWin = (balance) => {
 
 exports.updateUser = async (userId, updatedUser) => {
   const user = await User.findById(userId);
+
   if (updatedUser.name) {
     user.name = updatedUser.name;
+
+    publishEvent(notificationEvents.EVENT_USER_CHANGED_NAME, {
+      producer: 'user',
+      producerId: userId,
+      data: { username: user.name },
+    });
   }
+
   if (updatedUser.username) {
     user.username = updatedUser.username;
+
+    publishEvent(notificationEvents.EVENT_USER_CHANGED_USERNAME, {
+      producer: 'user',
+      producerId: userId,
+      data: { username: user.username },
+    });
   }
+
   if (updatedUser.profilePicture) {
     if (!user.profilePicture) {
       await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
     }
     user.profilePicture = updatedUser.profilePicture;
+
+    publishEvent(notificationEvents.EVENT_USER_UPLOADED_PICTURE, {
+      producer: 'user',
+      producerId: userId,
+      data: {},
+    });
   }
+
   if (updatedUser.notificationSettings) {
     user.notificationSettings = updatedUser.notificationSettings;
+
+    publishEvent(notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES, {
+      producer: 'user',
+      producerId: userId,
+      data: { notificationSettings: user.notificationSettings },
+    });
   }
+
   await user.save();
 };
 
@@ -146,6 +176,12 @@ exports.updateUserPreferences = async (userId, preferences) => {
     }
     user.preferences.currency = preferences.currency;
   }
+
+  publishEvent(notificationEvents.EVENT_USER_SET_CURRENCY, {
+    producer: 'user',
+    producerId: userId,
+    data: { currency: user.preferences.currency },
+  });
 
   return await user.save();
 };

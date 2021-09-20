@@ -341,19 +341,14 @@ const resolveBet = async (req, res, next) => {
     return next(new ErrorHandler(422, errors));
   }
 
-  if(!isAdmin(req)) {
+  if (!isAdmin(req)) {
     return next(new ErrorHandler(403, 'Action not allowed.'));
   }
 
   try {
-
     const { id: betId } = req.params;
     const reporter = req.user.id;
-    const {
-      outcomeIndex,
-      evidenceActual,
-      evidenceDescription,
-    } = req.body;
+    const { outcomeIndex, evidenceActual, evidenceDescription } = req.body;
 
     await betService.resolve({
       betId,
@@ -364,7 +359,6 @@ const resolveBet = async (req, res, next) => {
     });
 
     res.status(200).send();
-
   } catch (err) {
     return next(new ErrorHandler(422, err.message));
   }
