@@ -21,6 +21,10 @@ const transporter = nodemailer.createTransport(
 exports.sendConfirmMail = async (user) => {
   const emailCode = this.generate(6);
   const queryString = `?userId=${user.id}&code=${emailCode}`;
+  /**
+   * TODO
+   * When using v2 route please don't forget to pass `email` to the new route as POST param.
+   */
   const generatedTemplate = email_confirm
     .replace('{{query_string}}', queryString)
     .replace('{{verify_url}}', process.env.VERIFY_URL);
