@@ -13,8 +13,6 @@ module.exports = {
       }
       const counter = (await userApi.getUserEntriesAmount() || 0) + 1;
       const createdUser = await userApi.createUser({
-        // Phone is currently required by backend
-        phone: '000000000',
         email,
         username: username || `wallfair-${counter}`,
         openBeds: [],

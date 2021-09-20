@@ -25,7 +25,7 @@
     "@wallfair.io/smart_contract_mock": "0.4.0",
     "@wallfair.io/wallfair-commons": "^1.7.1",
     "admin-bro": "^4.0.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -36,7 +36,7 @@
     "express-validator": "^6.12.1",
     "flat": "^5.0.2",
     "generate-password": "^1.6.1",
-    "google-auth-library": "^7.9.1",
+    "google-auth-library": "^7.9.2",
     "googleapis": "^86.1.0",
     "helmet": "^4.5.0",
     "http": "0.0.1-security",
@@ -45,7 +45,7 @@
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
     "mailchimp-api-v3": "^1.15.0",
-    "mongoose": "^5.13.8",
+    "mongoose": "^5.13.9",
     "nodemailer": "^6.6.3",
     "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.1",
@@ -57,8 +57,8 @@
     "socket.io-redis": "^6.1.1",
     "socketio-jwt": "^4.6.2",
     "tslib": "^2.3.1",
-    "twilio": "^3.67.1",
-    "ws": "^7.5.4"
+    "twilio": "^3.67.2",
+    "ws": "^7.5.5"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
