@@ -6,6 +6,7 @@ const { Client } = require('pg');
 const mongoose = require('mongoose');
 const wallfair = require('@wallfair.io/wallfair-commons');
 const bigDecimal = require('js-big-decimal');
+const fs = require("fs")
 
 const pgClient = new Client({
   user: process.env.POSTGRES_USER,

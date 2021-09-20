@@ -30,7 +30,6 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
-    "eslint-config-airbnb-base": "^14.2.1",
     "express": "^4.17.1",
     "express-formidable": "^1.2.0",
     "express-session": "^1.17.2",
@@ -62,6 +61,7 @@
     "ws": "^7.5.4"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",

@@ -95,7 +95,7 @@ const bindWalletAddress = async (req, res, next) => {
     }
 
     res.status(201).json({
-      userId: user.id,
+      userId: user?.id || undefined,
       walletAddress,
     });
   } catch (err) {

@@ -1,12 +1,11 @@
 module.exports = {
   env: {
-    browser: true,
+    node: true,
+    mocha: true,
     commonjs: true,
     es2021: true,
   },
-  extends: [
-    'airbnb-base',
-  ],
+  extends: ['eslint:recommended'],
   parserOptions: {
     ecmaVersion: 12,
     extraFileExtensions: ['.json'],
@@ -16,7 +15,5 @@ module.exports = {
       experimentalObjectRestSpread: true,
     },
   },
-  rules: {
-    'no-undef': 0,
-  },
+  rules: {},
 };

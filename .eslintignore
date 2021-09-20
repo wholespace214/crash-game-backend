@@ -4,3 +4,4 @@ dist
 docker
 .husky
 .adminbro
+package.json
