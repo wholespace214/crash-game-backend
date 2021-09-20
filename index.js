@@ -28,6 +28,10 @@ async function connectMongoDB() {
   const connection = await mongoose.connect(mongoURL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+    readPreference: 'primary',
+    retryWrites: true,
   });
   console.log('Connection to Mongo-DB successful');
 
