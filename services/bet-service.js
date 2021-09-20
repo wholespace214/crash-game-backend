@@ -82,7 +82,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
 };
 
 exports.getTrade = async (id) => {
-  return await Trade.findById(id);
+  return await Trade.findById(id).populate('userId').populate('betId');
 }
 
 exports.clearOpenBets = async (bet, session) => {
