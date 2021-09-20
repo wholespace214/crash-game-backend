@@ -686,7 +686,7 @@ All v2 API routes are exposed under: `/api/v2/...` and locally stored with `src/
 #### Route `/api/v2/auth/login`
 * HTTP Method: `POST`
 * Required params
-  * `username` string, required
+  * `userIdentifier` string, required (Either phone, email, or username)
   * `password` string, required
     * Length:
       * min: 8
