@@ -1,5 +1,5 @@
 const logger = require('../util/logger');
-const userApi = require('../apis/user-api');
+const userApi = require('./user-api');
 const { ErrorHandler } = require('../util/error-handler');
 const authServiceV2 = require('./auth-service-v2');
 

@@ -1,6 +1,6 @@
 // const jwt = require('jsonwebtoken');
 // const userService = require('./user-service-v2');
-const userApi = require('../apis/user-api');
+const userApi = require('./user-api');
 
 /**
  * @param {String} userIdentifier Can be MongoId, email, phone or username
@@ -13,13 +13,9 @@ exports.doLogin = async (userIdentifier, userPw) => {
   if (!currentUser) return undefined;
 
   // check password
-  if (currentUser !== userPw) return undefined;
+  if (currentUser.password !== userPw) return undefined;
 
-  // TODO what else should be done here?
+  // TODO @gmussi what else should be done here?
 
-  return {
-    ...currentUser,
-    status: verification.status,
-    existing: existingUser && existingUser.confirmed,
-  };
+  return currentUser
 };
