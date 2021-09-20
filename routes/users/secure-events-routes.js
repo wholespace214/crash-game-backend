@@ -108,4 +108,14 @@ router.post(
 
 router.get('/bet/:id/payout', betController.payoutBet);
 
+router.post(
+  '/bet/:id/resolve', 
+  [
+    check('evidenceActual').isString(),
+    check('evidenceDescription').isString(),
+    check('outcomeIndex').isNumeric(),
+  ],
+  betController.resolveBet
+);
+
 module.exports = router;
