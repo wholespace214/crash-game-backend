@@ -43,6 +43,19 @@ module.exports = {
     }
   },
 
+  async resetPassword(req, res, next) {
+    try {
+      const user = await userApi.getOne(req.body.email);
+      if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
+      await mailService.sendResetPasswordMail(user);
+
+      return res.status(201).send();
+    } catch (err) {
+      logger.error(err);
+      return res.status(500).send();
+    }
+  },
+
   async login(req, res, next) {
     try {
       const user = await authServiceV2.doLogin(req.body.username, req.body.password);

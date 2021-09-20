@@ -715,6 +715,10 @@ None so far
 * HTTP Method: `POST`
 * Required params
   * `email` string, required
+#### Route `/api/v2/user/reset-password`
+* HTTP Method: `POST`
+* Required params
+  * `email` string, required
 
 ### Proteced user routes
 None so far
