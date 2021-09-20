@@ -192,11 +192,11 @@ Successful Result:
         "hot": true,
         "outcomes": [
           {
-            "index": 0, 
+            "index": 0,
             "name": "Jonas"
           },
           {
-            "index": 0, 
+            "index": 0,
             "name": "Jörn"
           }
         ],
@@ -637,7 +637,7 @@ Successful Result:
       }
     ],
     "createdAt": "1631517847345",
-    "closedAt": "1631517847345" 
+    "closedAt": "1631517847345"
   }
 ]
 ```
@@ -679,3 +679,37 @@ Successful Result: Lottery Ticket ID
 }]
 ```
 
+# API v2
+All v2 API routes are exposed under: `/api/v2/...` and locally stored with `src/routes/v2`
+## Auth routes
+### Public auth routes
+#### Route `/api/v2/auth/login`
+* HTTP Method: `POST`
+* Required params
+  * `username` string, required
+  * `password` string, required
+    * Length:
+      * min: 8
+      * max: 255
+
+### Proteced auth routes
+None so far
+
+## User routes
+### Public user routes
+#### Route `/api/v2/user/create`
+* HTTP Method: `POST`
+* Required params
+  * `username` string, required
+  * `password` string, required
+    * Length:
+      * min: 8
+      * max: 255
+
+#### Route `/api/v2/user/verify-email`
+* HTTP Method: `POST`
+* Required params
+  * `email` string, required
+
+### Proteced user routes
+None so far
