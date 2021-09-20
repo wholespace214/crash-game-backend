@@ -134,6 +134,23 @@ const placeBet = async (req, res, next) => {
   }
 };
 
+const getTrade = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
+  }
+
+  try {
+
+    let trade = await betService.getTrade(req.params.id);
+
+    return res.status(200).json(trade);
+  } catch (err) {
+    console.error(err);
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
 const pullOutBet = async (req, res, next) => {
   const LOG_TAG = '[PULLOUT-BET]';
   // Validating User Inputs
@@ -355,3 +372,4 @@ exports.calculateBuyOutcome = calculateBuyOutcome;
 exports.calculateSellOutcome = calculateSellOutcome;
 exports.payoutBet = payoutBet;
 exports.betHistory = betHistory;
+exports.getTrade = getTrade;

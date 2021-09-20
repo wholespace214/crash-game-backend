@@ -42,6 +42,12 @@ router.get(
   betController.betHistory
 );
 
+router.get(
+  '/trade/:id',
+  [check('id').notEmpty()],
+  betController.getTrade
+)
+
 router.get('/tags', eventController.getTags);
 
 router.post('/evaluate', eventController.sendEventEvaluate);

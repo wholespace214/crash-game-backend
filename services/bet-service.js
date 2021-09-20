@@ -80,6 +80,10 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
   }
 };
 
+exports.getTrade = async (id) => {
+  return await Trade.findById(id);
+}
+
 exports.clearOpenBets = async (bet, session) => {
   const betContract = new BetContract(bet.id, bet.outcomes.length);
   for (const outcome of bet.outcomes) {
