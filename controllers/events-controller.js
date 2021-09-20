@@ -122,7 +122,7 @@ const createEvent = async (req, res, next) => {
 const createEventFromYoutube = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
-  const LOG_TAG = '[CREATE-EVENT]';
+  // const LOG_TAG = '[CREATE-EVENT]';
 
   try {
     const errors = validationResult(req);

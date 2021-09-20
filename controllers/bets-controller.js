@@ -304,7 +304,7 @@ const payoutBet = async (req, res, next) => {
   }
 
   try {
-    const id = req.params.od;
+    const id = req.params.id;
     const session = await User.startSession();
     let bet = {};
 
@@ -332,6 +332,41 @@ const payoutBet = async (req, res, next) => {
   } catch (err) {
     console.error(err.message);
     next(new ErrorHandler(422, err.message));
+  }
+};
+
+const resolveBet = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, errors));
+  }
+
+  if(!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed.'));
+  }
+
+  try {
+
+    const { id: betId } = req.params;
+    const reporter = req.user.id;
+    const {
+      outcomeIndex,
+      evidenceActual,
+      evidenceDescription,
+    } = req.body;
+
+    await betService.resolve({
+      betId,
+      outcomeIndex,
+      evidenceActual,
+      evidenceDescription,
+      reporter,
+    });
+
+    res.status(200).send();
+
+  } catch (err) {
+    return next(new ErrorHandler(422, err.message));
   }
 };
 
@@ -373,3 +408,4 @@ exports.calculateSellOutcome = calculateSellOutcome;
 exports.payoutBet = payoutBet;
 exports.betHistory = betHistory;
 exports.getTrade = getTrade;
+exports.resolveBet = resolveBet;
