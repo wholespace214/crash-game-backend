@@ -1,3 +1,4 @@
+const {ObjectId}= require('mongodb')
 const { User } = require('@wallfair.io/wallfair-commons').models;
 
 /**
@@ -38,7 +39,6 @@ const getOne = (userId) => User.findOne({ _id: userId }).exec();
 const getUserByIdEmailPhoneOrUsername = (IdEmailPhoneOrUsername) => User
   .findOne({
     $or: [
-      { _id: IdEmailPhoneOrUsername },
       { username: IdEmailPhoneOrUsername },
       { phone: IdEmailPhoneOrUsername },
       { email: IdEmailPhoneOrUsername },

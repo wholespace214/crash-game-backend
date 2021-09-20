@@ -158,12 +158,18 @@ async function main() {
   server.use(
     '/api/bet-template',
     passport.authenticate('jwt', { session: false }),
-    secureBetTemplateRoute,
+    secureBetTemplateRoute
   );
 
   server.use('/webhooks/twitch/', twitchWebhook);
 
-  app.use('/api/chat', chatRoutes);
+  server.use('/api/chat', chatRoutes);
+
+  // V2 routes
+  const v2Routes = require('./routes/v2');
+  server.use('/api/v2', v2Routes);
+
+  server.use('/api/chat', chatRoutes);
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars
@@ -175,7 +181,7 @@ async function main() {
     socketioJwt.authorize({
       secret: process.env.JWT_KEY,
       handshake: true,
-    }),
+    })
   );
 
   io.on('connection', (socket) => {

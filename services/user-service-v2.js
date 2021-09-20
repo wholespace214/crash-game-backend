@@ -45,6 +45,7 @@ module.exports = {
     try {
       const user = await authServiceV2.doLogin(req.body.username, req.body.password);
       if (!user) return next(new ErrorHandler(403, "Couldn't verify user"));
+      // TODO @gmussi - What do you want to return here?
       return res.status(200).json(user);
     } catch (err) {
       logger.error(err);
