@@ -6,8 +6,6 @@ const userServiceV2 = require('../../../services/user-service-v2');
 router.post(
   '/create',
   [
-    check('phone').notEmpty(),
-    check('username').notEmpty(),
     check('email').notEmpty(),
     check('password').notEmpty().isLength({ min: 8, max: 255 }),
   ],

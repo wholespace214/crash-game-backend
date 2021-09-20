@@ -1,4 +1,3 @@
-const {ObjectId}= require('mongodb')
 const { User } = require('@wallfair.io/wallfair-commons').models;
 
 /**
@@ -56,10 +55,13 @@ const verifyEmail = async (email) => {
     .exec();
 };
 
+const getUserEntriesAmount = async ()=> User.countDocuments({}).exec();
+
 module.exports = {
   createUser,
   updateUser,
   getOne,
   getUserByIdEmailPhoneOrUsername,
   verifyEmail,
+  getUserEntriesAmount,
 };

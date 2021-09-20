@@ -700,8 +700,13 @@ None so far
 #### Route `/api/v2/user/create`
 * HTTP Method: `POST`
 * Required params
-  * `username` string, required
+  * `username` string
+  * `email` string, required
   * `password` string, required
+    * Length:
+      * min: 8
+      * max: 255
+  * `passwordConfirm` string, required
     * Length:
       * min: 8
       * max: 255
