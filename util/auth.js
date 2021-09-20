@@ -18,8 +18,8 @@ passport.use(
       } catch (error) {
         done(error);
       }
-    },
-  ),
+    }
+  )
 );
 passport.use(
   'jwt_admin',
@@ -38,6 +38,6 @@ passport.use(
       } catch (error) {
         done(error);
       }
-    },
-  ),
+    }
+  )
 );

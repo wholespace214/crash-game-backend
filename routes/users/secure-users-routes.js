@@ -10,7 +10,7 @@ const userController = require('../../controllers/users-controller');
 router.post(
   '/bindWalletAddress',
   [check('walletAddress').notEmpty()],
-  userController.bindWalletAddress,
+  userController.bindWalletAddress
 );
 
 router.post(
@@ -24,13 +24,13 @@ router.post(
     ],
     check('email').isEmail(),
   ]),
-  userController.saveAdditionalInformation,
+  userController.saveAdditionalInformation
 );
 
 router.post(
   '/acceptConditions',
   [check('conditions').isArray({ min: 3, max: 3 })],
-  userController.saveAcceptConditions,
+  userController.saveAcceptConditions
 );
 
 router.get('/refList', userController.getRefList);
@@ -52,13 +52,13 @@ router.patch(
       check('email').isEmail(),
     ],
   ]),
-  userController.updateUser,
+  userController.updateUser
 );
 
 router.patch(
   '/:userId/preferences',
   [check('preferences').notEmpty()],
-  userController.updateUserPreferences,
+  userController.updateUserPreferences
 );
 
 router.get('/:userId', userController.getUserInfo);

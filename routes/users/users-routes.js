@@ -9,7 +9,7 @@ router.post('/login', [check('phone').isMobilePhone()], userController.login);
 router.post(
   '/verifyLogin',
   [check('phone').isMobilePhone(), check('smsToken').isNumeric().isLength({ min: 6, max: 6 })],
-  userController.verfiySms,
+  userController.verfiySms
 );
 
 router.get('/getLeaderboard/:skip/:limit', userController.getLeaderboard);
@@ -17,7 +17,7 @@ router.get('/getLeaderboard/:skip/:limit', userController.getLeaderboard);
 router.get(
   '/confirm-email',
   [check('userId').isString(), check('code').isLength({ min: 6, max: 6 })],
-  userController.confirmEmail,
+  userController.confirmEmail
 );
 
 module.exports = router;
