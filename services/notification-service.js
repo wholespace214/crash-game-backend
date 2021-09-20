@@ -1,5 +1,8 @@
 const { UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
-const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const {
+  notificationEvents,
+  universalEventTypes,
+} = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 
 let pubClient, subClient;
 const DEFAULT_CHANNEL = 'system';
@@ -16,7 +19,10 @@ const init = (client) => {
     try {
       const messageObj = JSON.parse(message);
       console.log('[NOTIFICATION-SERVICE] Received:', message);
-      save(messageObj);
+
+      if (universalEventTypes.includes(messageObj.event)) {
+        save(messageObj);
+      }
     } catch (err) {
       console.error(err);
     }
