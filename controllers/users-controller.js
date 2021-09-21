@@ -402,8 +402,8 @@ const updateUserPreferences = async (req, res, next) => {
   }
 
   try {
-    const user = await userService.updateUserPreferences(req.params.userId, req.body.preferences);
-    res.status(200).send({ user });
+    await userService.updateUserPreferences(req.params.userId, req.body.preferences);
+    res.status(200).send();
   } catch (err) {
     next(new ErrorHandler(422, err.message));
   }

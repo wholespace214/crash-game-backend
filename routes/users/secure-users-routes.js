@@ -45,13 +45,7 @@ router.get('/resend-confirm', userController.resendConfirmEmail);
 
 router.patch(
   '/:userId',
-  oneOf([
-    [
-      check('username').isLength({ min: 3, max: 25 }),
-      check('name').isLength({ min: 3 }),
-      check('email').isEmail(),
-    ],
-  ]),
+  oneOf([[check('username').isLength({ min: 3, max: 25 }), check('email').isEmail()]]),
   userController.updateUser
 );
 
