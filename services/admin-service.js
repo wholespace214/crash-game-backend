@@ -393,7 +393,7 @@ exports.getLoginPath = function () {
 };
 let router = null;
 exports.buildRouter = function () {
-  if (process.env.ENVIRONMENT === 'STAGING' || process.env.ENVIRONMENT === 'PRODUCTIVE') {
+  if (process.env.ENVIRONMENT === 'STAGING' || process.env.ENVIRONMENT === 'PRODUCTION') {
     router = Router();
     router.use(passport.authenticate('jwt_admin', { session: false }));
   } else {

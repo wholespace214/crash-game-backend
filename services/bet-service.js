@@ -89,7 +89,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
 
 exports.getTrade = async (id) => {
   return await Trade.findById(id).populate('userId').populate('betId');
-}
+};
 
 exports.clearOpenBets = async (bet, session) => {
   const betContract = new BetContract(bet.id, bet.outcomes.length);
@@ -181,6 +181,7 @@ exports.resolve = async ({
     await session.withTransaction(async () => {
       bet.finalOutcome = outcomeIndex;
       bet.resolved = true;
+      bet.endDate = new Date().toISOString();
       bet.evidenceDescription = evidenceDescription;
       bet.evidenceActual = evidenceActual;
 
@@ -200,55 +201,56 @@ exports.resolve = async ({
     console.debug(err);
   } finally {
     await session.endSession();
+  }
 
-    // find out how much each individual user invested
-    const investedValues = {}; // userId -> value
-    for (const interaction of ammInteraction) {
-      const amount = Number(interaction.amount) / Number(WFAIR.ONE);
-      if (interaction.direction === 'BUY') {
-        // when user bought, add this amount to value invested
-        investedValues[interaction.buyer] = investedValues[interaction.buyer]
-          ? investedValues[interaction.buyer] + amount
-          : amount;
-      } else if (interaction.direction === 'SELL') {
-        // when user sells, decrease amount invested
-        investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
-      }
+  // find out how much each individual user invested
+  const investedValues = {}; // userId -> value
+  for (const interaction of ammInteraction) {
+    const amount = Number(interaction.amount) / Number(WFAIR.ONE);
+    if (interaction.direction === 'BUY') {
+      // when user bought, add this amount to value invested
+      investedValues[interaction.buyer] = investedValues[interaction.buyer]
+        ? investedValues[interaction.buyer] + amount
+        : amount;
+    } else if (interaction.direction === 'SELL') {
+      // when user sells, decrease amount invested
+      investedValues[interaction.buyer] = investedValues[interaction.buyer] - amount;
     }
-    console.log(LOG_TAG, 'Finding investments', investedValues);
+  }
 
-    for (const resolvedResult of resolveResults) {
-      const userId = resolvedResult.owner;
-      const { balance } = resolvedResult;
+  console.log(LOG_TAG, 'Finding investments', investedValues);
 
-      const winToken = Math.round(Number(balance) / Number(WFAIR.ONE));
+  for (const resolvedResult of resolveResults) {
+    const userId = resolvedResult.owner;
+    const { balance } = resolvedResult;
 
-      if (userId.includes('_')) {
-        continue;
-      }
+    const winToken = Math.round(Number(balance) / Number(WFAIR.ONE));
 
-      console.log(LOG_TAG, 'Awarding winnings', { userId, winToken });
-
-      // update the balance of tokens won of a user, to be used for leaderboards
-      // must be done inside transaction
-      await userService.increaseAmountWon(userId, winToken);
-      publishEvent(notificationEvents.EVENT_USER_REWARD, {
-        producer: 'system',
-        producerId: 'notification-service',
-        data: { bet, event, userId, winToken: winToken.toString() },
-      });
-
-      // send notification to this user
-      // eslint-disable-next-line no-unsafe-finally
-      return websocketService.emitBetResolveNotification(
-        userId,
-        betId,
-        bet.marketQuestion,
-        bet.outcomes[outcomeIndex].name,
-        Math.round(investedValues[userId]),
-        event.previewImageUrl,
-        winToken
-      );
+    if (userId.includes('_')) {
+      continue;
     }
+
+    console.log(LOG_TAG, 'Awarding winnings', { userId, winToken });
+
+    // update the balance of tokens won of a user, to be used for leaderboards
+    // must be done inside transaction
+    await userService.increaseAmountWon(userId, winToken);
+    publishEvent(notificationEvents.EVENT_USER_REWARD, {
+      producer: 'system',
+      producerId: 'notification-service',
+      data: { bet, event, userId, winToken: winToken.toString() },
+    });
+
+    // send notification to this user
+    return websocketService.emitBetResolveNotification(
+      // eslint-disable-line no-unsafe-finally
+      userId,
+      betId,
+      bet.marketQuestion,
+      bet.outcomes[outcomeIndex].name,
+      Math.round(investedValues[userId]),
+      event.previewImageUrl,
+      winToken
+    );
   }
 };
