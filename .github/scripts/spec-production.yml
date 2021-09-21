@@ -1,32 +1,34 @@
 databases:
+- cluster_name: production-mongodb
+  engine: MONGODB
+  name: production-mongodb
+  production: true
+  version: "4"
+- cluster_name: production-redis
+  engine: REDIS
+  name: production-redis
+  production: true
+  version: "6"
 - cluster_name: prod-db
+  db_name: defaultdb
+  db_user: doadmin
   engine: PG
   name: prod-db
   production: true
   version: "13"
-- cluster_name: prod-redis
-  engine: REDIS
-  name: prod-redis
-  production: true
-  version: "6"
-- cluster_name: prod-mongo
-  engine: MONGODB
-  name: prod-mongo
-  production: true
-  version: "4"
 envs:
 - key: DB_CONNECTION
   scope: RUN_AND_BUILD_TIME
-  value: ${prod-mongo.DATABASE_URL}
+  value: ${production-mongodb.DATABASE_URL}
 - key: REDIS_CONNECTION
   scope: RUN_AND_BUILD_TIME
-  value: ${prod-redis.DATABASE_URL}
+  value: ${production-redis.DATABASE_URL}
 name: production-backend
 region: fra
 services:
 - envs:
   - key: JWT_KEY
-    scope: RUN_TIME
+    scope: RUN_AND_BUILD_TIME
     value: $JWT_KEY
   - key: TWILIO_ACC_SID
     scope: RUN_AND_BUILD_TIME
@@ -42,7 +44,7 @@ services:
     value: PRODUCTIVE
   - key: VERIFY_URL
     scope: RUN_AND_BUILD_TIME
-    value: https://demo.wallfair.io/
+    value: https://play.wallfair.io/
   - key: GMAIL_USERNAME
     scope: RUN_AND_BUILD_TIME
     value: noreply@wallfair.io
@@ -70,9 +72,7 @@ services:
   - key: POSTGRES_PORT
     scope: RUN_AND_BUILD_TIME
     value: "25060"
-  - key: NODE_OPTIONS
-    scope: RUN_AND_BUILD_TIME
-    value: --max-old-space-size=8192
+
   - key: BACKEND_URL
     scope: RUN_AND_BUILD_TIME
     value: "https://prod-k9lh9.ondigitalocean.app"
@@ -101,7 +101,7 @@ services:
     tag: $VERSION
   instance_count: 2
   instance_size_slug: professional-xs
-  name: prod
+  name: production
   routes:
   - path: /
   source_dir: /
