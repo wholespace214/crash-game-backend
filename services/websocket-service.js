@@ -10,7 +10,6 @@ const persist = async (data) => {
   }
 };
 
-exports.setIO = (newIo) => (io = newIo);
 exports.setPubClient = (newpub) => (pubClient = newpub);
 
 exports.handleChatMessage = async function (socket, data, userId) {

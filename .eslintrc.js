@@ -1,20 +1,18 @@
 module.exports = {
   env: {
-    browser: true,
-    commonjs: true,
+    node: true,
+    mocha: true,
     es2021: true,
   },
   extends: ['eslint:recommended'],
-  parser: 'babel-eslint',
   parserOptions: {
     ecmaVersion: 12,
+    extraFileExtensions: ['.json'],
     sourceType: 'module',
     ecmaFeatures: {
       modules: true,
       experimentalObjectRestSpread: true,
     },
   },
-  rules: {
-    'no-undef': 0,
-  },
+  rules: {},
 };

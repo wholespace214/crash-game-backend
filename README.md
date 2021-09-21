@@ -192,11 +192,11 @@ Successful Result:
         "hot": true,
         "outcomes": [
           {
-            "index": 0, 
+            "index": 0,
             "name": "Jonas"
           },
           {
-            "index": 0, 
+            "index": 0,
             "name": "Jörn"
           }
         ],
@@ -637,7 +637,7 @@ Successful Result:
       }
     ],
     "createdAt": "1631517847345",
-    "closedAt": "1631517847345" 
+    "closedAt": "1631517847345"
   }
 ]
 ```
@@ -679,3 +679,50 @@ Successful Result: Lottery Ticket ID
 }]
 ```
 
+
+# Auth Endpoints
+### POST http://localhost:8000/api/auth/login
+```json
+{
+  "username": "foo",
+  "password": "bar",
+}
+```
+Successful Result:
+```json
+[
+  {
+    "userId": "613efc97cbad81c04dbf7198",
+    "session": ""
+  }
+]
+```
+### POST http://localhost:8000/api/auth/sign-up
+```json
+{
+  "username": "foo",
+  "password": "bar",
+  "passwordConfirm": "bar",
+}
+```
+Successful Result:
+```json
+[
+  {
+    "userId": "613efc97cbad81c04dbf7198",
+    "email": "user@example.com"
+  }
+]
+```
+### POST http://localhost:8000/api/auth/verify-email
+```json
+{
+  "email": "user@example.com"
+}
+```
+### POST http://localhost:8000/api/auth/reset-password
+```json
+{
+  "email": "user@example.com"
+}
+```

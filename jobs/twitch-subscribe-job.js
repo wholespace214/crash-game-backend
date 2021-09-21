@@ -31,7 +31,7 @@ const findAndSubscribe = async () => {
         unsubscribedEvent.metadata.twitch_subscribed_online = onlineSubscriptionStatus;
 
         // subscribe for offline events
-        offlineSubscriptionStatus = await twitchService.subscribeForOfflineNotifications(
+        const offlineSubscriptionStatus = await twitchService.subscribeForOfflineNotifications(
           unsubscribedEvent.metadata.twitch_id
         );
         unsubscribedEvent.metadata.twitch_subscribed_offline = offlineSubscriptionStatus;

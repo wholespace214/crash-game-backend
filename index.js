@@ -15,12 +15,23 @@ const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
 let mongoURL = process.env.DB_CONNECTION;
+if (process.env.ENVIRONMENT === 'STAGING') {
+  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
+  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/staging.crt';
+} else if (process.env.ENVIRONMENT === 'PRODUCTIVE') {
+  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
+  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/productive.crt';
+}
 
 // Connection to Database
 async function connectMongoDB() {
   const connection = await mongoose.connect(mongoURL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+    readPreference: 'primary',
+    retryWrites: true,
   });
   console.log('Connection to Mongo-DB successful');
 
@@ -105,12 +116,12 @@ async function main() {
   });
 
   subClient.subscribe('message');
-  websocketService.setIO(io);
 
   // Giving server ability to parse json
   server.use(passport.initialize());
   server.use(passport.session());
   adminService.buildRouter();
+
   server.use(adminService.getRootPath(), adminService.getRouter());
   server.use(adminService.getLoginPath(), adminService.getRouter());
   server.use(express.json({ limit: '1mb' }));
@@ -132,26 +143,24 @@ async function main() {
   const secureBetTemplateRoute = require('./routes/users/secure-bet-template-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
+  const authRoutes = require('./routes/auth/auth-routes');
 
   server.use(cors());
 
   // Using Routes
   server.use('/api/event', eventRoutes);
   server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
-
   server.use('/api/user', userRoute);
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
-
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
   server.use(
     '/api/bet-template',
     passport.authenticate('jwt', { session: false }),
     secureBetTemplateRoute
   );
-
   server.use('/webhooks/twitch/', twitchWebhook);
-
   server.use('/api/chat', chatRoutes);
+  server.use('/api/auth', authRoutes);
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars

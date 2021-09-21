@@ -84,10 +84,11 @@ const bindWalletAddress = async (req, res, next) => {
     if (walletUser && walletUser.id !== req.user.id) {
       return next(new ErrorHandler(409, 'This wallet is already bound to another user'));
     }
+
+    let user;
     if (!walletUser) {
       // retrieve user who made the request
-      let user = await userService.getUserById(req.user.id);
-
+      user = await userService.getUserById(req.user.id);
       user.walletAddress = walletAddress;
       user = await userService.saveUser(user);
     } else {
@@ -95,7 +96,7 @@ const bindWalletAddress = async (req, res, next) => {
     }
 
     res.status(201).json({
-      userId: user.id,
+      userId: user?.id,
       walletAddress,
     });
   } catch (err) {
@@ -223,6 +224,7 @@ const getUserInfo = async (req, res, next) => {
       userId: user.id,
       name: user.name,
       username: user.username,
+      email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
       totalWin: userService.getTotalWin(balance).toString(),

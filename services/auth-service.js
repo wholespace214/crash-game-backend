@@ -84,5 +84,4 @@ exports.verifyLogin = async (phone, smsToken) => {
   return user;
 };
 
-exports.generateJwt = async (user) =>
-  jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);
+exports.generateJwt = async (user) => jwt.sign({ userId: user.id, phone: user.phone }, process.env.JWT_KEY);
