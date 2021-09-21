@@ -93,6 +93,9 @@ services:
   - key: GOOGLE_API_KEY
     scope: RUN_AND_BUILD_TIME
     value: $GOOGLE_API_KEY
+  - key: DB_CONNECTION
+    scope: RUN_AND_BUILD_TIME
+    value: $STAGING_MONGO_DB_URL
   http_port: 80
   image:
     registry_type: DOCR

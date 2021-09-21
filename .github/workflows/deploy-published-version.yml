@@ -28,6 +28,8 @@ jobs:
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      STAGING_MONGO_DB_URL: ${{ secrets.STAGING_MONGO_DB_URL }}
+      PRODUCTION_MONGO_DB_URL: ${{ secrets.PRODUCTION_MONGO_DB_URL }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

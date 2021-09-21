@@ -17,4 +17,6 @@ console.log(
     .replace("$ADMIN_USERNAME", process.env.ADMIN_USERNAME)
     .replace("$ADMIN_PASSWORD", process.env.ADMIN_PASSWORD)
     .replace("$GOOGLE_API_KEY", process.env.GOOGLE_API_KEY)
+    .replace("$STAGING_MONGO_DB_URL", process.env.STAGING_MONGO_DB_URL)
+    .replace("$PRODUCTION_MONGO_DB_URL", process.env.PRODUCTION_MONGO_DB_URL)
     );

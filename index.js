@@ -15,13 +15,6 @@ const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
 let mongoURL = process.env.DB_CONNECTION;
-if (process.env.ENVIRONMENT === 'STAGING') {
-  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
-  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/staging.crt';
-} else if (process.env.ENVIRONMENT === 'PRODUCTION') {
-  mongoURL = mongoURL.replace('admin?authSource=admin', 'wallfair?authSource=admin');
-  mongoURL += '&replicaSet=wallfair&tls=true&tlsCAFile=/usr/src/app/ssl/production.crt';
-}
 
 // Connection to Database
 async function connectMongoDB() {
