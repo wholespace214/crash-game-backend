@@ -1,27 +1,33 @@
 const router = require('express').Router();
 const { check } = require('express-validator');
 
-const userServiceV2 = require('../../../services/user-service-v2');
+const sessionsController = require('../../../controllers/sessions-controller');
 
 router.post(
   '/create',
   [
-    check('email').notEmpty().isEmail(),
-    check('password').notEmpty().isLength({ min: 8, max: 255 }),
+    check('email').notEmpty(),
+    check('passwordConfirm').notEmpty(),
+    check('password')
+      .notEmpty()
+      .isLength({ min: 8, max: 255 })
+      .custom((value, { req }) => {
+        if (value !== req.body.passwordConfirm) {
+          throw new Error("Passwords don't match");
+        } else {
+          return value;
+        }
+      }),
   ],
-  userServiceV2.createUser,
+  sessionsController.createUser
 );
 
-router.post(
-  '/verify-email',
-  [check('email').notEmpty().isEmail()],
-  userServiceV2.verifyEmail,
-);
+router.post('/verify-email', [check('email').notEmpty().isEmail()], sessionsController.verifyEmail);
 
 router.post(
   '/reset-password',
   [check('email').notEmpty().isEmail()],
-  userServiceV2.resetPassword,
+  sessionsController.resetPassword
 );
 
 module.exports = router;
