@@ -38,7 +38,10 @@ module.exports = {
       await userService.mintUser(createdUser.id.toString());
       await mailService.sendConfirmMail(createdUser);
 
-      return res.status(201).json(createdUser);
+      return res.status(201).json({
+        userId: createdUser.id,
+        email: createdUser.email,
+      });
     } catch (err) {
       logger.error(err);
     }
@@ -74,7 +77,7 @@ module.exports = {
     try {
       const user = await userApi.verifyEmail(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
-      return res.status(200).json(user);
+      return res.status(200).send();
     } catch (err) {
       logger.error(err);
       return res.status(500).send();
@@ -87,7 +90,7 @@ module.exports = {
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
       await mailService.sendResetPasswordMail(user);
 
-      return res.status(201).send();
+      return res.status(200).send();
     } catch (err) {
       logger.error(err);
       return res.status(500).send();

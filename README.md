@@ -679,46 +679,50 @@ Successful Result: Lottery Ticket ID
 }]
 ```
 
-# API v2
-All v2 API routes are exposed under: `/api/v2/...` and locally stored with `src/routes/v2`
-## Auth routes
-### Public auth routes
-#### Route `/api/v2/auth/login`
-* HTTP Method: `POST`
-* Required params
-  * `userIdentifier` string, required (Either phone, email, or username)
-  * `password` string, required
-    * Length:
-      * min: 8
-      * max: 255
 
-### Proteced auth routes
-None so far
-
-## User routes
-### Public user routes
-#### Route `/api/v2/user/create`
-* HTTP Method: `POST`
-* Required params
-  * `username` string
-  * `email` string, required
-  * `password` string, required
-    * Length:
-      * min: 8
-      * max: 255
-  * `passwordConfirm` string, required
-    * Length:
-      * min: 8
-      * max: 255
-
-#### Route `/api/v2/user/verify-email`
-* HTTP Method: `POST`
-* Required params
-  * `email` string, required
-#### Route `/api/v2/user/reset-password`
-* HTTP Method: `POST`
-* Required params
-  * `email` string, required
-
-### Proteced user routes
-None so far
+# Auth Endpoints
+### POST http://localhost:8000/api/auth/login
+```json
+{
+  "username": "foo",
+  "password": "bar",
+}
+```
+Successful Result:
+```json
+[
+  {
+    "userId": "613efc97cbad81c04dbf7198",
+    "session": ""
+  }
+]
+```
+### POST http://localhost:8000/api/auth/sign-up
+```json
+{
+  "username": "foo",
+  "password": "bar",
+  "passwordConfirm": "bar",
+}
+```
+Successful Result:
+```json
+[
+  {
+    "userId": "613efc97cbad81c04dbf7198",
+    "email": "user@example.com"
+  }
+]
+```
+### POST http://localhost:8000/api/auth/verify-email
+```json
+{
+  "email": "user@example.com"
+}
+```
+### POST http://localhost:8000/api/auth/reset-password
+```json
+{
+  "email": "user@example.com"
+}
+```

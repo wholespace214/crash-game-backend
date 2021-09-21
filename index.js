@@ -116,7 +116,6 @@ async function main() {
   });
 
   subClient.subscribe('message');
-  websocketService.setIO(io);
 
   // Giving server ability to parse json
   server.use(passport.initialize());
