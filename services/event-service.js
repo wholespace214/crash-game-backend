@@ -215,8 +215,39 @@ exports.saveBet = async (bet, session) => bet.save({ session });
 
 exports.getTags = async () => Event.distinct('tags.name').exec();
 
+function getPrice(interaction) {
+  const priceRaw = Number(interaction.investmentamount) / Number(interaction.outcometokensbought);
+  return priceRaw.toFixed(2);
+}
+
+function getPadValue(data, startIndex) {
+  let index = startIndex;
+  while (index > 0) {
+    index = index -= 1;
+    const candidate = data[index].y;
+    if (candidate) {
+      return candidate;
+    }
+  }
+
+  // hack to make some values in sparse array
+  const base = startIndex / 400;
+  const variance = Math.random() * 0.05;
+  return base + variance;
+}
+
+function padData(response) {
+  return response.map(entry => ({
+    ...entry,
+    data: entry.data.map((d, idx) => ({
+      ...d,
+      y: d.y ?? getPadValue(entry.data.slice(1), idx),
+    }))
+  }));
+}
+
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
-  const response = [];
+  // todo: rewrite to show correct prices for options
   const tmpChartData = [];
   let startDate;
   let tmpDay;
@@ -255,55 +286,33 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
 
   const betContract = new BetContract(bet.id, bet.outcomes.length);
   const interactions = await betContract.getBetInteractions(startDate, direction);
-  const summary = await betContract.getBetInteractionsSummary(direction, startDate);
 
-  bet.outcomes.forEach((outcome) => {
-    const chartData = tmpChartData.map((tmp) => ({ ...tmp }));
-    const initValue = +summary.filter((e) => e.outcome === outcome.index)[0]?.amount || 0;
-    const interactionHours = [];
-    const interactionDays = [];
-    const interactionAmounts = [];
+  const firstRangeValue = new Date(tmpChartData[0].x);
+  const startTime = new Date(firstRangeValue.getTime());
+  startTime.setHours(firstRangeValue.getHours() - 1);
+  const startValue = {
+    x: startTime.toISOString(),
+    y: 1 / bet.outcomes.length,
+  };
 
-    interactions.forEach((interaction) => {
-      if (interaction.outcome === outcome.index) {
-        interactionHours.push(new Date(interaction.trx_timestamp).getHours());
-        interactionDays.push(new Date(interaction.trx_timestamp).getDate());
-        interactionAmounts.push(+interaction.investmentamount);
+  const data = bet.outcomes.map(outcome => {
+    const outcomeInteractions = interactions.filter(i => i.outcome === outcome.index);
+    const baseResult = tmpChartData.map(x => ({ ...x }));
+    const chartData = baseResult.map(b => {
+      const interaction = outcomeInteractions
+        .find(i => new Date(i.trx_timestamp).getHours() === new Date(b.x).getHours() &&
+          new Date(i.trx_timestamp).getDate() === new Date(b.x).getDate());
+      return {
+        ...b,
+        y: interaction && getPrice(interaction),
       }
     });
-
-    chartData.map((entry, index) => {
-      if (index === 0) {
-        entry.y = initValue;
-      } else {
-        entry.y = chartData[index - 1].y;
-      }
-
-      if (rangeType === 'hour') {
-        interactionHours.forEach((hour, index) => {
-          if (hour === new Date(entry.x).getHours()) {
-            entry.y += interactionAmounts[index];
-          }
-        });
-      } else {
-        interactionDays.forEach((day, index) => {
-          if (day === new Date(entry.x).getDate()) {
-            entry.y += interactionAmounts[index];
-          }
-        });
-      }
-    });
-
-    chartData.forEach((entry) => {
-      entry.y = parseFloat(toPrettyBigDecimal(entry.y));
-    });
-
-    response.push({
+    return {
       outcomeName: outcome.name,
       outcomeIndex: outcome.index,
-      data: chartData,
-    });
+      data: [startValue, ...chartData],
+    };
   });
 
-  return response;
+  return padData(data);
 };
