@@ -2,6 +2,8 @@ const ChatMessageService = require('./chat-message-service');
 
 const LOG_TAG = '[SOCKET] ';
 let pubClient = null;
+// eslint-disable-next-line 
+let io = null;
 
 const persist = async (data) => {
   if (data) {

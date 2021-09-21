@@ -77,7 +77,7 @@ exports.generate = (n) => {
   let max = 12 - add;
 
   if (n > max) {
-    return generate(max) + generate(n - max);
+    return this.generate(max) + this.generate(n - max);
   }
 
   max = Math.pow(10, n + add);
