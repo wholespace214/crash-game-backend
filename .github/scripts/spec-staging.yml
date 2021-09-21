@@ -17,9 +17,6 @@ databases:
   production: true
   version: "13"
 envs:
-- key: DB_CONNECTION
-  scope: RUN_AND_BUILD_TIME
-  value: ${wallfair.DATABASE_URL}
 - key: REDIS_CONNECTION
   scope: RUN_AND_BUILD_TIME
   value: ${redis.DATABASE_URL}
