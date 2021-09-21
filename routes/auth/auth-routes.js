@@ -1,10 +1,15 @@
 const router = require('express').Router();
 const { check } = require('express-validator');
-
-const sessionsController = require('../../../controllers/sessions-controller');
+const sessionsController = require('../../controllers/sessions-controller');
 
 router.post(
-  '/create',
+  '/login',
+  [check('userIdentifier').notEmpty(), check('password').notEmpty().isLength({ min: 8, max: 255 })],
+  sessionsController.login
+);
+
+router.post(
+  '/sign-up',
   [
     check('email').notEmpty(),
     check('passwordConfirm').notEmpty(),

@@ -144,32 +144,24 @@ async function main() {
   const secureBetTemplateRoute = require('./routes/users/secure-bet-template-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
+  const authRoutes = require('./routes/auth/auth-routes');
 
   server.use(cors());
 
   // Using Routes
   server.use('/api/event', eventRoutes);
   server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
-
   server.use('/api/user', userRoute);
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
-
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
   server.use(
     '/api/bet-template',
     passport.authenticate('jwt', { session: false }),
     secureBetTemplateRoute
   );
-
   server.use('/webhooks/twitch/', twitchWebhook);
-
   server.use('/api/chat', chatRoutes);
-
-  // V2 routes
-  const v2Routes = require('./routes/v2');
-  server.use('/api/v2', v2Routes);
-
-  server.use('/api/chat', chatRoutes);
+  server.use('/api/auth', authRoutes);
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars
