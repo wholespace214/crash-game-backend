@@ -46,13 +46,11 @@ const getUserByIdEmailPhoneOrUsername = (IdEmailPhoneOrUsername) => User
   .exec();
 
 const verifyEmail = async (email) => {
-  console.log(User || undefined);
   return await User.findOneAndUpdate(
     { email },
     { $set: { confirmed: true } },
-    { new: true },
-  )
-    .exec();
+    { new: true }
+  ).exec();
 };
 
 const getUserEntriesAmount = async ()=> User.countDocuments({}).exec();
