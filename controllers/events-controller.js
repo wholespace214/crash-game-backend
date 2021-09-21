@@ -74,7 +74,7 @@ const getEvent = async (req, res, next) => {
 };
 
 const createEvent = async (req, res, next) => {
-  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed')); 
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   // Validating User Inputs
   const LOG_TAG = '[CREATE-EVENT]';
@@ -122,8 +122,6 @@ const createEvent = async (req, res, next) => {
 const createEventFromYoutube = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
-  // const LOG_TAG = '[CREATE-EVENT]';
-
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -135,9 +133,9 @@ const createEventFromYoutube = async (req, res, next) => {
     // TODO properly parse URL
     let streamUrl = req.body.youtubeVideoId;
 
-    if (streamUrl.indexOf("/") == -1) {
+    if (streamUrl.indexOf('/') == -1) {
       streamUrl = `https://www.youtube.com/watch?v=${req.body.youtubeVideoId}`;
-    } 
+    }
 
     let event = await youtubeService.getEventFromYoutubeUrl(streamUrl, req.body.category);
 

@@ -80,6 +80,10 @@ async function main() {
     url: process.env.REDIS_CONNECTION,
     no_ready_check: false,
   });
+
+  const { init } = require('./services/notification-service');
+  init(subClient);
+
   websocketService.setPubClient(pubClient);
 
   // When message arrive from Redis, disseminate to proper channels
@@ -100,24 +104,7 @@ async function main() {
     io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
   });
 
-  const notificationsController = require('./controllers/notifications-controller');
-
   subClient.subscribe('message');
-  subClient.on('notification', (channel, message) => {
-    try {
-      const messageObj = JSON.parse(message);
-      if (messageObj.data.type && notificationsController[messageObj.data.type]) {
-        notificationsController[messageObj.data.type](messageObj.data);
-      } else {
-        notificationsController.defaultNotification(message);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  });
-
-  // subClient.subscribe('notification');
-
   websocketService.setIO(io);
 
   // Giving server ability to parse json

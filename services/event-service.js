@@ -6,6 +6,7 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const websocketService = require('./websocket-service');
 const { toPrettyBigDecimal } = require('../util/number-helper');
+const { publishEvent, notificationEvents } = require('./notification-service');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -108,20 +109,12 @@ exports.getEvent = async (id) =>
 
 exports.getCoverEvent = async (type) => {
   // TODO Sort events by number of UniversalEvent associated with it
-  if (type === "streamed") {
-    return Event
-      .find({type, state: "online"})
-      .sort({date: -1})
-      .limit(1)
-      .lean();
+  if (type === 'streamed') {
+    return Event.find({ type, state: 'online' }).sort({ date: -1 }).limit(1).lean();
   } else {
-    return Event
-      .find({type})
-      .sort({date: -1})
-      .limit(1)
-      .lean();
+    return Event.find({ type }).sort({ date: -1 }).limit(1).lean();
   }
-}
+};
 
 exports.getBet = async (id, session) =>
   Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
@@ -154,6 +147,12 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
       outcome,
       currentPrice
     );
+
+    publishEvent(notificationEvents.EVENT_BET_CASHED_OUT, {
+      producer: 'user',
+      producerId: user.id,
+      data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome },
+    });
   }
 };
 
@@ -168,6 +167,12 @@ exports.betCreated = async (bet, userId) => {
   if (bet) {
     const eventId = bet.event;
     const betId = bet._id;
+
+    publishEvent(notificationEvents.EVENT_NEW_BET, {
+      producer: 'user',
+      producerId: userId,
+      data: { bet },
+    });
 
     await websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
   }
@@ -185,9 +190,24 @@ exports.provideLiquidityToBet = async (createBet) => {
   await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * WFAIR.ONE);
 };
 
-exports.saveEvent = async (event, session) => event.save({ session });
+exports.saveEvent = async (event, session) => {
+  event.save({ session });
+
+  publishEvent(notificationEvents.EVENT_NEW, {
+    producer: 'system',
+    producerId: 'notification-service',
+    data: { event },
+  });
+};
 exports.editEvent = async (eventId, userData) => {
   const updatedEvent = await Event.findByIdAndUpdate(eventId, userData, { new: true });
+
+  publishEvent(notificationEvents.EVENT_UPDATED, {
+    producer: 'system',
+    producerId: 'notification-service',
+    data: { updatedEvent },
+  });
+
   return updatedEvent;
 };
 
