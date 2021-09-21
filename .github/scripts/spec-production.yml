@@ -41,7 +41,7 @@ services:
     value: $TWILIO_SID
   - key: ENVIRONMENT
     scope: RUN_AND_BUILD_TIME
-    value: PRODUCTIVE
+    value: PRODUCTION
   - key: VERIFY_URL
     scope: RUN_AND_BUILD_TIME
     value: https://play.wallfair.io/
