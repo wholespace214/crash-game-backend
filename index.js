@@ -64,7 +64,6 @@ async function main() {
   const httpServer = http.createServer(server);
 
   // Create socket.io server
-  const socketioJwt = require('socketio-jwt');
   const { Server } = require('socket.io');
   const io = new Server(httpServer, {
     cors: {
