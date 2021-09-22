@@ -35,7 +35,7 @@ module.exports = {
 /*
 {
   config: {
-    url: 'https://youtube.googleapis.com/youtube/v3/videoCategories?part=snippet&id=17&key=AIzaSyDWQ3tHGRg-bERuvPja7kDuTxp3rZKOq5Q',
+    url: 'https://youtube.googleapis.com/youtube/v3/videoCategories?part=snippet&id=17&key=aaaa-aaaaa',
     method: 'GET',
     userAgentDirectives: [ [Object] ],
     paramsSerializer: [Function (anonymous)],
@@ -76,7 +76,7 @@ module.exports = {
   status: 200,
   statusText: 'OK',
   request: {
-    responseURL: 'https://youtube.googleapis.com/youtube/v3/videoCategories?part=snippet&id=17&key=AIzaSyDWQ3tHGRg-bERuvPja7kDuTxp3rZKOq5Q'
+    responseURL: 'https://youtube.googleapis.com/youtube/v3/videoCategories?part=snippet&id=17&key=aaaa-aaaa'
   }
 }
 */
