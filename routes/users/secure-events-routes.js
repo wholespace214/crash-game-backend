@@ -32,7 +32,6 @@ router.post(
   [
     check('youtubeVideoId').isString().notEmpty(),
     check('type').isString().notEmpty(),
-    check('category').notEmpty(),
   ],
   eventController.createEventFromYoutube
 );
@@ -109,7 +108,7 @@ router.post(
 router.get('/bet/:id/payout', betController.payoutBet);
 
 router.post(
-  '/bet/:id/resolve', 
+  '/bet/:id/resolve',
   [
     check('evidenceActual').isString(),
     check('evidenceDescription').isString(),
