@@ -6,6 +6,7 @@ const generateSlug = require('../util/generateSlug');
 
 // Import Event model
 const { Event } = require('@wallfair.io/wallfair-commons').models;
+const ytCategoryService = require('./youtube-category-service')
 
 const ytApi = google.youtube({
   version: 'v3',
@@ -20,22 +21,31 @@ const ytApi = google.youtube({
 const getVideosById = async (/** @type string[] */ videoIds) => {
   try {
     if (!videoIds || !videoIds.length) throw new Error('No or empty array of "videoIds" given');
-    
+
     let response = await ytApi.videos.list({
       part: ['snippet,contentDetails,player,recordingDetails,statistics,status,topicDetails'],
       id: videoIds,
     });
-    return response.data.items[0];
+    return response?.data?.items?.[0] || undefined;
   } catch (err) {
     logger.error(err);
     return undefined;
   }
 };
 
-const getEventFromYoutubeUrl = async (streamUrl, category) => {
-  let videoId = streamUrl.substring(streamUrl.lastIndexOf("v=")+2);
+/**
+ *
+ * @param {String} streamUrl
+ * @param {String} category
+ * @returns
+ */
+const getEventFromYoutubeUrl = async (streamUrl) => {
+  const videoId = streamUrl.substring(streamUrl.lastIndexOf("v=")+2);
 
   const streamItem = await getVideosById(videoId);
+  const ytCategory = (streamItem && streamItem.snippet && !!streamItem.snippet.categoryId)
+  ? await ytCategoryService.getYoutubeCategoryById(streamItem.snippet.categoryId)
+  : undefined;
   const slug = generateSlug(streamItem.snippet.channelTitle);
 
   let event = await Event.findOne({ streamUrl }).exec();
@@ -45,21 +55,21 @@ const getEventFromYoutubeUrl = async (streamUrl, category) => {
       name: streamItem.snippet.channelTitle,
       slug,
       streamUrl,
-      category,
+      category : ytCategory?.snippet?.title || '',
       type: "streamed",
       previewImageUrl:
         streamItem.snippet.thumbnails?.maxres.url ||
         streamItem.snippet.thumbnails?.default.url ||
         '',
       tags: streamItem.snippet.tags.map((tag) => ({ name: tag })),
-      // TODO - We're not getting the real date of when the event starts from the API.
+      // TODO - We're not getting the real date of when the streamed event starts from the API.
       date: new Date(),
     });
     await event.save();
     console.debug(new Date(), 'Successfully created a new youtube Event');
   } else {
     event.name = streamItem.snippet.channelTitle;
-    event.previewImageUrl = 
+    event.previewImageUrl =
         streamItem.snippet.thumbnails?.maxres.url ||
         streamItem.snippet.thumbnails?.default.url ||
         '';

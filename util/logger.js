@@ -6,7 +6,7 @@ module.exports = {
   },
   /** Method to log errors */
   error(message, ...args) {
-    console.error('ERROR', message, args);
+    console.error('\x1b[31mERROR\x1b[0m', message, args);
   },
   /** These logs will always be logged */
   always(message, ...args) {
