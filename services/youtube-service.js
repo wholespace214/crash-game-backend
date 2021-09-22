@@ -46,7 +46,6 @@ const getEventFromYoutubeUrl = async (streamUrl) => {
   const ytCategory = (streamItem && streamItem.snippet && !!streamItem.snippet.categoryId)
   ? await ytCategoryService.getYoutubeCategoryById(streamItem.snippet.categoryId)
   : undefined;
-  console.log(ytCategory)
   const slug = generateSlug(streamItem.snippet.channelTitle);
 
   let event = await Event.findOne({ streamUrl }).exec();
