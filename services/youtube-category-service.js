@@ -48,7 +48,7 @@ module.exports = {
     params: {
       part: 'snippet',
       id: '17',
-      key: 'AIzaSyDWQ3tHGRg-bERuvPja7kDuTxp3rZKOq5Q'
+      key: 'aaaaa-aaaaa'
     },
     validateStatus: [Function (anonymous)],
     retry: true,
