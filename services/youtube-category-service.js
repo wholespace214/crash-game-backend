@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 const { google } = require('googleapis');
 const logger = require('../util/logger').default;
 
