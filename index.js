@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 // Import Models from Wallfair Commons
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
+const jwt = require('jsonwebtoken');
 
 let mongoURL = process.env.DB_CONNECTION;
 
@@ -63,7 +64,6 @@ async function main() {
   const httpServer = http.createServer(server);
 
   // Create socket.io server
-  const socketioJwt = require('socketio-jwt');
   const { Server } = require('socket.io');
   const io = new Server(httpServer, {
     cors: {
@@ -161,18 +161,25 @@ async function main() {
     handleError(err, res);
   });
 
-  io.use(
-    socketioJwt.authorize({
-      secret: process.env.JWT_KEY,
-      handshake: true,
-    })
-  );
+  io.use((socket, next) => {
+    let userId;
+
+    try {
+      const token = jwt.verify(socket.handshake.query.token, process.env.JWT_KEY);
+      userId = token.userId;
+    } catch (e) {
+      console.error('Invalid token');
+    }
+
+    socket.userId = userId;
+    next();
+  });
 
   io.on('connection', (socket) => {
-    const { userId } = socket.decoded_token;
+    const userId = socket.userId;
 
     socket.on('chatMessage', (data) => {
-      websocketService.handleChatMessage(socket, data, userId);
+      if (userId) websocketService.handleChatMessage(socket, data, userId);
     });
     socket.on('joinRoom', (data) => websocketService.handleJoinRoom(socket, data, userId));
 
