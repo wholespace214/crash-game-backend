@@ -117,8 +117,8 @@ async function main() {
 
   server.use(adminService.getRootPath(), adminService.getRouter());
   server.use(adminService.getLoginPath(), adminService.getRouter());
-  server.use(express.json({ limit: '1mb' }));
-  server.use(express.urlencoded({ limit: '1mb', extended: true }));
+  server.use(express.json({ limit: '5mb' }));
+  server.use(express.urlencoded({ limit: '5mb', extended: true }));
 
   // Home Route
   server.get('/', (req, res) => {
