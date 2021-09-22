@@ -7,7 +7,7 @@ const ytApi = google.youtube({
 });
 
 /**
- * Gets a list of videos based on the Ids given.
+ * Gets a category based on the YouTube category ID given.
  * @param {String} categoryId
  * @returns {Object}
  */
