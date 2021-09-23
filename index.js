@@ -88,11 +88,14 @@ async function main() {
   const { init } = require('./services/notification-service');
   init(subClient);
 
+  const { initQuoteJobs } = require('./jobs/quote-storage-job');
+  initQuoteJobs(subClient);
+
   websocketService.setPubClient(pubClient);
 
   // When message arrive from Redis, disseminate to proper channels
   subClient.on('message', (channel, message) => {
-    console.log(`[REDIS] Incoming : ${message}`);
+    //console.log(`[REDIS] Incoming : ${message}`);
     const messageObj = JSON.parse(message);
 
     // intercept certain messages

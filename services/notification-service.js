@@ -18,7 +18,7 @@ const init = (client) => {
   subClient.on('message', (_, message) => {
     try {
       const messageObj = JSON.parse(message);
-      console.log('[NOTIFICATION-SERVICE] Received:', message);
+      //console.log('[NOTIFICATION-SERVICE] Received:', message);
 
       if (universalEventTypes.includes(messageObj.event)) {
         save(messageObj);
@@ -37,7 +37,7 @@ const publishEvent = (event, data) => {
       ...data,
     })
   );
-  console.log('[NOTIFICATION-SERVICE] Published:', event);
+  //console.log('[NOTIFICATION-SERVICE] Published:', event);
 };
 
 const save = (message) => {
