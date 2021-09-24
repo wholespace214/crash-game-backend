@@ -3,6 +3,7 @@ const smtpTransport = require('nodemailer-smtp-transport');
 
 const fs = require('fs');
 const { publishEvent, notificationEvents } = require('./notification-service');
+const { generate } = require('../helper');
 
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
 const email_evaluate = fs.readFileSync('./emails/email-evaluate.html', 'utf8');
@@ -19,7 +20,7 @@ const transporter = nodemailer.createTransport(
 );
 
 exports.sendConfirmMail = async (user) => {
-  const emailCode = this.generate(6);
+  const emailCode = generate(6);
   const queryString = `?userId=${user.id}&code=${emailCode}`;
   /**
    * TODO
@@ -60,21 +61,6 @@ exports.sendEventEvaluateMail = async (payload) => {
       comment,
     },
   });
-};
-
-exports.generate = (n) => {
-  const add = 1;
-  let max = 12 - add;
-
-  if (n > max) {
-    return this.generate(max) + this.generate(n - max);
-  }
-
-  max = Math.pow(10, n + add);
-  const min = max / 10;
-  const number = Math.floor(Math.random() * (max - min + 1)) + min;
-
-  return `${number}`.substring(add);
 };
 
 exports.sendMail = async (email, subject, template) => {

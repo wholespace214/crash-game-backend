@@ -91,6 +91,10 @@ module.exports = {
       const user = await userApi.getOne(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
 
+      // generate token
+
+      // store user token
+
       const resetPwUrl = `${process.env.CLIENT_URL}?email=${user.email}`
 
       notificationService.publishEvent(
