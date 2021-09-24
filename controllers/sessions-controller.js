@@ -120,15 +120,10 @@ module.exports = {
         updatedUser,
       )
 
-      /*
-       * @gmussi Which event to trigger here? Because there should be two events, like:
-       *   * User requested password change
-       *   * User actually changed password
-       */
-      // notificationService.publishEvent(
-      //   { type: notificationEvents... },
-      //   { ...user, resetPwUrl },
-      // );
+      notificationService.publishEvent(
+        { type: notificationEvents.EVENT_USER_CHANGED_PASSWORD },
+        user,
+      );
 
 
       return res.status(200).send();
