@@ -28,11 +28,11 @@ const listEvents = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
   }
-
-  // Defining User Inputs
-  const { id } = req.params;
-  const eventList = await eventService.listEvent(id);
-
+  let q = {}
+  if (!req.isAdmin){
+    q = {bets: {$not: {$size: 0}}}
+  }
+  const eventList = await eventService.listEvents(q);
   res.status(201).json(calculateAllBetsStatus(eventList));
 };
 
@@ -47,7 +47,8 @@ const filterEvents = async (req, res) => {
     count,
     page,
     sortby,
-    searchQuery
+    searchQuery,
+    !req.isAdmin ? {bets: {$not: {$size: 0}}} : null
   );
 
   res.status(201).json(eventList);

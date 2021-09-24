@@ -68,8 +68,11 @@ const filterPublishedBets = (eventOrArray) => {
 };
 exports.filterPublishedBets = filterPublishedBets;
 
-exports.listEvent = async () =>
-  Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
+exports.listEvents = async (q) => {
+  return Event.find(q).populate('bets')
+    .map(calculateAllBetsStatus)
+    .map(filterPublishedBets);
+}
 
 exports.filterEvents = async (
   type = 'all',
@@ -77,7 +80,8 @@ exports.filterEvents = async (
   count = 10,
   page = 1,
   sortby = 'name',
-  searchQuery
+  searchQuery,
+  betFilter = null
 ) => {
   const query = {};
 
@@ -95,12 +99,17 @@ exports.filterEvents = async (
     query.name = { $regex: searchQuery, $options: 'i' };
   }
 
-  return Event.find(query)
+  const op = Event.find(query)
     .limit(count)
     .skip(count * (page - 1))
     .collation({ locale: 'en' })
     .sort(sortby)
-    .lean();
+
+  if(betFilter){
+    op.find(betFilter)
+  }
+
+  return op.lean();
 };
 
 exports.getEvent = async (id) =>
@@ -122,7 +131,7 @@ exports.getCoverEvent = async (type) => {
       .limit(1)
       .lean();
   } else {
-    return Event.find({ type }).sort({ date: -1 }).limit(1).lean();
+    return Event.find({ type, bets: {$not: {$size: 0}} }).sort({ date: -1 }).limit(1).lean();
   }
 };
 
