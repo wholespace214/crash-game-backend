@@ -42,7 +42,13 @@ const createBet = async (req, res, next) => {
     } = req.body;
 
     let event = await eventService.getEvent(eventId);
-    if (!event) return next(new ErrorHandler(404, 'Event not found'));
+    if (!event) {
+      return next(new ErrorHandler(404, 'Event not found'));
+    }
+
+    if (event.type === 'non-streamed' && event.bets.length === 1) {
+      return next(new ErrorHandler(422, 'Non-streamed events can only have one bet.'));
+    }
 
     console.debug(LOG_TAG, event);
     console.debug(LOG_TAG, {
@@ -141,7 +147,6 @@ const getTrade = async (req, res, next) => {
   }
 
   try {
-
     let trade = await betService.getTrade(req.params.id);
 
     return res.status(200).json(trade);

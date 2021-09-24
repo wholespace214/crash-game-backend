@@ -190,14 +190,17 @@ exports.provideLiquidityToBet = async (createBet) => {
 };
 
 exports.saveEvent = async (event, session) => {
-  event.save({ session });
+  const savedEvent = await event.save({ session });
 
   publishEvent(notificationEvents.EVENT_NEW, {
     producer: 'system',
     producerId: 'notification-service',
     data: { event },
   });
+
+  return savedEvent;
 };
+
 exports.editEvent = async (eventId, userData) => {
   const updatedEvent = await Event.findByIdAndUpdate(eventId, userData, { new: true });
 
@@ -234,12 +237,12 @@ function getPadValue(data, startIndex) {
 }
 
 function padData(response) {
-  return response.map(entry => ({
+  return response.map((entry) => ({
     ...entry,
     data: entry.data.map((d, idx) => ({
       ...d,
       y: d.y ?? getPadValue(entry.data, idx),
-    }))
+    })),
   }));
 }
 
@@ -292,17 +295,19 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
     y: 1 / bet.outcomes.length,
   };
 
-  const data = bet.outcomes.map(outcome => {
-    const outcomeInteractions = interactions.filter(i => i.outcome === outcome.index);
-    const baseResult = tmpChartData.map(x => ({ ...x }));
-    const chartData = baseResult.map(b => {
-      const interaction = outcomeInteractions
-        .find(i => new Date(i.trx_timestamp).getHours() === new Date(b.x).getHours() &&
-          new Date(i.trx_timestamp).getDate() === new Date(b.x).getDate());
+  const data = bet.outcomes.map((outcome) => {
+    const outcomeInteractions = interactions.filter((i) => i.outcome === outcome.index);
+    const baseResult = tmpChartData.map((x) => ({ ...x }));
+    const chartData = baseResult.map((b) => {
+      const interaction = outcomeInteractions.find(
+        (i) =>
+          new Date(i.trx_timestamp).getHours() === new Date(b.x).getHours() &&
+          new Date(i.trx_timestamp).getDate() === new Date(b.x).getDate()
+      );
       return {
         ...b,
         y: interaction && getPrice(interaction),
-      }
+      };
     });
     return {
       outcomeName: outcome.name,
