@@ -95,8 +95,7 @@ module.exports = {
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
-        user,
-        resetPwUrl
+        { ...user, resetPwUrl },
       );
       logger.info(notificationEvents.EVENT_USER_FORGOT_PASSWORD, user, resetPwUrl)
 
