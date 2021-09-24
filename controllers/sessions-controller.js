@@ -90,10 +90,15 @@ module.exports = {
     try {
       const user = await userApi.getOne(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
+
+      const resetPwUrl = `${process.env.CLIENT_URL}?email=${user.email}`
+
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
-        user
+        user,
+        resetPwUrl
       );
+      logger.info(notificationEvents.EVENT_USER_FORGOT_PASSWORD, user, resetPwUrl)
 
       return res.status(200).send();
     } catch (err) {
