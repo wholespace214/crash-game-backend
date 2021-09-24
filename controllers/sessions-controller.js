@@ -5,6 +5,7 @@ const authService = require('../services/auth-service');
 const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
+const { generate } = require('../helper');
 const notificationService = require('../services/notification-service');
 const bcrypt = require('bcryptjs');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -92,10 +93,11 @@ module.exports = {
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
 
       // generate token
-
+      const passwordResetToken = generate(10);
       // store user token
+      await userApi.updateUser({ id: user.id, passwordResetToken })
 
-      const resetPwUrl = `${process.env.CLIENT_URL}?email=${user.email}`
+      const resetPwUrl = `${process.env.CLIENT_URL}?email=${user.email}&passwordResetToken=${passwordResetToken}`
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
