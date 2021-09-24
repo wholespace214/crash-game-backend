@@ -109,7 +109,18 @@ exports.getEvent = async (id) =>
 exports.getCoverEvent = async (type) => {
   // TODO Sort events by number of UniversalEvent associated with it
   if (type === 'streamed') {
-    return Event.find({ type, state: 'online' }).sort({ date: -1 }).limit(1).lean();
+    return Event.find({
+      type,
+      state: 'online',
+      bets: {
+        $exists: true,
+        $type: 'array',
+        $ne: [],
+      },
+    })
+      .sort({ date: -1 })
+      .limit(1)
+      .lean();
   } else {
     return Event.find({ type }).sort({ date: -1 }).limit(1).lean();
   }
