@@ -9,8 +9,9 @@ const userService = require('../services/user-service');
 const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { toPrettyBigDecimal } = require('../util/number-helper');
+const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
+const { BetContract } = require('@wallfair.io/smart_contract_mock');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -264,12 +265,26 @@ const getOpenBetsList = async (request, response, next) => {
       const openBets = [];
 
       for (const trade of trades) {
+        const outcomeIndex = trade._id.outcomeIndex;
+        const betId = trade._id.betId;
+        const betContract = new BetContract(betId, trade._id.bet.outcomes.length);
+        const outcomeBuy = await betContract.calcBuy(
+          BigInt(toCleanBigDecimal(parseFloat(trade.totalInvestmentAmount).toFixed(4)).getValue()),
+          outcomeIndex
+        );
+        const outcomeSell = await betContract.calcSellFromAmount(
+          BigInt(toCleanBigDecimal(parseFloat(trade.totalOutcomeTokens).toFixed(4)).getValue()),
+          outcomeIndex
+        );
+
         openBets.push({
-          betId: trade._id.betId.toString(),
-          outcome: trade._id.outcomeIndex,
+          betId,
+          outcome: outcomeIndex,
           investmentAmount: trade.totalInvestmentAmount,
           outcomeAmount: trade.totalOutcomeTokens,
           lastDate: trade.date,
+          currentBuyAmount: toPrettyBigDecimal(outcomeBuy),
+          sellAmount: toPrettyBigDecimal(outcomeSell),
         });
       }
 
