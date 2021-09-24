@@ -6,7 +6,6 @@ const { publishEvent, notificationEvents } = require('./notification-service');
 
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
 const email_evaluate = fs.readFileSync('./emails/email-evaluate.html', 'utf8');
-const resetPasswordEmailTemplate = fs.readFileSync('./emails/reset-password-email.html', 'utf8');
 
 const transporter = nodemailer.createTransport(
   smtpTransport({
@@ -35,15 +34,6 @@ exports.sendConfirmMail = async (user) => {
   user.emailCode = emailCode;
   await user.save();
 };
-
-exports.sendResetPasswordMail = async (user) => {
-  // TODO @gmussi Please define baseUrl. Who's building the express route?
-  const baseUrl = ''
-  const queryString= `${baseUrl}?email=${user.email}`
-  const generatedTemplate = resetPasswordEmailTemplate
-    .replace('{{buttonUrl}}', queryString)
-  await this.sendMail(user.email, 'Wallfair: Reset your password', generatedTemplate);
-}
 
 exports.sendEventEvaluateMail = async (payload) => {
   const ratings = {

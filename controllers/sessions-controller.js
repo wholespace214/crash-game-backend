@@ -5,7 +5,9 @@ const authService = require('../services/auth-service');
 const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
+const notificationService = require('../services/notification-service');
 const bcrypt = require('bcryptjs');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 
 module.exports = {
   async createUser(req, res, next) {
@@ -88,7 +90,10 @@ module.exports = {
     try {
       const user = await userApi.getOne(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
-      await mailService.sendResetPasswordMail(user);
+      notificationService.publishEvent(
+        { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
+        user
+      );
 
       return res.status(200).send();
     } catch (err) {
