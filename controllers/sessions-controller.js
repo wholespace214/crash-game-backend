@@ -113,16 +113,14 @@ module.exports = {
       const updatedUser = await userApi.updateUser({
         id: user.id,
         password: req.body.password,
-        $unset:{passwordResetToken: 1}
+        $unset: { passwordResetToken: 1 }
       })
 
-      logger.info(
-        updatedUser,
-      )
+      logger.info(updatedUser)
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_CHANGED_PASSWORD },
-        user,
+        { id: updatedUser._id, email: updatedUser.email, passwordResetToken: updatedUser.passwordResetToken },
       );
 
 
@@ -149,7 +147,12 @@ module.exports = {
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
-        { ...user, resetPwUrl },
+        {
+          id: updatedUser._id,
+          email: updatedUser.email,
+          passwordResetToken: updatedUser.passwordResetToken,
+          resetPwUrl,
+        },
       );
       logger.info(
         notificationEvents.EVENT_USER_FORGOT_PASSWORD,
