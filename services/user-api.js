@@ -11,6 +11,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
  * @param {Boolean} userData.admin
  * @param {Date} userData.date
  * @param {String} userData.password
+ * @param {String} userData.passwordResetToken
  */
 const createUser = async (userData) => await new User(userData).save();
 
@@ -26,6 +27,7 @@ const createUser = async (userData) => await new User(userData).save();
  * @param {Boolean} userData.admin
  * @param {Date} userData.date
  * @param {String} userData.password
+ * @param {String} userData.passwordResetToken
  */
 const updateUser = async (userData) => await User.findOneAndUpdate({
   _id: userData.id,
@@ -53,7 +55,7 @@ const verifyEmail = async (email) => {
   ).exec();
 };
 
-const getUserEntriesAmount = async ()=> User.countDocuments({}).exec();
+const getUserEntriesAmount = async () => User.countDocuments({}).exec();
 
 module.exports = {
   createUser,

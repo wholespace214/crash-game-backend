@@ -22,5 +22,11 @@
   "editor.formatOnSave": true,
   "editor.formatOnType": false,
   "editor.formatOnPaste": true,
-  "editor.rulers": [80, 100]
+  "editor.rulers": [
+    80,
+    100
+  ],
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  }
 }
