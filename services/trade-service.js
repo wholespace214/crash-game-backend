@@ -12,11 +12,31 @@ exports.getActiveTradesByUserId = async (userId) =>
     },
     { $sort: { createdAt: -1 } },
     {
+      $lookup: {
+        localField: 'betId',
+        from: 'bets',
+        foreignField: '_id',
+        as: 'bet',
+      },
+    },
+    {
       $group: {
         _id: {
           userId: '$userId',
           betId: '$betId',
           outcomeIndex: '$outcomeIndex',
+          bet: {
+            $let: {
+              vars: {
+                betMatch: {
+                  $arrayElemAt: ['$bet', 0],
+                },
+              },
+              in: {
+                outcomes: '$$betMatch.outcomes',
+              },
+            },
+          },
         },
         totalInvestmentAmount: {
           $sum: '$investmentAmount',
