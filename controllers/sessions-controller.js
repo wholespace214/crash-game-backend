@@ -93,7 +93,7 @@ module.exports = {
       // get user
       const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
-      console.log(user)
+
       // check if token matches
       if (user.passwordResetToken !== req.body.passwordResetToken) {
         return next(new ErrorHandler(401, "Token not valid"));
@@ -103,26 +103,24 @@ module.exports = {
       if (user.email !== req.body.email) {
         return next(new ErrorHandler(401, "Emails do not match"));
       }
-      console.log(req.body, req.body.password, req.body.passwordConfirmation)
+
       // check if given passwords match
       if (req.body.password !== req.body.passwordConfirmation) {
         return next(new ErrorHandler(401, "Passwords do not match"));
       }
 
+      const passwordHash = await bcrypt.hash(req.body.password, 8);
       // actually update user
       const updatedUser = await userApi.updateUser({
         id: user.id,
-        password: req.body.password,
+        password: passwordHash,
         $unset: { passwordResetToken: 1 }
       })
-
-      logger.info(updatedUser)
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_CHANGED_PASSWORD },
         { id: updatedUser._id, email: updatedUser.email, passwordResetToken: updatedUser.passwordResetToken },
       );
-
 
       return res.status(200).send();
     } catch (err) {
@@ -143,7 +141,7 @@ module.exports = {
       // store user token
       const updatedUser = await userApi.updateUser({ id: user._id, passwordResetToken: passwordResetToken });
 
-      const resetPwUrl = `${process.env.CLIENT_URL}?email=${user.email}&passwordResetToken=${passwordResetToken}`
+      const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
 
       notificationService.publishEvent(
         { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
@@ -153,11 +151,6 @@ module.exports = {
           passwordResetToken: updatedUser.passwordResetToken,
           resetPwUrl,
         },
-      );
-      logger.info(
-        notificationEvents.EVENT_USER_FORGOT_PASSWORD,
-        updatedUser,
-        resetPwUrl
       );
 
       return res.status(200).send();
