@@ -105,7 +105,7 @@ exports.filterEvents = async (
     .collation({ locale: 'en' })
     .sort(sortby)
 
-  if(betFilter){
+  if (betFilter) {
     op.find(betFilter)
   }
 
@@ -131,7 +131,7 @@ exports.getCoverEvent = async (type) => {
       .limit(1)
       .lean();
   } else {
-    return Event.find({ type, bets: {$not: {$size: 0}} }).sort({ date: -1 }).limit(1).lean();
+    return Event.find({ type, bets: { $not: { $size: 0 } } }).sort({ date: -1 }).limit(1).lean();
   }
 };
 
@@ -199,7 +199,7 @@ exports.betCreated = async (bet, userId) => {
 
 exports.provideLiquidityToBet = async (createBet) => {
   const LOG_TAG = '[CREATE-BET]';
-  const liquidityAmount = 214748n;
+  const liquidityAmount = 25_000_0000n; // bets start with 25k liquidity
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
   const betContract = new BetContract(createBet.id, createBet.outcomes.length);
 
@@ -240,7 +240,7 @@ exports.getTags = async () => Event.distinct('tags.name').exec();
 const getTimeOption = (rangeType, rangeValue) => {
   if (rangeType === 'day' && rangeValue === '7') {
     return '7days';
-  } else if (rangeType === 'day' && rangeValue === '30' ){
+  } else if (rangeType === 'day' && rangeValue === '30') {
     return '30days';
   }
   return '24hours';
