@@ -3,12 +3,26 @@ const router = require('express').Router();
 const { check, query } = require('express-validator');
 const eventController = require('../../controllers/events-controller');
 const betController = require('../../controllers/bets-controller');
+const passport = require("passport");
 
-router.get('/list', eventController.listEvents);
+function checkAdmin(req, res, next) {
+  return passport.authenticate('jwt', { session: false }, function (err, user) {
+    req.isAdmin = !err && user && user.admin;
+    next();
+  })(req, res, next);
+}
 
-router.get('/list/:type/:category/:count/:page/:sortby', eventController.filterEvents);
+router.get('/list',
+  checkAdmin,
+  eventController.listEvents);
 
-router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery', eventController.filterEvents);
+router.get('/list/:type/:category/:count/:page/:sortby',
+  checkAdmin,
+  eventController.filterEvents);
+
+router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery',
+  checkAdmin,
+  eventController.filterEvents);
 
 router.get(
   '/cover/:type',

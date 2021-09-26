@@ -5,7 +5,10 @@ const authService = require('../services/auth-service');
 const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
+const { generate } = require('../helper');
+const notificationService = require('../services/notification-service');
 const bcrypt = require('bcryptjs');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 
 module.exports = {
   async createUser(req, res, next) {
@@ -84,11 +87,71 @@ module.exports = {
     }
   },
 
+  /** Handler to acutally reset your password */
   async resetPassword(req, res, next) {
     try {
-      const user = await userApi.getOne(req.body.email);
+      // get user
+      const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
-      await mailService.sendResetPasswordMail(user);
+
+      // check if token matches
+      if (user.passwordResetToken !== req.body.passwordResetToken) {
+        return next(new ErrorHandler(401, "Token not valid"));
+      }
+
+      // check if email matches
+      if (user.email !== req.body.email) {
+        return next(new ErrorHandler(401, "Emails do not match"));
+      }
+
+      // check if given passwords match
+      if (req.body.password !== req.body.passwordConfirmation) {
+        return next(new ErrorHandler(401, "Passwords do not match"));
+      }
+
+      const passwordHash = await bcrypt.hash(req.body.password, 8);
+      // actually update user
+      const updatedUser = await userApi.updateUser({
+        id: user.id,
+        password: passwordHash,
+        $unset: { passwordResetToken: 1 }
+      })
+
+      notificationService.publishEvent(
+        { type: notificationEvents.EVENT_USER_CHANGED_PASSWORD },
+        { id: updatedUser._id, email: updatedUser.email, passwordResetToken: updatedUser.passwordResetToken },
+      );
+
+      return res.status(200).send();
+    } catch (err) {
+      logger.error(err);
+      return res.status(500).send();
+    }
+  },
+
+
+  /** Hanlder to init the "I've forgot my passwort" process */
+  async forgotPassword(req, res, next) {
+    try {
+      const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
+      if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
+
+      // generate token
+      const passwordResetToken = generate(10);
+      // store user token
+      const updatedUser = await userApi.updateUser({ id: user._id, passwordResetToken: passwordResetToken });
+
+      const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
+
+      notificationService.publishEvent(
+        { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
+        {
+          id: updatedUser._id,
+          email: updatedUser.email,
+          passwordResetToken: updatedUser.passwordResetToken,
+          resetPwUrl,
+        },
+      );
 
       return res.status(200).send();
     } catch (err) {

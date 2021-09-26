@@ -41,6 +41,8 @@ router.get('/transactions', userController.getTransactions);
 
 router.get('/history', userController.getAMMHistory);
 
+router.get('/trade-history', userController.getTradeHistory);
+
 router.get('/resend-confirm', userController.resendConfirmEmail);
 
 router.patch(

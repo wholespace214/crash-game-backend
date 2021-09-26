@@ -17,7 +17,7 @@ router.post(
   [
     check('name').notEmpty().isString().isLength({ max: 255 }),
     check('slug'),
-    check('streamUrl').isString().notEmpty().isLength({ max: 500 }),
+    check('streamUrl').isString().optional().isLength({ max: 500 }),
     check('previewImageUrl').isString().notEmpty().isLength({ max: 255 }),
     check('category').notEmpty(),
     check('tags').isArray(),
@@ -29,10 +29,7 @@ router.post(
 
 router.post(
   '/create-from-youtube',
-  [
-    check('youtubeVideoId').isString().notEmpty(),
-    check('type').isString().notEmpty(),
-  ],
+  [check('youtubeVideoId').isString().notEmpty(), check('type').isString().notEmpty()],
   eventController.createEventFromYoutube
 );
 
@@ -58,7 +55,8 @@ router.post(
     check('marketQuestion').isString().notEmpty().isLength({ max: 255 }),
     check('slug').isString().notEmpty().isLength({ max: 255 }),
     check('outcomes').isArray({ min: 0 }),
-    check('evidenceDescription').isLength({ max: 1200 }),
+    check('evidenceSource').isLength({ max: 2200 }),
+    check('evidenceDescription').isLength({ max: 2200 }),
     check('date').notEmpty(),
     check('published').default(true),
   ],

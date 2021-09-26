@@ -7,7 +7,7 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 
 // Import Event model
-const { Event } = require('@wallfair.io/wallfair-commons').models;
+const { Event, Bet } = require('@wallfair.io/wallfair-commons').models;
 
 // Import Mail Service
 const mailService = require('../services/mail-service');
@@ -28,18 +28,16 @@ const listEvents = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
   }
-
-  // Defining User Inputs
-  const { id } = req.params;
-  const eventList = await eventService.listEvent(id);
-
+  let q = {}
+  if (!req.isAdmin){
+    q = {bets: {$not: {$size: 0}}}
+  }
+  const eventList = await eventService.listEvents(q);
   res.status(201).json(calculateAllBetsStatus(eventList));
 };
 
 const filterEvents = async (req, res) => {
-  const {
-    category, sortby, searchQuery, type,
-  } = req.params;
+  const { category, sortby, searchQuery, type } = req.params;
   const count = +req.params.count;
   const page = +req.params.page;
 
@@ -50,6 +48,7 @@ const filterEvents = async (req, res) => {
     page,
     sortby,
     searchQuery,
+    !req.isAdmin ? {bets: {$not: {$size: 0}}} : null
   );
 
   res.status(201).json(eventList);
@@ -90,8 +89,30 @@ const createEvent = async (req, res, next) => {
   try {
     // Defining User Inputs
     const {
-      name, slug, streamUrl, previewImageUrl, category, tags = [], date, type,
+      name,
+      slug,
+      streamUrl,
+      previewImageUrl,
+      category,
+      tags = [],
+      date,
+      type,
+      bet,
     } = req.body;
+
+    const isNonStreamedEvent = type === 'non-streamed';
+    if (
+      isNonStreamedEvent &&
+      (!bet ||
+        !['slug', 'marketQuestion', 'outcomes', 'endDate', 'evidenceDescription'].reduce(
+          (acc, key) => acc && !!bet[key],
+          true
+        ))
+    ) {
+      throw new Error('Non-streamed event must have a bet.');
+    } else if (!isNonStreamedEvent && !streamUrl) {
+      throw new Error('Streamed event must have a streamUrl.');
+    }
 
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
@@ -116,6 +137,20 @@ const createEvent = async (req, res, next) => {
 
     const event = await eventService.saveEvent(createdEvent);
     console.debug(LOG_TAG, 'Successfully created a new Event');
+
+    if (isNonStreamedEvent) {
+      const createdBet = new Bet({
+        event: event._id,
+        ...bet,
+        date: new Date(),
+        creator: req.user.id,
+        published: true,
+        endDate: new Date(bet.endDate),
+        status: 'active',
+      });
+      const newBet = await createdBet.save();
+      await eventService.editEvent(event._id, { bets: [newBet._id] });
+    }
 
     return res.status(201).json(event);
   } catch (err) {

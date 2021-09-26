@@ -171,7 +171,7 @@ async function main() {
       const token = jwt.verify(socket.handshake.query.token, process.env.JWT_KEY);
       userId = token.userId;
     } catch (e) {
-      console.error('Invalid token');
+      console.debug('[SOCKET] Invalid user token');
     }
 
     socket.userId = userId;

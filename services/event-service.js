@@ -68,8 +68,11 @@ const filterPublishedBets = (eventOrArray) => {
 };
 exports.filterPublishedBets = filterPublishedBets;
 
-exports.listEvent = async () =>
-  Event.find().populate('bets').map(calculateAllBetsStatus).map(filterPublishedBets);
+exports.listEvents = async (q) => {
+  return Event.find(q).populate('bets')
+    .map(calculateAllBetsStatus)
+    .map(filterPublishedBets);
+}
 
 exports.filterEvents = async (
   type = 'all',
@@ -77,7 +80,8 @@ exports.filterEvents = async (
   count = 10,
   page = 1,
   sortby = 'name',
-  searchQuery
+  searchQuery,
+  betFilter = null
 ) => {
   const query = {};
 
@@ -95,12 +99,17 @@ exports.filterEvents = async (
     query.name = { $regex: searchQuery, $options: 'i' };
   }
 
-  return Event.find(query)
+  const op = Event.find(query)
     .limit(count)
     .skip(count * (page - 1))
     .collation({ locale: 'en' })
     .sort(sortby)
-    .lean();
+
+  if(betFilter){
+    op.find(betFilter)
+  }
+
+  return op.lean();
 };
 
 exports.getEvent = async (id) =>
@@ -109,9 +118,20 @@ exports.getEvent = async (id) =>
 exports.getCoverEvent = async (type) => {
   // TODO Sort events by number of UniversalEvent associated with it
   if (type === 'streamed') {
-    return Event.find({ type, state: 'online' }).sort({ date: -1 }).limit(1).lean();
+    return Event.find({
+      type,
+      state: 'online',
+      bets: {
+        $exists: true,
+        $type: 'array',
+        $ne: [],
+      },
+    })
+      .sort({ date: -1 })
+      .limit(1)
+      .lean();
   } else {
-    return Event.find({ type }).sort({ date: -1 }).limit(1).lean();
+    return Event.find({ type, bets: {$not: {$size: 0}} }).sort({ date: -1 }).limit(1).lean();
   }
 };
 
@@ -190,14 +210,17 @@ exports.provideLiquidityToBet = async (createBet) => {
 };
 
 exports.saveEvent = async (event, session) => {
-  event.save({ session });
+  const savedEvent = await event.save({ session });
 
   publishEvent(notificationEvents.EVENT_NEW, {
     producer: 'system',
     producerId: 'notification-service',
     data: { event },
   });
+
+  return savedEvent;
 };
+
 exports.editEvent = async (eventId, userData) => {
   const updatedEvent = await Event.findByIdAndUpdate(eventId, userData, { new: true });
 
@@ -228,7 +251,6 @@ function padData(values, now, rangeType, outcomeLength) {
     return values;
   }
 
-  const getLastValue = () => ({ x: now.toISOString(), y: values[0].y });
   if (values.length === 0) {
     const clone = new Date(now.getTime());
     if (rangeType === 'hour') {
@@ -247,6 +269,7 @@ function padData(values, now, rangeType, outcomeLength) {
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
   const betContract = new BetContract(bet.id, bet.outcomes.length);
+
   const timeOption = getTimeOption(rangeType, rangeValue);
   const allPrices = await betContract.getAmmPriceActions(timeOption);
 
@@ -256,12 +279,7 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
     [current.outcomeIndex]: [...(agg[current.outcomeIndex] ?? []), toXY(current)],
   }), {});
 
-  // add an extra point if there is one value so the client can draw a line
   const now = new Date();
-  // const lookupWithExtraValues = Object.fromEntries(
-  //   Object.keys(lookup).map(key => [key, padData(lookup[key], now)]),
-  // );
-
   return bet.outcomes.map(outcome => ({
     outcomeName: outcome.name,
     outcomeIndex: outcome.index,

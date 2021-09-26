@@ -29,10 +29,23 @@ router.post(
 
 router.post('/verify-email', [check('email').notEmpty().isEmail()], sessionsController.verifyEmail);
 
+/** Triggers the "I've forgot my passwort" process */
+router.post(
+  '/forgot-password',
+  [check('email').notEmpty().isEmail()],
+  sessionsController.forgotPassword
+);
+
+/** Route to acutally reset your password */
 router.post(
   '/reset-password',
-  [check('email').notEmpty().isEmail()],
-  sessionsController.resetPassword
+  [
+    check('email').notEmpty().isEmail(),
+    check('passwordResetToken').notEmpty().isLength({ min: 1, max: 12 }),
+    check('password').notEmpty(),
+    check('passwordConfirmation').notEmpty(),
+  ],
+  sessionsController.resetPassword,
 );
 
 module.exports = router;
