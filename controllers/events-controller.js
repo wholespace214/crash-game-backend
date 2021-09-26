@@ -29,8 +29,11 @@ const listEvents = async (req, res, next) => {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
   }
   let q = {}
-  if (!req.isAdmin){
-    q = {bets: {$not: {$size: 0}}}
+  if (!req.isAdmin) {
+    q = {
+      bets: { $not: { $size: 0 } },
+      state: { $ne: "offline" },
+    }
   }
   const eventList = await eventService.listEvents(q);
   res.status(201).json(calculateAllBetsStatus(eventList));
@@ -48,7 +51,8 @@ const filterEvents = async (req, res) => {
     page,
     sortby,
     searchQuery,
-    !req.isAdmin ? {bets: {$not: {$size: 0}}} : null
+    !req.isAdmin ? { bets: { $not: { $size: 0 } } } : null,
+    type === "streamed" && req.isAdmin,
   );
 
   res.status(201).json(eventList);
@@ -149,6 +153,7 @@ const createEvent = async (req, res, next) => {
         status: 'active',
       });
       const newBet = await createdBet.save();
+      await eventService.provideLiquidityToBet(newBet);
       await eventService.editEvent(event._id, { bets: [newBet._id] });
     }
 

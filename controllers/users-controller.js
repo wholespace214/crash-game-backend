@@ -268,15 +268,21 @@ const getOpenBetsList = async (request, response, next) => {
       for (const trade of trades) {
         const outcomeIndex = trade._id.outcomeIndex;
         const betId = trade._id.betId;
-        const betContract = new BetContract(betId, trade._id.bet.outcomes.length);
-        const outcomeBuy = await betContract.calcBuy(
-          BigInt(toCleanBigDecimal(parseFloat(trade.totalInvestmentAmount).toFixed(4)).getValue()),
-          outcomeIndex
-        );
-        const outcomeSell = await betContract.calcSellFromAmount(
-          BigInt(toCleanBigDecimal(parseFloat(trade.totalOutcomeTokens).toFixed(4)).getValue()),
-          outcomeIndex
-        );
+        const outcomes = trade._id.bet.outcomes || [];
+        let outcomeBuy = 0;
+        let outcomeSell = 0;
+
+        if (outcomes.length) {
+          const betContract = new BetContract(betId, outcomes.length);
+          outcomeBuy = await betContract.calcBuy(
+            BigInt(toCleanBigDecimal(parseFloat(trade.totalInvestmentAmount).toFixed(4)).getValue()),
+            outcomeIndex
+          );
+          outcomeSell = await betContract.calcSellFromAmount(
+            BigInt(toCleanBigDecimal(parseFloat(trade.totalOutcomeTokens).toFixed(4)).getValue()),
+            outcomeIndex
+          );
+        }
 
         openBets.push({
           betId,
