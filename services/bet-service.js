@@ -6,8 +6,59 @@ const { Bet, Trade, Event } = require('@wallfair.io/wallfair-commons').models;
 const { publishEvent, notificationEvents } = require('./notification-service');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
+const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
 
 const WFAIR = new Erc20('WFAIR');
+
+exports.listBets = async (q) => {
+  return Bet.find(q).populate('event')
+    .map(calculateAllBetsStatus)
+    .map(filterPublishedBets);
+}
+
+exports.filterBets = async (
+  type = 'all',
+  category = 'all',
+  count = 10,
+  page = 1,
+  sortby = 'name',
+  searchQuery
+) => {
+  const eventQuery = {};
+  const betQuery = {};
+
+  // only filter by type if it is not 'all'
+  if (type !== 'all') {
+    eventQuery.type = type;
+  }
+
+  if (category !== 'all') {
+    eventQuery.category = category;
+  }
+
+  // only filter by searchQuery if it is present
+  if (searchQuery) {
+    betQuery.marketQuestion = { $regex: searchQuery, $options: 'i' };
+  }
+
+  const result = await Bet.find(betQuery)
+    .limit(count)
+    .skip(count * (page - 1))
+    .collation({ locale: 'en' })
+    .sort(sortby)
+    .populate(
+      {
+        path: 'event',
+        match: eventQuery
+      }
+    )
+    .lean();
+
+  const response = result.filter(bet => bet.event != null);
+
+  return response;
+};
+
 
 exports.editBet = async (betId, betData) => {
   const updatedEvent = await Bet.findByIdAndUpdate(betId, betData, { new: true });

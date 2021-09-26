@@ -18,8 +18,38 @@ const betService = require('../services/bet-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 const { isAdmin } = require('../helper');
+const { calculateAllBetsStatus } = require('../services/event-service');
 
 const WFAIR = new Erc20('WFAIR');
+
+const listBets = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
+  }
+  let q = {}
+
+  const betList = await betService.listBets(q);
+  res.status(201).json(calculateAllBetsStatus(betList));
+};
+
+const filterBets = async (req, res) => {
+  const { category, sortby, searchQuery, type } = req.params;
+  const count = +req.params.count;
+  const page = +req.params.page;
+
+  const betList = await betService.filterBets(
+    type,
+    category,
+    count,
+    page,
+    sortby,
+    searchQuery,
+  );
+
+  res.status(201).json(betList);
+};
 
 const createBet = async (req, res, next) => {
   const LOG_TAG = '[CREATE-BET]';
@@ -398,6 +428,8 @@ const betHistory = async (req, res, next) => {
   }
 };
 
+exports.listBets = listBets;
+exports.filterBets = filterBets;
 exports.createBet = createBet;
 exports.editBet = editBet;
 exports.placeBet = placeBet;
