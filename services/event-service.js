@@ -223,12 +223,26 @@ const getTimeOption = (rangeType, rangeValue) => {
   return '24hours';
 }
 
-function padData(values, now) {
-  // if there is one point on the graph, add point for today
-  // so the client can draw a line
-  return value.length > 1
-    ? values
-    : [...values, { x: now.toISOString(), y: values[0].y }]
+function padData(values, now, rangeType, outcomeLength) {
+  if (values.length > 1) {
+    return values;
+  }
+
+  const getLastValue = () => ({ x: now.toISOString(), y: values[0].y });
+  if (values.length === 0) {
+    const clone = new Date(now.getTime());
+    if (rangeType === 'hour') {
+      clone.setHours(clone.getHours() - 1);
+    } else {
+      clone.setDate(clone.getDate() - 1);
+    }
+    const y = 1 / outcomeLength;
+    return [
+      { x: clone.toISOString(), y },
+      { x: now.toISOString(), y },
+    ];
+  }
+  return [...values, { x: now.toISOString(), y: values[0].y }];
 }
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
@@ -244,13 +258,13 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
 
   // add an extra point if there is one value so the client can draw a line
   const now = new Date();
-  const lookupWithExtraValues = Object.fromEntries(
-    Object.keys(lookup).map(key => [key, padData(lookup[key], now)]),
-  );
+  // const lookupWithExtraValues = Object.fromEntries(
+  //   Object.keys(lookup).map(key => [key, padData(lookup[key], now)]),
+  // );
 
   return bet.outcomes.map(outcome => ({
     outcomeName: outcome.name,
     outcomeIndex: outcome.index,
-    data: lookupWithExtraValues[outcome.index] ?? [],
+    data: padData(lookup[outcome.index] ?? [], now, rangeType, bet.outcomes.length),
   }));
 };
