@@ -8,3 +8,4 @@ CREATE INDEX bet_idx ON amm_interactions (bet);
 CREATE INDEX owner_idx ON token_balances (owner);
 CREATE INDEX bet_rep_idx ON bet_reports (bet_id);
 CREATE INDEX sende_receiver_idx ON token_transactions (sender, receiver);
+CREATE TABLE IF NOT EXISTS amm_price_action (betid varchar(255), trx_timestamp timestamp, outcomeIndex integer, quote decimal, PRIMARY KEY(betid, outcomeIndex, trx_timestamp));
