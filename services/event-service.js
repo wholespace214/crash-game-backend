@@ -199,7 +199,7 @@ exports.betCreated = async (bet, userId) => {
 
 exports.provideLiquidityToBet = async (createBet) => {
   const LOG_TAG = '[CREATE-BET]';
-  const liquidityAmount = 25_000_0000n; // bets start with 25k liquidity
+  const liquidityAmount = 100_0000n; // bets start with 100 liquidity
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
   const betContract = new BetContract(createBet.id, createBet.outcomes.length);
 
