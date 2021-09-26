@@ -41,22 +41,19 @@ exports.filterBets = async (
     betQuery.marketQuestion = { $regex: searchQuery, $options: 'i' };
   }
 
+  const eventIds = await Event.find(eventQuery).select('_id').lean();
+
+  betQuery.event = { $in: eventIds };
+
   const result = await Bet.find(betQuery)
     .limit(count)
     .skip(count * (page - 1))
     .collation({ locale: 'en' })
     .sort(sortby)
-    .populate(
-      {
-        path: 'event',
-        match: eventQuery
-      }
-    )
+    .populate({ path: 'event' })
     .lean();
 
-  const response = result.filter(bet => bet.event != null);
-
-  return response;
+  return result;
 };
 
 
