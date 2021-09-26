@@ -214,102 +214,43 @@ exports.saveBet = async (bet, session) => bet.save({ session });
 
 exports.getTags = async () => Event.distinct('tags.name').exec();
 
-function getPrice(interaction) {
-  const priceRaw = Number(interaction.investmentamount) / Number(interaction.outcometokensbought);
-  return priceRaw.toFixed(2);
-}
-
-function getPadValue(data, startIndex) {
-  let index = startIndex;
-  while (index > 0) {
-    index = index -= 1;
-    const candidate = data[index].y;
-    if (candidate) {
-      return candidate;
-    }
+const getTimeOption = (rangeType, rangeValue) => {
+  if (rangeType === 'day' && rangeValue === '7') {
+    return '7days';
+  } else if (rangeType === 'day' && rangeValue === '30' ){
+    return '30days';
   }
-
-  // should never come here because we set the first value
-  return 0;
+  return '24hours';
 }
 
-function padData(response) {
-  return response.map(entry => ({
-    ...entry,
-    data: entry.data.map((d, idx) => ({
-      ...d,
-      y: d.y ?? getPadValue(entry.data, idx),
-    }))
-  }));
+function padData(values, now) {
+  // if there is one point on the graph, add point for today
+  // so the client can draw a line
+  return value.length > 1
+    ? values
+    : [...values, { x: now.toISOString(), y: values[0].y }]
 }
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
-  // todo: rewrite to show correct prices for options
-  const tmpChartData = [];
-  let startDate;
-  let tmpDay;
-
-  switch (rangeType) {
-    case 'hour':
-      startDate = new Date(new Date().getTime() - rangeValue * 60 * 60 * 1000);
-      tmpDay = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-        startDate.getHours(),
-        0,
-        0
-      );
-
-      for (let i = 1; i <= rangeValue; i++) {
-        tmpChartData.push({
-          x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60),
-          y: 0,
-        });
-      }
-      break;
-    case 'day':
-      startDate = new Date(Date.now() - rangeValue * 24 * 60 * 60 * 1000);
-      tmpDay = new Date(startDate);
-
-      for (let i = 1; i <= rangeValue; i++) {
-        tmpChartData.push({
-          x: new Date(tmpDay.getTime() + i * 1000 * 60 * 60 * 24),
-          y: 0,
-        });
-      }
-      break;
-  }
-
   const betContract = new BetContract(bet.id, bet.outcomes.length);
-  const interactions = await betContract.getBetInteractions(startDate, direction);
+  const timeOption = getTimeOption(rangeType, rangeValue);
+  const allPrices = await betContract.getAmmPriceActions(timeOption);
 
-  const firstRangeValue = new Date(tmpChartData[0].x);
-  const startTime = new Date(firstRangeValue.getTime());
-  startTime.setHours(firstRangeValue.getHours() - 1);
-  const startValue = {
-    x: startTime.toISOString(),
-    y: 1 / bet.outcomes.length,
-  };
+  const toXY = action => ({ x: action.trxTimestamp, y: action.quote });
+  const lookup = allPrices.reduce((agg, current) => ({
+    ...agg,
+    [current.outcomeIndex]: [...(agg[current.outcomeIndex] ?? []), toXY(current)],
+  }), {});
 
-  const data = bet.outcomes.map(outcome => {
-    const outcomeInteractions = interactions.filter(i => i.outcome === outcome.index);
-    const baseResult = tmpChartData.map(x => ({ ...x }));
-    const chartData = baseResult.map(b => {
-      const interaction = outcomeInteractions
-        .find(i => new Date(i.trx_timestamp).getHours() === new Date(b.x).getHours() &&
-          new Date(i.trx_timestamp).getDate() === new Date(b.x).getDate());
-      return {
-        ...b,
-        y: interaction && getPrice(interaction),
-      }
-    });
-    return {
-      outcomeName: outcome.name,
-      outcomeIndex: outcome.index,
-      data: [startValue, ...chartData],
-    };
-  });
+  // add an extra point if there is one value so the client can draw a line
+  const now = new Date();
+  const lookupWithExtraValues = Object.fromEntries(
+    Object.keys(lookup).map(key => [key, padData(lookup[key], now)]),
+  );
 
-  return padData(data);
+  return bet.outcomes.map(outcome => ({
+    outcomeName: outcome.name,
+    outcomeIndex: outcome.index,
+    data: lookupWithExtraValues[outcome.index] ?? [],
+  }));
 };
