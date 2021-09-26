@@ -81,7 +81,8 @@ exports.filterEvents = async (
   page = 1,
   sortby = 'name',
   searchQuery,
-  betFilter = null
+  betFilter = null,
+  includeOffline = false,
 ) => {
   const query = {};
 
@@ -97,6 +98,10 @@ exports.filterEvents = async (
   // only filter by searchQuery if it is present
   if (searchQuery) {
     query.name = { $regex: searchQuery, $options: 'i' };
+  }
+
+  if (!includeOffline) {
+    query.state = { $ne: "offline" };
   }
 
   const op = Event.find(query)
