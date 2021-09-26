@@ -23,7 +23,7 @@
     "@admin-bro/express": "^3.1.0",
     "@admin-bro/mongoose": "^1.1.0",
     "@socket.io/redis-adapter": "7.0.0",
-    "@wallfair.io/smart_contract_mock": "^0.5.1",
+    "@wallfair.io/smart_contract_mock": "^0.5.3",
     "@wallfair.io/wallfair-commons": "^1.7.1",
     "admin-bro": "^4.0.1",
     "axios": "^0.21.4",
