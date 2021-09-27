@@ -8,6 +8,7 @@ const { validationResult } = require('express-validator');
 
 // Import Event model
 const { Event, Bet } = require('@wallfair.io/wallfair-commons').models;
+const { publishEvent, notificationEvents } = require('./notification-service');
 
 // Import service
 const eventService = require('../services/event-service');
@@ -207,10 +208,29 @@ const getTags = async (req, res) => {
   });
 };
 
-const sendEventEvaluate = async (_, res, next) => {
+const sendEventEvaluate = async (req, res, next) => {
   try {
-    // const { payload } = req.body;
-    // await mailService.sendEventEvaluateMail(payload);
+    const { payload } = req.body;
+    const ratings = {
+      0: 'Excellent',
+      1: 'Good',
+      2: 'Lame',
+      3: 'Unethical',
+    };
+    const { bet_question } = payload;
+    const rating = ratings[payload.rating];
+    const { comment } = payload;
+
+    publishEvent(notificationEvents.EVENT_BET_EVALUATED, {
+      producer: 'system',
+      producerId: 'notification-service',
+      data: {
+        bet_question,
+        rating,
+        comment,
+      },
+    });
+
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
