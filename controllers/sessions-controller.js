@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb')
 const logger = require('../util/logger');
 const userApi = require('../services/user-api');
 const { ErrorHandler } = require('../util/error-handler');
@@ -5,6 +6,7 @@ const authService = require('../services/auth-service');
 const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
+const auth0Service = require('../services/auth0-service');
 const { generate } = require('../helper');
 const notificationService = require('../services/notification-service');
 const bcrypt = require('bcryptjs');
@@ -26,17 +28,37 @@ module.exports = {
         return next(new ErrorHandler(400, 'User exists'));
       }
 
+      // init data
+      const wFairUserId = new ObjectId().toHexString();
       const counter = ((await userApi.getUserEntriesAmount()) || 0) + 1;
       const passwordHash = await bcrypt.hash(password, 8);
 
+      // create auth0 user
+      const auth0User = auth0Service.createUser({
+        email,
+        username: username || `wallfair-${counter}`,
+        password,
+        app_metadata: {},
+        user_metadata: {
+          // this reflects our own user mongoDB user Id
+          appId: wFairUserId,
+        },
+      });
+
+      if (!auth0User) throw new Error("Couldn't create auth0 user")
+
       const createdUser = await userApi.createUser({
+        _id: wFairUserId,
         email,
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
           currency: 'WFAIR',
         },
+        auth0Id: auth0User.user_id,
       });
+
+      // TODO: When there's time, delete Auth0 user if WFAIR creation fails
 
       await userService.mintUser(createdUser.id.toString());
       await mailService.sendConfirmMail(createdUser);
