@@ -59,8 +59,8 @@ services:
     value: prod-db-do-user-9290946-0.b.db.ondigitalocean.com
   - key: POSTGRES_DB
     scope: RUN_AND_BUILD_TIME
-    value: testdb
-  - key: $STAGING_POSTGRES_DB
+    value: $STAGING_POSTGRES_DB
+  - key: POSTGRES_PASSWORD
     scope: RUN_AND_BUILD_TIME
     value: $POSTGRES_PASSWORD
   - key: POSTGRES_SSL
