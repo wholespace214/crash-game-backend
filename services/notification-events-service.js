@@ -15,5 +15,5 @@ const broadcastedEvents = [
 ]
 
 exports.listNotificationEvents = async (limit = 10) => {
-  return UniversalEvent.find({}).where('type').in(broadcastedEvents).limit(+limit);
+  return UniversalEvent.find({}).where('type').in(broadcastedEvents).sort('-createdAt').limit(+limit);
 }
