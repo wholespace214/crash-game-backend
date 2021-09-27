@@ -19,7 +19,7 @@ const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 const { isAdmin } = require('../helper');
 const { calculateAllBetsStatus } = require('../services/event-service');
-const logger = require('../util/logger').default;
+const logger = require('../util/logger');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -36,7 +36,7 @@ const listBets = async (req, res, next) => {
 
 const filterBets = async (req, res, next) => {
   try {
-    const { category, sortby, searchQuery, type } = req.params;
+    const { category, sortby, searchQuery, type, status, published, resolved, canceled } = req.params;
     const count = +req.params.count;
     const page = +req.params.page;
 
@@ -47,6 +47,10 @@ const filterBets = async (req, res, next) => {
       page,
       sortby,
       searchQuery,
+      status,
+      published,
+      resolved,
+      canceled,
     );
 
     return res.status(200).json(betList);
