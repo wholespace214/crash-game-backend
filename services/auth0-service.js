@@ -48,11 +48,11 @@ exports.deleteUser = managementClient.
       cache: true,
       rateLimit: true,
       jwksRequestsPerMinute: 5,
-      jwksUri: `https://YOUR_DOMAIN/.well-known/jwks.json`
+      jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
     }),
 
     // Validate the audience and the issuer.
     audience: 'YOUR_API_IDENTIFIER',
-    issuer: [`https://YOUR_DOMAIN/`],
+    issuer: [`https://${AUTH0_DOMAIN}`],
     algorithms: ['RS256']
   });
