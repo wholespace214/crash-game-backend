@@ -6,7 +6,6 @@ const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const authService = require('../services/auth-service');
 const userService = require('../services/user-service');
-const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
@@ -141,7 +140,6 @@ const saveAdditionalInformation = async (req, res, next) => {
       user.email = email.replace(' ', '');
 
       await rewardRefUserIfNotConfirmed(user);
-      await mailService.sendConfirmMail(user);
     }
 
     user = await userService.saveUser(user);
@@ -435,10 +433,10 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-const resendConfirmEmail = async (req, res, next) => {
+const resendConfirmEmail = async (_, res, next) => {
   try {
-    const user = await userService.getUserById(req.user.id);
-    await mailService.sendConfirmMail(user);
+    // const user = await userService.getUserById(req.user.id);
+    // await mailService.sendConfirmMail(user);
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));

@@ -2,7 +2,6 @@ const logger = require('../util/logger');
 const userApi = require('../services/user-api');
 const { ErrorHandler } = require('../util/error-handler');
 const authService = require('../services/auth-service');
-const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
 const { generate } = require('../helper');
@@ -39,7 +38,6 @@ module.exports = {
       });
 
       await userService.mintUser(createdUser.id.toString());
-      await mailService.sendConfirmMail(createdUser);
 
       return res.status(201).json({
         userId: createdUser.id,
