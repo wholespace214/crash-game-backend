@@ -30,7 +30,7 @@ const listBets = async (req, res, next) => {
 
   } catch (err) {
     logger.error(err);
-    return next(res.status(422).send(err));
+    next(res.status(422).send(err));
   }
 };
 
@@ -53,7 +53,7 @@ const filterBets = async (req, res, next) => {
 
   } catch (err) {
     logger.error(err);
-    return next(res.status(422).send(err));
+    next(res.status(422).send(err));
   }
 };
 
