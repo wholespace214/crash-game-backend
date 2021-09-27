@@ -133,7 +133,7 @@ const createBet = async (req, res, next) => {
         await eventService.provideLiquidityToBet(createdBet);
       });
 
-      await eventService.betCreated(createdBet, req.user.id);
+      await eventService.betCreated(createdBet, req.user);
     } finally {
       await session.endSession();
     }
@@ -228,7 +228,7 @@ const pullOutBet = async (req, res, next) => {
       );
     }
 
-    const user = await userService.getUserById(userId);
+    const user = await userService.getUserReducedDataById(userId);
     let sellAmount;
 
     const session = await User.startSession();
@@ -254,13 +254,14 @@ const pullOutBet = async (req, res, next) => {
           );
           console.debug(LOG_TAG, 'Successfully sold Tokens');
 
-          await tradeService.closeTrades(user.id, bet, outcome, 'sold', session);
+          await tradeService.closeTrades(userId, bet, outcome, 'sold', session);
           console.debug(LOG_TAG, 'Trades closed successfully');
         })
         .catch((err) => console.error(err));
 
       await eventService.pullOutBet(
         user,
+        userId,
         bet,
         toPrettyBigDecimal(newBalances?.earnedTokens),
         outcome,

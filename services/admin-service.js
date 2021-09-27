@@ -140,6 +140,7 @@ exports.initialize = function () {
 
                   dbBet.canceled = true;
                   dbBet.reasonOfCancellation = request.fields.reason;
+                  dbBet.endDate = new Date().toISOString();
                   await eventService.saveBet(dbBet, session);
 
                   userIds = await betService.refundUserHistory(dbBet, session);

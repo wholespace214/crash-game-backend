@@ -110,7 +110,11 @@ async function main() {
       }
     }
 
-    io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
+    if (messageObj.to === '*') {
+      io.of('/').emit(messageObj.event, messageObj.data);
+    } else {
+      io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
+    }
   });
 
   subClient.subscribe('message');
@@ -141,6 +145,7 @@ async function main() {
   const secureBetTemplateRoute = require('./routes/users/secure-bet-template-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
+  const notificationEventsRoutes = require('./routes/users/notification-events-routes');
   const authRoutes = require('./routes/auth/auth-routes');
 
   server.use(cors());
@@ -158,6 +163,7 @@ async function main() {
   );
   server.use('/webhooks/twitch/', twitchWebhook);
   server.use('/api/chat', chatRoutes);
+  server.use('/api/notification-events', notificationEventsRoutes);
   server.use('/api/auth', authRoutes);
 
   // Error handler middleware

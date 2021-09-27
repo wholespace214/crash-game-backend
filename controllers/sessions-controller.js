@@ -2,13 +2,12 @@ const logger = require('../util/logger');
 const userApi = require('../services/user-api');
 const { ErrorHandler } = require('../util/error-handler');
 const authService = require('../services/auth-service');
-const mailService = require('../services/mail-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
 const { generate } = require('../helper');
-const notificationService = require('../services/notification-service');
 const bcrypt = require('bcryptjs');
-const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const { publishEvent, notificationEvents } = require('../services/notification-service');
+
 
 module.exports = {
   async createUser(req, res, next) {
@@ -39,7 +38,12 @@ module.exports = {
       });
 
       await userService.mintUser(createdUser.id.toString());
-      await mailService.sendConfirmMail(createdUser);
+
+      publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
+        producer: 'user',
+        producerId: createdUser._id,
+        data: { email: createdUser.email, username: createdUser.username },
+      });
 
       return res.status(201).json({
         userId: createdUser.id,
@@ -65,6 +69,12 @@ module.exports = {
       if (!valid) {
         return next(new ErrorHandler(401, 'Invalid login'));
       }
+
+      publishEvent(notificationEvents.EVENT_USER_SIGNED_IN, {
+        producer: 'user',
+        producerId: user._id,
+        data: { userIdentifier },
+      });
 
       res.status(200).json({
         userId: user.id,
@@ -117,10 +127,11 @@ module.exports = {
         $unset: { passwordResetToken: 1 }
       })
 
-      notificationService.publishEvent(
-        { type: notificationEvents.EVENT_USER_CHANGED_PASSWORD },
-        { id: updatedUser._id, email: updatedUser.email, passwordResetToken: updatedUser.passwordResetToken },
-      );
+      publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
+        id: updatedUser._id,
+        email: updatedUser.email,
+        passwordResetToken: updatedUser.passwordResetToken
+      });
 
       return res.status(200).send();
     } catch (err) {
@@ -143,15 +154,12 @@ module.exports = {
 
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
 
-      notificationService.publishEvent(
-        { type: notificationEvents.EVENT_USER_FORGOT_PASSWORD },
-        {
-          id: updatedUser._id,
-          email: updatedUser.email,
-          passwordResetToken: updatedUser.passwordResetToken,
-          resetPwUrl,
-        },
-      );
+      publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
+        id: updatedUser._id,
+        email: updatedUser.email,
+        passwordResetToken: updatedUser.passwordResetToken,
+        resetPwUrl,
+      });
 
       return res.status(200).send();
     } catch (err) {
