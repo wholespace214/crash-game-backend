@@ -82,7 +82,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
     throw new Error('No further action can be performed on an event/bet that has ended!');
   }
 
-  const user = await userService.getUserById(userId);
+  const user = await userService.getUserReducedDataById(userId);
 
   if (!user) {
     console.error(LOG_TAG, `User not found with id ${userId}`);
@@ -108,7 +108,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
       const potentialReward = await betContract.calcBuy(amount, outcome);
 
       const trade = new Trade({
-        userId: user._id,
+        userId: userId,
         betId: bet._id,
         outcomeIndex: outcome,
         investmentAmount: toPrettyBigDecimal(amount),
@@ -124,7 +124,8 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
     publishEvent(notificationEvents.EVENT_BET_PLACED, {
       producer: 'user',
       producerId: userId,
-      data: { bet, trade: response.trade },
+      data: { bet, trade: response.trade, user },
+      broadcast: true
     });
     return response;
   } catch (err) {
@@ -192,6 +193,7 @@ exports.refundUserHistory = async (bet, session) => {
       bet,
       userIds,
     },
+    broadcast: true
   });
 
   return userIds;
@@ -244,6 +246,7 @@ exports.resolve = async ({
       producer: 'system',
       producerId: 'notification-service',
       data: { bet, event },
+      broadcast: true
     });
   } catch (err) {
     console.debug(err);
@@ -287,6 +290,7 @@ exports.resolve = async ({
       producer: 'system',
       producerId: 'notification-service',
       data: { bet, event, userId, winToken: winToken.toString() },
+      broadcast: true
     });
 
     // send notification to this user
