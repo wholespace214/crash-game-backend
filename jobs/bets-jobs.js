@@ -29,6 +29,7 @@ const betsActiveNotification = async () => {
       producer: 'system',
       producerId: 'notification-service',
       data: { bet },
+      broadcast: true
     });
   }
 };

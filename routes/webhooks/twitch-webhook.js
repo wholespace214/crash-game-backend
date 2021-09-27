@@ -26,6 +26,7 @@ router.post('/', async (req, res) => {
             producer: 'system',
             producerId: 'notification-service',
             data: { event },
+            broadcast: true
           });
         } else if (type == 'stream.offline') {
           event.metadata.twitch_subscribed_offline = 'true';
@@ -35,6 +36,7 @@ router.post('/', async (req, res) => {
             producer: 'system',
             producerId: 'notification-service',
             data: { event },
+            broadcast: true
           });
         }
       });

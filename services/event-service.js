@@ -158,7 +158,7 @@ exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   }
 };
 
-exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
+exports.pullOutBet = async (user, userId, bet, amount, outcome, currentPrice) => {
   if (bet) {
     const eventId = bet.event;
     const betId = bet._id;
@@ -174,8 +174,9 @@ exports.pullOutBet = async (user, bet, amount, outcome, currentPrice) => {
 
     publishEvent(notificationEvents.EVENT_BET_CASHED_OUT, {
       producer: 'user',
-      producerId: user.id,
-      data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome },
+      producerId: userId,
+      data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome, user },
+      broadcast: true
     });
   }
 };
@@ -187,18 +188,26 @@ exports.isBetTradable = (bet) => bet.status === BET_STATUS.active;
  * @param Object bet
  * @param String userId
  */
-exports.betCreated = async (bet, userId) => {
+exports.betCreated = async (bet, user) => {
   if (bet) {
     const eventId = bet.event;
     const betId = bet._id;
 
     publishEvent(notificationEvents.EVENT_NEW_BET, {
       producer: 'user',
-      producerId: userId,
-      data: { bet },
+      producerId: user.id,
+      data: {
+        bet, user: {
+          username: user.username,
+          profilePicture: user.profilePicture,
+          name: user.name,
+          amountWon: user.amountWon
+        }
+      },
+      broadcast: true
     });
 
-    await websocketService.emitBetCreatedByEventId(eventId, userId, betId, bet.title);
+    await websocketService.emitBetCreatedByEventId(eventId, user.id, betId, bet.title);
   }
 };
 
@@ -221,6 +230,7 @@ exports.saveEvent = async (event, session) => {
     producer: 'system',
     producerId: 'notification-service',
     data: { event },
+    broadcast: true
   });
 
   return savedEvent;
@@ -233,6 +243,7 @@ exports.editEvent = async (eventId, userData) => {
     producer: 'system',
     producerId: 'notification-service',
     data: { updatedEvent },
+    broadcast: true
   });
 
   return updatedEvent;

@@ -110,7 +110,11 @@ async function main() {
       }
     }
 
-    io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
+    if (messageObj.to === '*') {
+      io.of('/').emit(messageObj.event, messageObj.data);
+    } else {
+      io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
+    }
   });
 
   subClient.subscribe('message');
