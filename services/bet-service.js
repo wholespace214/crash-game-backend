@@ -75,6 +75,8 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
   }
 
   const bet = await eventService.getBet(betId);
+  const event = await Event.findById({ _id: bet.event });
+
   console.debug(LOG_TAG, 'Placing Bet', betId, userId);
 
   if (!eventService.isBetTradable(bet)) {
@@ -121,10 +123,11 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
     });
 
     await eventService.placeBet(user, bet, toPrettyBigDecimal(amount), outcome);
+
     publishEvent(notificationEvents.EVENT_BET_PLACED, {
       producer: 'user',
       producerId: userId,
-      data: { bet, trade: response.trade, user },
+      data: { bet, trade: response.trade, user, event },
       broadcast: true
     });
     return response;
