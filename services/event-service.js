@@ -251,7 +251,7 @@ const getTimeOption = (rangeType, rangeValue) => {
   return '24hours';
 }
 
-function padData(values, now, rangeType, outcomeLength) {
+function padData(values, now, rangeType, outcomeIndex, lookup) {
   if (values.length > 1) {
     return values;
   }
@@ -263,13 +263,21 @@ function padData(values, now, rangeType, outcomeLength) {
     } else {
       clone.setDate(clone.getDate() - 1);
     }
-    const y = 1 / outcomeLength;
+    const y = lookup.get(outcomeIndex);
     return [
       { x: clone.toISOString(), y },
       { x: now.toISOString(), y },
     ];
   }
   return [...values, { x: now.toISOString(), y: values[0].y }];
+}
+
+async function getLatestPriceLookup(betContract) {
+  const latestPrices = await betContract.getLatestPriceActions();
+  return new Map(latestPrices.map(p => ([
+    p.outcomeindex,
+    Number(p.quote),
+  ])));
 }
 
 exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) => {
@@ -284,10 +292,12 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
     [current.outcomeIndex]: [...(agg[current.outcomeIndex] ?? []), toXY(current)],
   }), {});
 
+  const latestQuotes = await getLatestPriceLookup(betContract);
+
   const now = new Date();
   return bet.outcomes.map(outcome => ({
     outcomeName: outcome.name,
     outcomeIndex: outcome.index,
-    data: padData(lookup[outcome.index] ?? [], now, rangeType, bet.outcomes.length),
+    data: padData(lookup[outcome.index] ?? [],now, rangeType, outcome.index, latestQuotes),
   }));
 };
