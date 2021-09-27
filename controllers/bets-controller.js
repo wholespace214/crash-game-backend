@@ -18,8 +18,44 @@ const betService = require('../services/bet-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
 const { isAdmin } = require('../helper');
+const { calculateAllBetsStatus } = require('../services/event-service');
+const logger = require('../util/logger').default;
 
 const WFAIR = new Erc20('WFAIR');
+
+const listBets = async (req, res, next) => {
+  try {
+    const betList = await betService.listBets();
+    return res.status(200).json(calculateAllBetsStatus(betList));
+
+  } catch (err) {
+    logger.error(err);
+    next(res.status(422).send(err));
+  }
+};
+
+const filterBets = async (req, res, next) => {
+  try {
+    const { category, sortby, searchQuery, type } = req.params;
+    const count = +req.params.count;
+    const page = +req.params.page;
+
+    const betList = await betService.filterBets(
+      type,
+      category,
+      count,
+      page,
+      sortby,
+      searchQuery,
+    );
+
+    return res.status(200).json(betList);
+
+  } catch (err) {
+    logger.error(err);
+    next(res.status(422).send(err));
+  }
+};
 
 const createBet = async (req, res, next) => {
   const LOG_TAG = '[CREATE-BET]';
@@ -401,6 +437,8 @@ const betHistory = async (req, res, next) => {
   }
 };
 
+exports.listBets = listBets;
+exports.filterBets = filterBets;
 exports.createBet = createBet;
 exports.editBet = editBet;
 exports.placeBet = placeBet;

@@ -20,6 +20,18 @@ router.get('/list/:type/:category/:count/:page/:sortby',
   checkAdmin,
   eventController.filterEvents);
 
+router.get('/bets/:type/:category/:count/:page/:sortby/:searchQuery',
+  checkAdmin,
+  betController.filterBets);
+
+router.get('/bets',
+  checkAdmin,
+  betController.listBets);
+
+router.get('/bets/:type/:category/:count/:page/:sortby',
+  checkAdmin,
+  betController.filterBets);
+
 router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery',
   checkAdmin,
   eventController.filterEvents);
