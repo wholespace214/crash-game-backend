@@ -34,25 +34,25 @@ exports.createPasswordChangeTicket = async (auth0UserId) => await managementClie
 
 exports.createUser = managementClient.createUser;
 exports.deleteUser = managementClient.deleteUser;
-exports.deleteUser = managementClient.
-  /**
-   * Authorization middleware. When used, the
-   * Access Token must exist and be verified against
-   * the Auth0 JSON Web Key Set
-   */
-  exports.checkJwt = jwt({
-    // Dynamically provide a signing key
-    // based on the kid in the header and
-    // the signing keys provided by the JWKS endpoint.
-    secret: jwksRsa.expressJwtSecret({
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 5,
-      jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
-    }),
+/**
+ * Authorization middleware. When used, the
+ * Access Token must exist and be verified against
+ * the Auth0 JSON Web Key Set
+ */
+exports.checkJwt = jwt({
+  // Dynamically provide a signing key
+  // based on the kid in the header and
+  // the signing keys provided by the JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
+  }),
 
-    // Validate the audience and the issuer.
-    audience: 'YOUR_API_IDENTIFIER',
-    issuer: [`https://${AUTH0_DOMAIN}`],
-    algorithms: ['RS256']
-  });
+  // Validate the audience and the issuer.
+  audience: 'YOUR_API_IDENTIFIER',
+  issuer: [`https://${AUTH0_DOMAIN}`],
+  algorithms: ['RS256']
+});
+exports.checkScopes = jwtAuthz(['read:messages']);
