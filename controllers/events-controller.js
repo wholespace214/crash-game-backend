@@ -8,7 +8,7 @@ const { validationResult } = require('express-validator');
 
 // Import Event model
 const { Event, Bet } = require('@wallfair.io/wallfair-commons').models;
-const { publishEvent, notificationEvents } = require('./notification-service');
+const { publishEvent, notificationEvents } = require('../services/notification-service');
 
 // Import service
 const eventService = require('../services/event-service');

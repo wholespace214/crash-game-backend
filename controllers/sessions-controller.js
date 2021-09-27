@@ -6,7 +6,7 @@ const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
-const { publishEvent, notificationEvents } = require('./notification-service');
+const { publishEvent, notificationEvents } = require('../services/notification-service');
 
 
 module.exports = {
