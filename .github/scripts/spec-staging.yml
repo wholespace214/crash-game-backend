@@ -60,7 +60,7 @@ services:
   - key: POSTGRES_DB
     scope: RUN_AND_BUILD_TIME
     value: testdb
-  - key: POSTGRES_PASSWORD
+  - key: $STAGING_POSTGRES_DB
     scope: RUN_AND_BUILD_TIME
     value: $POSTGRES_PASSWORD
   - key: POSTGRES_SSL
