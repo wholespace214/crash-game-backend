@@ -43,10 +43,11 @@ async function onBetPlaced(message) {
 async function onNewBet(message) {
   const { _id: betId, outcomes } = message.data.bet;
   const initialQuote = 1 / outcomes.length;
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date();
+  timestamp.setMinutes(timestamp.getMinutes() - 5);
   const values = outcomes.map(outcome => [
     betId,
-    timestamp,
+    timestamp.toISOString(),
     outcome.index,
     initialQuote,
   ]);

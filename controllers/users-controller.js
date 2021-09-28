@@ -4,9 +4,7 @@ dotenv.config();
 const { validationResult } = require('express-validator');
 const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
 const { User } = require('@wallfair.io/wallfair-commons').models;
-const authService = require('../services/auth-service');
 const userService = require('../services/user-service');
-const mailService = require('../services/mail-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
@@ -15,57 +13,6 @@ const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const _ = require('lodash');
 
 const WFAIR = new Erc20('WFAIR');
-
-// Controller to sign up a new user
-const login = async (req, res, next) => {
-  // Validating User Inputs
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return next(new ErrorHandler(422, 'Invalid phone number'));
-  }
-
-  // Defining User Inputs
-  const { phone, ref } = req.body;
-
-  try {
-    const response = await authService.doLogin(phone, ref);
-    res.status(201).json({
-      phone,
-      smsStatus: response.status,
-      existing: !!response.existing,
-    });
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
-const verfiySms = async (req, res, next) => {
-  // Validating User Inputs
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return next(new ErrorHandler(422, 'Invalid verification code'));
-  }
-
-  // Defining User Inputs
-  const { phone, smsToken } = req.body;
-
-  try {
-    const user = await authService.verifyLogin(phone, smsToken);
-
-    res.status(201).json({
-      userId: user.id,
-      phone: user.phone,
-      name: user.name,
-      email: user.email,
-      walletAddress: user.walletAddress,
-      session: await authService.generateJwt(user),
-      confirmed: user.confirmed,
-    });
-  } catch (err) {
-    next(new ErrorHandler(422, err.message));
-  }
-};
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -141,7 +88,6 @@ const saveAdditionalInformation = async (req, res, next) => {
       user.email = email.replace(' ', '');
 
       await rewardRefUserIfNotConfirmed(user);
-      await mailService.sendConfirmMail(user);
     }
 
     user = await userService.saveUser(user);
@@ -435,10 +381,10 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-const resendConfirmEmail = async (req, res, next) => {
+const resendConfirmEmail = async (_, res, next) => {
   try {
-    const user = await userService.getUserById(req.user.id);
-    await mailService.sendConfirmMail(user);
+    // const user = await userService.getUserById(req.user.id);
+    // TODO: Provide event to resend confirmation mail
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -483,8 +429,6 @@ const updateUserPreferences = async (req, res, next) => {
   }
 };
 
-exports.login = login;
-exports.verfiySms = verfiySms;
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
