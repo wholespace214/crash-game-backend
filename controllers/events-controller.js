@@ -140,17 +140,34 @@ const createEvent = async (req, res, next) => {
     const event = await eventService.saveEvent(createdEvent);
     console.debug(LOG_TAG, 'Successfully created a new Event');
 
+    const { user } = req;
     if (isNonStreamedEvent) {
       const createdBet = new Bet({
         event: event._id,
         ...bet,
         date: new Date(),
-        creator: req.user.id,
+        creator: user.id,
         published: true,
         endDate: new Date(bet.endDate),
         status: 'active',
       });
       const newBet = await createdBet.save();
+
+      publishEvent(notificationEvents.EVENT_NEW_BET, {
+        producer: 'user',
+        producerId: user.id,
+        data: {
+          bet: newBet,
+          user: {
+            username: user.username,
+            profilePicture: user.profilePicture,
+            name: user.name,
+            amountWon: user.amountWon
+          }
+        },
+        broadcast: true
+      });
+
       await eventService.provideLiquidityToBet(newBet);
       await eventService.editEvent(event._id, { bets: [newBet._id] });
     }
