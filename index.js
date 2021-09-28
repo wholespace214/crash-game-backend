@@ -17,6 +17,25 @@ const jwt = require('jsonwebtoken');
 
 let mongoURL = process.env.DB_CONNECTION;
 
+/**
+ * CORS options
+ * @type import('cors').CorsOptions
+ */
+const corsOptions = {
+  origin: '*',
+  credentials: true,
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'X-Access-Token',
+    'Authorization',
+  ],
+  exposedHeaders: ['Content-Length'],
+  preflightContinue: false,
+}
+
 // Connection to Database
 async function connectMongoDB() {
   const connection = await mongoose.connect(mongoURL, {
@@ -62,16 +81,12 @@ async function main() {
   // Initialise server using express
   const server = express();
   const httpServer = http.createServer(server);
+  server.use(cors(corsOptions));
 
   // Create socket.io server
   const { Server } = require('socket.io');
   const io = new Server(httpServer, {
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['*'],
-      credentials: true,
-    },
+    cors: corsOptions,
   });
 
   // Create Redis pub and sub clients
@@ -148,7 +163,9 @@ async function main() {
   const notificationEventsRoutes = require('./routes/users/notification-events-routes');
   const authRoutes = require('./routes/auth/auth-routes');
 
-  server.use(cors());
+  const auth0ShowcaseRoutes = require('./routes/auth0-showcase-routes');
+  server.use(auth0ShowcaseRoutes);
+
 
   // Using Routes
   server.use('/api/event', eventRoutes);
