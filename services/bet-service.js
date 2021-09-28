@@ -22,7 +22,11 @@ exports.filterBets = async (
   count = 10,
   page = 1,
   sortby = 'name',
-  searchQuery
+  searchQuery,
+  status = 'active',
+  published = true,
+  resolved = false,
+  canceled = false,
 ) => {
   const eventQuery = {};
   const betQuery = {};
@@ -35,6 +39,12 @@ exports.filterBets = async (
   if (category !== 'all') {
     eventQuery.category = category;
   }
+
+  // filter by default: active, published, not resolved and not cancelled Bets
+  betQuery.status = status;
+  betQuery.published = published;
+  betQuery.resolved = resolved;
+  betQuery.canceled = canceled;
 
   // only filter by searchQuery if it is present
   if (searchQuery) {
