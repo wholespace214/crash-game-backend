@@ -54,7 +54,7 @@ exports.getTradesByUserIdAndStatuses = async (userId, statuses = []) =>
   ]);
 
 exports.closeTrades = async (userId, bet, outcomeIndex, status, session) => {
-  if (![eventService.BET_STATUS.active].includes(bet.status)) {
+  if (![eventService.BET_STATUS.active, eventService.BET_STATUS.closed].includes(bet.status)) {
     throw new Error(`Cannot close inactive bets, bet status is ${bet.status}`);
   }
 
