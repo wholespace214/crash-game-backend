@@ -86,7 +86,7 @@ async function main() {
   });
 
   const { init } = require('./services/notification-service');
-  init(subClient);
+  init(subClient, pubClient);
 
   const { initQuoteJobs } = require('./jobs/quote-storage-job');
   initQuoteJobs(subClient);

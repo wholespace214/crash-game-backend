@@ -7,9 +7,9 @@ const {
 let pubClient, subClient;
 const DEFAULT_CHANNEL = 'system';
 
-const init = (client) => {
-  pubClient = client.duplicate();
-  subClient = client.duplicate();
+const init = (sub, pub) => {
+  pubClient = pub.duplicate();
+  subClient = sub.duplicate();
 
   subClient.subscribe(DEFAULT_CHANNEL, (error, channel) => {
     console.log(error || 'NotificationService subscribed to channel:', channel);
@@ -18,9 +18,9 @@ const init = (client) => {
   subClient.on('message', (_, message) => {
     try {
       const messageObj = JSON.parse(message);
-      // console.log('[NOTIFICATION-SERVICE] Received:', message);
+      // console.log('[NOTIFICATION-SERVICE] Received:', messageObj.event);
 
-      if (universalEventTypes.includes(messageObj.event)) {
+      if (universalEventTypes.includes(messageObj.event) && !messageObj.to) {
         save(messageObj);
       }
     } catch (err) {
@@ -37,7 +37,7 @@ const publishEvent = (event, data) => {
       ...data,
     })
   );
-  //console.log('[NOTIFICATION-SERVICE] Published:', event);
+  // console.log('[NOTIFICATION-SERVICE] Published:', event);
 
   if (data.broadcast) {
     pubClient.publish(
