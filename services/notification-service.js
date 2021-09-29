@@ -1,35 +1,20 @@
 const { UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 const {
-  notificationEvents,
-  universalEventTypes,
+  notificationEvents, universalEventTypes
 } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 
-let pubClient, subClient;
+let pubClient;
 const DEFAULT_CHANNEL = 'system';
 
-const init = (client) => {
-  pubClient = client.duplicate();
-  subClient = client.duplicate();
-
-  subClient.subscribe(DEFAULT_CHANNEL, (error, channel) => {
-    console.log(error || 'NotificationService subscribed to channel:', channel);
-  });
-
-  subClient.on('message', (_, message) => {
-    try {
-      const messageObj = JSON.parse(message);
-      // console.log('[NOTIFICATION-SERVICE] Received:', message);
-
-      if (universalEventTypes.includes(messageObj.event)) {
-        save(messageObj);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  });
+const init = (pub) => {
+  pubClient = pub.duplicate();
 };
 
 const publishEvent = (event, data) => {
+  if (universalEventTypes.includes(event)) {
+    save(event, data);
+  }
+
   pubClient.publish(
     DEFAULT_CHANNEL,
     JSON.stringify({
@@ -37,7 +22,7 @@ const publishEvent = (event, data) => {
       ...data,
     })
   );
-  //console.log('[NOTIFICATION-SERVICE] Published:', event);
+  console.log('[NOTIFICATION-SERVICE] Published:', event);
 
   if (data.broadcast) {
     pubClient.publish(
@@ -52,16 +37,16 @@ const publishEvent = (event, data) => {
   }
 };
 
-const save = (message) => {
-  let event = new UniversalEvent({
-    type: message.event,
+const save = (event, message) => {
+  let uniEvent = new UniversalEvent({
+    type: event,
     performedBy: message.producer,
     userId: message.producerId,
     channel: DEFAULT_CHANNEL,
     data: message.data,
   });
 
-  event.save();
+  uniEvent.save();
 };
 
 module.exports = {
