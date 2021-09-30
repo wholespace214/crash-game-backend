@@ -32,6 +32,9 @@ const options = {
 const managementClient = new ManagementClient(options);
 
 /**
+ * Depends on weather we're storing the password or not.
+ * Not needed right now
+ *
  *
  * @param {String} auth0UserId
  * @returns {Object}
@@ -43,8 +46,49 @@ exports.createPasswordChangeTicket = async (auth0UserId) => await managementClie
     user_id: auth0UserId,
   });
 
-exports.createUser = managementClient.createUser;
-exports.deleteUser = managementClient.deleteUser;
+/**
+ * Updates as users password at auth0
+ * @param {String} auth0UserId
+ * @param {String} newPassword
+ * @returns Auth0 user
+ */
+exports.updateUser = async function changePassword(auth0UserId, newPassword) {
+  // @gmussi Do we need to trigger an event here?
+  return managementClient.updateUser({ id: auth0UserId }, { password: newPassword })
+}
+
+/**
+ *
+ * @param {String} wfairUserId MongoDb user id
+ * @param {Object} userData
+ * @param {string} userData.email
+ * @param {string} userData.password
+ * @param {string} userData.phoneNumber
+ * @returns
+ */
+exports.createUser = async function (wfairUserId, userData) {
+  return managementClient.createUser({
+    connection: process.env.AUTH0_CONNECTION_ID,
+    email: userData.email,
+    password: userData.password,
+    email_verified: false,
+    phone_number: userData.phoneNumber,
+    phone_verified: false,
+    user_metadata: {
+      // this reflects our own user mongoDB user Id
+      wfairUserId,
+    },
+  })
+}
+
+/**
+ * Deletes a user on Auth0
+ * @param {String} auth0UserId
+ * @returns void
+ */
+exports.deleteUser = async function (auth0UserId) {
+  return managementClient.deleteUser({ id: auth0UserId })
+}
 /**
  * Authorization middleware. When used, the
  * Access Token must exist and be verified against

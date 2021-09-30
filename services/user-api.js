@@ -20,7 +20,7 @@ const createUser = async (userData) => await new User(userData).save();
  * @param {Object} userData
  * @param {string} userData.phone
  * @param {string} userData.email
- * @param {username} userData.username
+ * @param {string} userData.username
  * @param {Array} userData.openBets
  * @param {Array} userData.closedBets
  * @param {Boolean} userData.confirmed
