@@ -54,7 +54,7 @@ router.post(
     check('event').isString().notEmpty(),
     check('marketQuestion').isString().notEmpty().isLength({ max: 255 }),
     check('slug').isString().notEmpty().isLength({ max: 255 }),
-    check('outcomes').isArray({ min: 0 }),
+    check('outcomes').isArray({ min: 2, max: 4 }),
     check('evidenceSource').isLength({ max: 2200 }),
     check('evidenceDescription').isLength({ max: 2200 }),
     check('date').notEmpty(),
@@ -113,6 +113,24 @@ router.post(
     check('outcomeIndex').isNumeric(),
   ],
   betController.resolveBet
+);
+
+
+router.post(
+  '/bet/:id/cancel',
+  [
+    check('id').notEmpty(),
+    check('reasonOfCancellation').notEmpty(),
+  ],
+  betController.cancelBet,
+);
+
+router.delete(
+  '/bet/:id/delete',
+  [
+    check('id').notEmpty(),
+  ],
+  betController.deleteBet,
 );
 
 module.exports = router;
