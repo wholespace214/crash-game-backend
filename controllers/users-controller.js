@@ -7,7 +7,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { toPrettyBigDecimal, toCleanBigDecimal } = require('../util/number-helper');
+const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const _ = require('lodash');
@@ -165,7 +165,7 @@ const getUserInfo = async (req, res, next) => {
 
     const user = await User.findById(userId);
     const balance = await WFAIR.balanceOf(userId);
-    const formattedBalance = toPrettyBigDecimal(balance);
+    const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -221,11 +221,11 @@ const getOpenBetsList = async (request, response, next) => {
         if (outcomes.length) {
           const betContract = new BetContract(betId, outcomes.length);
           outcomeBuy = await betContract.calcBuy(
-            BigInt(toCleanBigDecimal(parseFloat(trade.totalInvestmentAmount).toFixed(4)).getValue()),
+            toScaledBigInt(trade.totalInvestmentAmount),
             outcomeIndex
           );
           outcomeSell = await betContract.calcSellFromAmount(
-            BigInt(toCleanBigDecimal(parseFloat(trade.totalOutcomeTokens).toFixed(4)).getValue()),
+            toScaledBigInt(trade.totalOutcomeTokens),
             outcomeIndex
           );
         }
@@ -236,8 +236,8 @@ const getOpenBetsList = async (request, response, next) => {
           investmentAmount: trade.totalInvestmentAmount,
           outcomeAmount: trade.totalOutcomeTokens,
           lastDate: trade.date,
-          currentBuyAmount: toPrettyBigDecimal(outcomeBuy),
-          sellAmount: toPrettyBigDecimal(outcomeSell),
+          currentBuyAmount: fromScaledBigInt(outcomeBuy),
+          sellAmount: fromScaledBigInt(outcomeSell),
           status: trade._id.status,
         });
       }
@@ -245,24 +245,6 @@ const getOpenBetsList = async (request, response, next) => {
       response.status(200).json({
         openBets,
       });
-    } else {
-      return next(new ErrorHandler(404, 'User not found'));
-    }
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(500, err.message));
-  }
-};
-
-const getTransactions = async (req, res, next) => {
-  const { user } = req;
-
-  try {
-    if (user) {
-      const wallet = new Wallet(user.id);
-      const trx = await wallet.getTransactions();
-
-      res.status(200).json(trx);
     } else {
       return next(new ErrorHandler(404, 'User not found'));
     }
@@ -282,9 +264,9 @@ const getAMMHistory = async (req, res, next) => {
       const transactions = [];
 
       for (const interaction of interactions) {
-        const investmentAmount = toPrettyBigDecimal(BigInt(interaction.investmentamount));
-        const feeAmount = toPrettyBigDecimal(BigInt(interaction.feeamount));
-        const outcomeTokensBought = toPrettyBigDecimal(BigInt(interaction.outcometokensbought));
+        const investmentAmount = fromScaledBigInt(BigInt(interaction.investmentamount));
+        const feeAmount = fromScaledBigInt(BigInt(interaction.feeamount));
+        const outcomeTokensBought = fromScaledBigInt(BigInt(interaction.outcometokensbought));
 
         transactions.push({
           ...interaction,
@@ -332,9 +314,9 @@ const getTradeHistory = async (req, res, next) => {
             i.outcome === bet.outcomeIndex
         );
         const totalSellAmount = _.sum(
-          sellInteractions.map(_.property('investmentamount')).map(Number).filter(_.isFinite)
+          sellInteractions.map(_.property('investmentamount')).map(BigInt).filter(Boolean)
         );
-        soldAmount = toPrettyBigDecimal(BigInt(totalSellAmount || 0));
+        soldAmount = fromScaledBigInt(totalSellAmount);
       }
 
       return {
@@ -435,7 +417,6 @@ exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
-exports.getTransactions = getTransactions;
 exports.getAMMHistory = getAMMHistory;
 exports.getTradeHistory = getTradeHistory;
 exports.confirmEmail = confirmEmail;
