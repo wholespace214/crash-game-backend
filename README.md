@@ -726,3 +726,19 @@ Successful Result:
   "email": "user@example.com"
 }
 ```
+
+# Auth0
+
+Watch out, current Auth0 CORS, callback etc. hosts are set to `http://localhost:3000` & `https://*.wallfair.oi` everthing else __won't__ work, except you change this in Auth0 itself.
+
+##
+
+## Setup
+
+* Add the corresponding env vars. You'll find them in `.env-example`
+* UI callback URL must be `http://localhost:3000/callback`
+
+## Auth0 Endpoints
+
+These endpoints are intended for internal backend usage only. Do not publish this somewhere even though these endpoints aren't confidential.
+![Auth0 Endpoints](./documentation/images/auth0/auth0-oauth-endpoints.png "Auth0 Endpoints")
