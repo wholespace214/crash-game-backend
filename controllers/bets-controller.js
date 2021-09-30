@@ -382,13 +382,13 @@ const payoutBet = async (req, res, next) => {
 };
 
 const resolveBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed.'));
+  }
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, errors));
-  }
-
-  if (!isAdmin(req)) {
-    return next(new ErrorHandler(403, 'Action not allowed.'));
   }
 
   try {
@@ -411,13 +411,13 @@ const resolveBet = async (req, res, next) => {
 };
 
 const cancelBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, errors));
-  }
-
-  if (!isAdmin(req)) {
-    return next(new ErrorHandler(403, 'Action not allowed'));
   }
 
   const { reasonOfCancellation } = req.body;
@@ -440,13 +440,13 @@ const cancelBet = async (req, res, next) => {
 };
 
 const deleteBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, errors));
-  }
-
-  if (!isAdmin(req)) {
-    return next(new ErrorHandler(403, 'Action not allowed'));
   }
 
   const { id } = req.params;
