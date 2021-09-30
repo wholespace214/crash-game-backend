@@ -301,7 +301,7 @@ exports.resolve = async ({
     });
 
     // send notification to this user
-    return websocketService.emitBetResolveNotification(
+    websocketService.emitBetResolveNotification(
       // eslint-disable-line no-unsafe-finally
       userId,
       betId,
@@ -312,4 +312,53 @@ exports.resolve = async ({
       winToken
     );
   }
+  return bet;
+};
+
+exports.cancel = async (bet, cancellationReason) => {
+  const session = await Bet.startSession();
+
+  let dbBet;
+  let userIds = [];
+
+  await session.withTransaction(async () => {
+    dbBet = await eventService.getBet(bet._id, session);
+
+    const betContract = new BetContract(dbBet.id);
+    await betContract.refund();
+
+    dbBet.canceled = true;
+    dbBet.reasonOfCancellation = cancellationReason;
+    dbBet.endDate = new Date().toISOString();
+    await eventService.saveBet(dbBet, session);
+
+    userIds = await this.refundUserHistory(dbBet, session);
+  });
+
+  if (dbBet) {
+    const event = await eventService.getEvent(dbBet.event);
+
+    for (const userId of userIds) {
+      publishEvent(notificationEvents.EVENT_CANCEL, {
+        producer: 'system',
+        producerId: 'notification-service',
+        data: {
+          userId,
+          eventId: dbBet.event,
+          eventName: event.name,
+          reasonOfCancellation: dbBet.reasonOfCancellation,
+          previewImageUrl: event.previewImageUrl,
+        },
+        broadcast: true
+      });
+      websocketService.emitEventCancelNotification(
+        userId,
+        dbBet.event,
+        event.name,
+        dbBet.reasonOfCancellation
+      );
+    }
+  }
+
+  return dbBet;
 };
