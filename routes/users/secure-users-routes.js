@@ -37,8 +37,6 @@ router.get('/refList', userController.getRefList);
 
 router.get('/open-bets', userController.getOpenBetsList);
 
-router.get('/transactions', userController.getTransactions);
-
 router.get('/history', userController.getAMMHistory);
 
 router.get('/trade-history', userController.getTradeHistory);
