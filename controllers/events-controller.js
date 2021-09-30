@@ -116,6 +116,10 @@ const createEvent = async (req, res, next) => {
       throw new Error('Streamed event must have a streamUrl.');
     }
 
+    if (isNonStreamedEvent && (bet.outcomes.length < 2 || bet.outcomes.length > 4)) {
+      throw new Error('Bet must have between 2 and 4 outcomes.');
+    }
+
     console.debug(LOG_TAG, 'Create a new Event', {
       name,
       slug,

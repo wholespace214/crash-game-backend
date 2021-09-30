@@ -382,13 +382,13 @@ const payoutBet = async (req, res, next) => {
 };
 
 const resolveBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed.'));
+  }
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new ErrorHandler(422, errors));
-  }
-
-  if (!isAdmin(req)) {
-    return next(new ErrorHandler(403, 'Action not allowed.'));
   }
 
   try {
@@ -407,6 +407,64 @@ const resolveBet = async (req, res, next) => {
     res.status(200).send();
   } catch (err) {
     return next(new ErrorHandler(422, err.message));
+  }
+};
+
+const cancelBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, errors));
+  }
+
+  const { reasonOfCancellation } = req.body;
+  const { id } = req.params;
+
+  try {
+    const bet = await Bet.findById(id);
+    if (!bet) {
+      return next(new ErrorHandler(404, 'Bet does not exist'));
+    }
+
+    const cancelledBet = await betService.cancel(bet, reasonOfCancellation);
+
+    res.status(200).send(cancelledBet);
+  } catch (err) {
+    console.debug(err);
+    next(new ErrorHandler(422, err.message));
+  }
+
+};
+
+const deleteBet = async (req, res, next) => {
+  if (!isAdmin(req)) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, errors));
+  }
+
+  const { id } = req.params;
+  try {
+    const bet = await Bet.findById(id);
+    if (!bet) {
+      return next(new ErrorHandler(404, 'Bet does not exist.'));
+    }
+    if (!bet.canceled) {
+      return next(new ErrorHandler(422, 'Bet must be cancelled prior to deletion.'));
+    }
+
+    const deletedBet = await Bet.deleteOne(id);
+
+    res.status(200).send(deletedBet);
+  } catch (err) {
+    console.debug(err);
+    next(new ErrorHandler(422, err.message));
   }
 };
 
@@ -451,3 +509,5 @@ exports.payoutBet = payoutBet;
 exports.betHistory = betHistory;
 exports.getTrade = getTrade;
 exports.resolveBet = resolveBet;
+exports.cancelBet = cancelBet;
+exports.deleteBet = deleteBet;
