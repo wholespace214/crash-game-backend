@@ -2,17 +2,20 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const { validationResult } = require('express-validator');
-const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+const { Erc20, Wallet, CasinoTradeContract, BetContract } = require('@wallfair.io/smart_contract_mock');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
-const { BetContract } = require('@wallfair.io/smart_contract_mock');
+
 const _ = require('lodash');
+const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
+const bigDecimal = require('js-big-decimal');
 
 const WFAIR = new Erc20('WFAIR');
+const casinoContract = new CasinoTradeContract('CASINO');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -254,13 +257,18 @@ const getOpenBetsList = async (request, response, next) => {
   }
 };
 
-const getAMMHistory = async (req, res, next) => {
+const getHistory = async (req, res, next) => {
   const { user } = req;
 
   try {
     if (user) {
       const wallet = new Wallet(user.id);
       const interactions = await wallet.getAMMInteractions();
+      const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
+        CASINO_TRADE_STATE.LOCKED,
+        CASINO_TRADE_STATE.WIN,
+        CASINO_TRADE_STATE.LOSS
+      ]);
       const transactions = [];
 
       for (const interaction of interactions) {
@@ -273,6 +281,22 @@ const getAMMHistory = async (req, res, next) => {
           investmentAmount,
           feeAmount,
           outcomeTokensBought,
+          type: 'BET',
+        });
+      }
+
+      for (const casinoTrade of casinoTrades) {
+        const isWin = casinoTrade.state === CASINO_TRADE_STATE.WIN;
+        const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
+        const outcomeTokensBought = isWin ? fromScaledBigInt(bigDecimal.multiply(BigInt(casinoTrade.stakedamount), parseFloat(casinoTrade.crashfactor))) : 0;
+        const direction = isWin ? 'PAYOUT' : 'BUY';
+
+        transactions.push({
+          direction,
+          investmentAmount,
+          outcomeTokensBought,
+          trx_timestamp: casinoTrade.created_at,
+          type: 'GAME',
         });
       }
 
@@ -417,7 +441,7 @@ exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
-exports.getAMMHistory = getAMMHistory;
+exports.getHistory = getHistory;
 exports.getTradeHistory = getTradeHistory;
 exports.confirmEmail = confirmEmail;
 exports.resendConfirmEmail = resendConfirmEmail;
