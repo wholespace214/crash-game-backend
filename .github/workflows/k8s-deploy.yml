@@ -23,9 +23,9 @@ jobs:
       - name: Login to Digital Ocean docker registry
         run: doctl registry login
       - name: Build the docker image
-        run: docker build . -t registry.digitalocean.com/wallfair/backend_k8s:${{ github.event.inputs.version }}
+        run: docker build . -t registry.digitalocean.com/wallfair/backend_k8s
       - name: Publish the docker image to Digital Ocean
-        run: docker push registry.digitalocean.com/wallfair/backend_k8s:${{ github.event.inputs.version }}
+        run: docker push registry.digitalocean.com/wallfair/backend_k8s
   
   deploy:
     runs-on: ubuntu-latest
