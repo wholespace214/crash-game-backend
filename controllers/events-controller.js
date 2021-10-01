@@ -38,7 +38,7 @@ const listEvents = async (req, res, next) => {
 };
 
 const filterEvents = async (req, res) => {
-  const { category, sortby, searchQuery, type } = req.params;
+  const { category, sortby, searchQuery, type, upcoming, deactivated } = req.params;
   const count = +req.params.count;
   const page = +req.params.page;
 
@@ -48,6 +48,8 @@ const filterEvents = async (req, res) => {
     count,
     page,
     sortby,
+    upcoming === 'true',
+    deactivated === 'true',
     searchQuery,
     !req.isAdmin ? { bets: { $not: { $size: 0 } } } : null,
     type === "streamed" && req.isAdmin,

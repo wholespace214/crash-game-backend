@@ -80,6 +80,8 @@ exports.filterEvents = async (
   count = 10,
   page = 1,
   sortby = 'name',
+  upcoming = false,
+  deactivated = false,
   searchQuery,
   betFilter = null,
   includeOffline = false,
@@ -100,9 +102,12 @@ exports.filterEvents = async (
     query.name = { $regex: searchQuery, $options: 'i' };
   }
 
-  if (!includeOffline) {
+  if (!includeOffline && !upcoming && !deactivated) {
     query.state = { $ne: "offline" };
   }
+
+  query.deactivatedAt = { $exists: deactivated }
+  query.date = upcoming ? { $gt: new Date() } : { $lt: new Date() };
 
   const op = Event.find(query)
     .limit(count)
