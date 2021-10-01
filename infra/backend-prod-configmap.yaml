@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: production
+data:
+  JWT_KEY: MElWWFE3OEM1b2gzd0NNUA==_KEY
+  TWILIO_ACC_SID: AC32af9a1c4494dbf72b9cc2a436bc9344
+  TWILIO_AUTH_TOKEN: a175a76eb157807ce9a37023b6257f63
+  TWILIO_SID: VA3f09171bb0a89d44fe96913dd2899b3e
+  ENVIRONMENT: PRODUCTION
+  VERIFY_URL: https://play.wallfair.io/
+  GMAIL_USERNAME: noreply@wallfair.io
+  GMAIL_PASSWORD: mIXQ8w2U39K7RDEJ
+  POSTGRES_CA: /usr/src/app/ssl/postgres-prod.crt
+  POSTGRES_USER: doadmin
+  POSTGRES_HOST: prod-db-do-user-9290946-0.b.db.ondigitalocean.com
+  POSTGRES_DB: defaultdb
+  POSTGRES_PASSWORD: ax4x2jxs4q51758o
+  POSTGRES_SSL: "true"
+  POSTGRES_PORT: "25060"
+  BACKEND_URL: http://todo.com
+  TWITCH_CLIENT_ID: vwlp5jpunmgorv4cuhlz79brm82u2f
+  TWITCH_CLIENT_SECRET: m61qvv8qecphhbyam7xxepd4juadcy
+  TWITCH_CALLBACK_SECRET: e32cA8cnTd93Cjcjd
+  ADMIN_USERNAME: wallfair
+  ADMIN_PASSWORD: wfair2DAmoon!
+  GOOGLE_API_KEY: AIzaSyAeqvmzBB7ghSsyAsmf-La4r5GVORNM7nE
+  DB_CONNECTION: mongodb+srv://backendk8s:79p6O5y2AT3Irb48@production-mongodb-ffe88bf1.mongo.ondigitalocean.com/admin?authSource=admin&replicaSet=production-mongodb&tls=true&tlsCAFile=/usr/src/app/ssl/production.crt
+  REDIS_CONNECTION: rediss://default:vluIIacbcgcWuxIV@production-redis-do-user-9290946-0.b.db.ondigitalocean.com:25061
