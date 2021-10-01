@@ -18,6 +18,8 @@ router.post('/', async (req, res) => {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
+        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+
         if (type == 'stream.online') {
           event.metadata.twitch_subscribed_online = 'true';
           await event.save();
@@ -51,6 +53,8 @@ router.post('/', async (req, res) => {
 
   // handle twitch events
   if (req.header('Twitch-Eventsub-Message-Type') === 'notification') {
+    console.log('TWITCH_NOTIFICATION', JSON.stringify(req.body));
+
     const type = req.header('Twitch-Eventsub-Subscription-Type');
     const { broadcaster_user_id } = req.body.subscription.condition;
 
@@ -58,6 +62,8 @@ router.post('/', async (req, res) => {
     try {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
+
+        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
 
         if (type == 'stream.online') {
           event.state = 'online';
