@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: production
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend 
+    spec:
+      containers:
+        - image: registry.digitalocean.com/wallfair/backend:2.8.9
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1300m
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
+          name: backend
+          envFrom:
+          - configMapRef:
+              name: app-config
+          ports:
+            - containerPort: 80
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: production
+  name: backend
+spec:
+  maxReplicas: 10
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  targetCPUUtilizationPercentage: 50
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: production
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
