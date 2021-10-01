@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 jobs:
   build_and_push:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -22,11 +23,13 @@ jobs:
       - name: Login to Digital Ocean docker registry
         run: doctl registry login
       - name: Build the docker image
-        run: docker build . -t registry.digitalocean.com/wallfair/backend-k8s:${{ github.event.inputs.version }}
+        run: docker build . -t registry.digitalocean.com/wallfair/backend_k8s
       - name: Publish the docker image to Digital Ocean
-        run: docker push registry.digitalocean.com/wallfair/backend-k8s:${{ github.event.inputs.version }}
+        run: docker push registry.digitalocean.com/wallfair/backend_k8s
   
   deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
