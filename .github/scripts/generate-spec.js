@@ -21,4 +21,9 @@ console.log(
         .replace("$PRODUCTION_MONGO_DB_URL", process.env.PRODUCTION_MONGO_DB_URL)
         .replace("$PRODUCTION_POSTGRES_DB", process.env.PRODUCTION_POSTGRES_DB)
         .replace("$STAGING_POSTGRES_DB", process.env.STAGING_POSTGRES_DB)
+        .replace("$AUTH0_DOMAIN", process.env.AUTH0_DOMAIN)
+        .replace("$AUTH0_CLIENT_ID", process.env.AUTH0_CLIENT_ID)
+        .replace("$AUTH0_CLIENT_SECRET", process.env.AUTH0_CLIENT_SECRET)
+        .replace("$AUTH0_AUDIENCE", process.env.AUTH0_AUDIENCE)
+        .replace("$AUTH0_CONNECTION_ID", process.env.AUTH0_CONNECTION_ID)
 );
