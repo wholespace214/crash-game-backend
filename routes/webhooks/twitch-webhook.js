@@ -58,7 +58,9 @@ router.post('/', async (req, res) => {
           throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
         }
 
-        event.state = type === 'stream.online' ? 'online' : event.state === 'offline' ? 'offline' : null;
+        if (!['stream.online', 'stream.offline'].includes(type)) return;
+
+        event.state = type === 'stream.online' ? 'online' : 'offline';
         await event.save();
 
         publishEvent(type === 'stream.online' ? notificationEvents.EVENT_ONLINE : notificationEvents.EVENT_OFFLINE, {
