@@ -1,6 +1,7 @@
 // Import the express Router to create routes
 const router = require('express').Router();
 const { publishEvent, notificationEvents } = require('../../services/notification-service');
+const { removeSubscription } = require('../../services/twitch-service');
 
 // Import Event model
 const { Event } = require('@wallfair.io/wallfair-commons').models;
@@ -18,7 +19,10 @@ router.post('/', async (req, res) => {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
-        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        if (!event) {
+          removeSubscription(req.body.subscription.id);
+          throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        }
 
         if (type == 'stream.online') {
           event.metadata.twitch_subscribed_online = 'true';
@@ -63,7 +67,10 @@ router.post('/', async (req, res) => {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
-        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        if (!event) {
+          removeSubscription(req.body.subscription.id);
+          throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        }
 
         if (type == 'stream.online') {
           event.state = 'online';
