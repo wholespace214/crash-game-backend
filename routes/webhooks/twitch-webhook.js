@@ -1,6 +1,7 @@
 // Import the express Router to create routes
 const router = require('express').Router();
 const { publishEvent, notificationEvents } = require('../../services/notification-service');
+const { removeSubscription } = require('../../services/twitch-service');
 
 // Import Event model
 const { Event } = require('@wallfair.io/wallfair-commons').models;
@@ -18,28 +19,17 @@ router.post('/', async (req, res) => {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
-        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        if (!event) {
+          removeSubscription(req.body.subscription.id);
+          throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
+        }
 
         if (type == 'stream.online') {
           event.metadata.twitch_subscribed_online = 'true';
           await event.save();
-
-          publishEvent(notificationEvents.EVENT_ONLINE, {
-            producer: 'system',
-            producerId: 'notification-service',
-            data: { event },
-            broadcast: true
-          });
         } else if (type == 'stream.offline') {
           event.metadata.twitch_subscribed_offline = 'true';
           await event.save();
-
-          publishEvent(notificationEvents.EVENT_OFFLINE, {
-            producer: 'system',
-            producerId: 'notification-service',
-            data: { event },
-            broadcast: true
-          });
         }
       });
     } catch (err) {
@@ -63,15 +53,22 @@ router.post('/', async (req, res) => {
       await session.withTransaction(async () => {
         const event = await Event.findOne({ 'metadata.twitch_id': broadcaster_user_id }).exec();
 
-        if (!event) throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
-
-        if (type == 'stream.online') {
-          event.state = 'online';
-          await event.save();
-        } else if (type == 'stream.offline') {
-          event.state = 'offline';
-          await event.save();
+        if (!event) {
+          removeSubscription(req.body.subscription.id);
+          throw Error(`Event with broadcaster_user_id:${broadcaster_user_id} does not exist`);
         }
+
+        if (!['stream.online', 'stream.offline'].includes(type)) return;
+
+        event.state = type === 'stream.online' ? 'online' : 'offline';
+        await event.save();
+
+        publishEvent(type === 'stream.online' ? notificationEvents.EVENT_ONLINE : notificationEvents.EVENT_OFFLINE, {
+          producer: 'system',
+          producerId: 'notification-service',
+          data: { event },
+          broadcast: true
+        });
       });
     } catch (err) {
       console.log('Twitch webhook event error', err);
