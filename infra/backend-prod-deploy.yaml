@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: production
+  namespace: staging 
   labels:
     app: backend
 spec:
@@ -36,7 +36,7 @@ spec:
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  namespace: production
+  namespace: staging
   name: backend
 spec:
   maxReplicas: 10
@@ -53,7 +53,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: production
+  namespace: staging
 spec:
   selector:
     app: backend
