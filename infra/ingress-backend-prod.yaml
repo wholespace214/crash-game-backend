@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-frontend
+  namespace: staging
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - host: frontend-k8s.wallfair.io
+    http:
+      paths:
+        - path: /backend(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port:
+                number: 80
+  - host: staging-frontend.wallfair.io
+    http:
+      paths:
+        - path: /backend(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port:
+                number: 80
