@@ -28,7 +28,7 @@ exports.getUserByIdAndWallet = async (id, walletAddress, session) =>
 exports.getRefByUserId = async (id) => {
   const result = [];
   await User.find({ ref: id }).then((users) => {
-    users.forEach((entry) => result.push(pick(entry, ['id', 'name', 'email', 'date'])));
+    users.forEach((entry) => result.push(pick(entry, ['id', 'username', 'email', 'date'])));
   });
   return result;
 };
