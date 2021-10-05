@@ -3,11 +3,11 @@ const ChatMessageService = require('./chat-message-service');
 const LOG_TAG = '[SOCKET] ';
 let pubClient = null;
 
-const persist = async (data) => {
-  if (data) {
-    const chatMessage = await ChatMessageService.createChatMessage(data);
-    await ChatMessageService.saveChatMessage(chatMessage);
-  }
+const notificationTypes = {
+  EVENT_START: 'Notification/EVENT_START',
+  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
+  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
+  BET_STARTED: 'Notification/BET_STARTED',
 };
 
 exports.setPubClient = (newpub) => (pubClient = newpub);
@@ -71,6 +71,19 @@ exports.handleLeaveRoom = async function (socket, data) {
   }
 };
 
+exports.emitBetStarted = async (bet) => {
+  const event = bet.event;
+
+  const payload = {
+    roomId: event.id,
+    eventId: event.id,
+    bet,
+    type: 'BET_STARTED',
+  }
+
+  emitToAllByEventId(event.id, 'BET_STARTED', payload);
+};
+
 exports.emitPlaceBetToAllByEventId = async (eventId, betId, user, amount, outcome) => {
   const message = 'dummy';
   const betPlacedData = {
@@ -126,40 +139,13 @@ exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
   await handleBetMessage(eventId, 'betCreated', betCreationData);
 };
 
-const handleBetMessage = async (eventId, emitEventName, data) => {
-  // await persist(data); TODO: Check if we need to persist these types of messages
-  emitToAllByEventId(eventId, emitEventName, data);
-};
-
-const emitToAllByEventId = (eventId, emitEventName, data) => {
-  console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
-  // io.of('/').to(eventId.toString()).emit(emitEventName, data);
-  pubClient.publish(
-    'message',
-    JSON.stringify({
-      to: eventId.toString(),
-      event: emitEventName,
-      data: { date: new Date(), ...data },
-    })
-  );
-};
-
-exports.emitToAllByEventId = emitToAllByEventId;
-
-const notificationTypes = {
-  EVENT_START: 'Notification/EVENT_START',
-  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
-  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
-};
-
-const emitEventStartNotification = (userId, eventId, eventName) => {
+exports.emitEventStartNotification = (userId, eventId, eventName) => {
   console.log(userId, eventId, eventName);
   // const message = `The event ${eventName} begins in 60s. Place your token.`;
   // emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
 };
-exports.emitEventStartNotification = emitEventStartNotification;
 
-const emitBetResolveNotification = (
+exports.emitBetResolveNotification = (
   userId,
   betId,
   betQuestion,
@@ -184,14 +170,37 @@ const emitBetResolveNotification = (
     tokensWon,
   });
 };
-exports.emitBetResolveNotification = emitBetResolveNotification;
 
-const emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
+exports.emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
   console.log(userId, eventId, eventName, cancellationDescription);
   const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
   emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
 };
-exports.emitEventCancelNotification = emitEventCancelNotification;
+
+const handleBetMessage = async (eventId, emitEventName, data) => {
+  // await persist(data); TODO: Check if we need to persist these types of messages
+  emitToAllByEventId(eventId, emitEventName, data);
+};
+
+const persist = async (data) => {
+  if (data) {
+    const chatMessage = await ChatMessageService.createChatMessage(data);
+    await ChatMessageService.saveChatMessage(chatMessage);
+  }
+};
+
+const emitToAllByEventId = (eventId, emitEventName, data) => {
+  console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
+  // io.of('/').to(eventId.toString()).emit(emitEventName, data);
+  pubClient.publish(
+    'message',
+    JSON.stringify({
+      to: eventId.toString(),
+      event: emitEventName,
+      data: { date: new Date(), ...data },
+    })
+  );
+};
 
 const emitToAllByUserId = (userId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in user room ${userId}`);
