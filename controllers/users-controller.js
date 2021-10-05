@@ -57,6 +57,7 @@ const bindWalletAddress = async (req, res, next) => {
   }
 };
 
+//@todo this route is not used in frontend, I will move ref reward part in confirm-email route
 const saveAdditionalInformation = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -106,6 +107,7 @@ const saveAdditionalInformation = async (req, res, next) => {
   }
 };
 
+//@todo this route is not used in frontend as well
 const saveAcceptConditions = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -171,8 +173,15 @@ const getUserInfo = async (req, res, next) => {
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
+    if(!user) {
+      res.status(200).json({
+        userId
+      })
+      return next();
+    }
+
     res.status(200).json({
-      userId: user.id,
+      userId: user._id,
       name: user.name,
       username: user.username,
       email: user.email,
@@ -187,6 +196,7 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
     });
   } catch (err) {
+    console.error(err);
     next(new ErrorHandler(422, 'Account information loading failed'));
   }
 };
@@ -380,7 +390,13 @@ const confirmEmail = async (req, res, next) => {
   if (user.emailCode === code) {
     user.emailConfirmed = true;
     await user.save();
-    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.confirmEmail);
+    await userService.rewardUserAction(user._id.toString(), WFAIR_REWARDS.confirmEmail);
+
+    if(user.ref) {
+      console.debug('[REWARD USER] ref', user.ref);
+      await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    }
+
     res.status(200).send({ status: 'OK' });
   } else {
     next(new ErrorHandler(422, 'The email code is invalid'));

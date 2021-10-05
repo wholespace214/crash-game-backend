@@ -46,9 +46,12 @@ module.exports = {
 
       if (!auth0User) throw new Error("Couldn't create auth0 user")
 
+      const emailCode = generate(6);
+
       const createdUser = await userApi.createUser({
         _id: wFairUserId,
         email,
+        emailCode,
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
