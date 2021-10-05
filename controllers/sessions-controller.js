@@ -19,7 +19,7 @@ module.exports = {
     }
 
     try {
-      const { password, email, username } = req.body;
+      const { password, email, username, ref } = req.body;
 
       const existing = await userApi.getUserByIdEmailPhoneOrUsername(email);
 
@@ -33,7 +33,7 @@ module.exports = {
       const passwordHash = await bcrypt.hash(password, 8);
 
       // create auth0 user
-      const auth0User = auth0Service.createUser({
+      const auth0User = auth0Service.createUser(wFairUserId,{
         email,
         username: username || `wallfair-${counter}`,
         password,
@@ -55,6 +55,7 @@ module.exports = {
           currency: 'WFAIR',
         },
         auth0Id: auth0User.user_id,
+        ref
       });
 
       // TODO: When there's time, delete Auth0 user if WFAIR creation fails
@@ -64,7 +65,7 @@ module.exports = {
       publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
         producer: 'user',
         producerId: createdUser._id,
-        data: { email: createdUser.email, username: createdUser.username },
+        data: { email: createdUser.email, username: createdUser.username, ref },
       });
 
       return res.status(201).json({
