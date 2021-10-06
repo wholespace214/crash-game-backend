@@ -68,6 +68,9 @@ async function main() {
   const { initTwitchSubscribeJob } = require('./jobs/twitch-subscribe-job');
   initTwitchSubscribeJob();
 
+  const { initYoutubeCheckJob } = require('./jobs/youtube-live-check-job');
+  initYoutubeCheckJob();
+
   // Import Socket.io service
   const websocketService = require('./services/websocket-service');
 
