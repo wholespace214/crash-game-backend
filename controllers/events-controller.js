@@ -224,6 +224,29 @@ const editEvent = async (req, res, next) => {
   }
 };
 
+const deleteEvent = async (req, res, next) => {
+  if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
+  try {
+    const { id } = req.params;
+    const event = await eventService.getEvent(id);
+    if (!event) {
+      return next(new ErrorHandler(404, 'Event not found'));
+    }
+    if (
+      event.bets?.length > 0 &&
+      event.bets.some(({ status }) => status !== eventService.BET_STATUS.canceled)
+    ) {
+      return next(new ErrorHandler(422, 'All event bets must be cancelled'));
+    }
+
+    const deletedEvent = await eventService.deleteEvent(id);
+
+    return res.status(200).json(deletedEvent);
+  } catch (err) {
+    return next(new ErrorHandler(422, err.message));
+  }
+};
+
 const getTags = async (req, res) => {
   const tags = await eventService.getTags();
   res.status(200).json({
@@ -266,6 +289,7 @@ exports.getEvent = getEvent;
 exports.createEvent = createEvent;
 exports.createEventFromYoutube = createEventFromYoutube;
 exports.editEvent = editEvent;
+exports.deleteEvent = deleteEvent;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
 exports.getCoverEvent = getCoverEvent;

@@ -254,6 +254,11 @@ exports.editEvent = async (eventId, userData) => {
   return updatedEvent;
 };
 
+exports.deleteEvent = async (eventId) => {
+  await Bet.updateMany({ event: eventId }, { event: null });
+  return await Event.findByIdAndDelete(eventId);
+}
+
 exports.saveBet = async (bet, session) => bet.save({ session });
 
 exports.getTags = async () => Event.distinct('tags.name').exec();
@@ -314,6 +319,6 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
   return bet.outcomes.map(outcome => ({
     outcomeName: outcome.name,
     outcomeIndex: outcome.index,
-    data: padData(lookup[outcome.index] ?? [],now, rangeType, outcome.index, latestQuotes),
+    data: padData(lookup[outcome.index] ?? [], now, rangeType, outcome.index, latestQuotes),
   }));
 };
