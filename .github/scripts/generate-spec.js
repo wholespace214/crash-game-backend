@@ -26,4 +26,8 @@ console.log(
         .replace("$AUTH0_CLIENT_SECRET", process.env.AUTH0_CLIENT_SECRET)
         .replace("$AUTH0_AUDIENCE", process.env.AUTH0_AUDIENCE)
         .replace("$AUTH0_CONNECTION_ID", process.env.AUTH0_CONNECTION_ID)
+        .replace("$AWS_S3_CLIENT_ID", process.env.AWS_S3_CLIENT_ID)
+        .replace("$AWS_S3_CLIENT_SECRET", process.env.AWS_S3_CLIENT_SECRET)
+        .replace("$AWS_S3_CLIENT_BUCKET", process.env.AWS_S3_CLIENT_BUCKET)
+        .replace("$AWS_S3_CLIENT_REGION", process.env.AWS_S3_CLIENT_REGION)
 );
