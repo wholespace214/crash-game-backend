@@ -2,17 +2,20 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const { validationResult } = require('express-validator');
-const { Erc20, Wallet } = require('@wallfair.io/smart_contract_mock');
+const { Erc20, Wallet, CasinoTradeContract, BetContract } = require('@wallfair.io/smart_contract_mock');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
-const { BetContract } = require('@wallfair.io/smart_contract_mock');
+
 const _ = require('lodash');
+const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
+const bigDecimal = require('js-big-decimal');
 
 const WFAIR = new Erc20('WFAIR');
+const casinoContract = new CasinoTradeContract('CASINO');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -54,6 +57,7 @@ const bindWalletAddress = async (req, res, next) => {
   }
 };
 
+//@todo this route is not used in frontend, I will move ref reward part in confirm-email route
 const saveAdditionalInformation = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -103,6 +107,7 @@ const saveAdditionalInformation = async (req, res, next) => {
   }
 };
 
+//@todo this route is not used in frontend as well
 const saveAcceptConditions = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
@@ -168,8 +173,15 @@ const getUserInfo = async (req, res, next) => {
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
+    if(!user) {
+      res.status(200).json({
+        userId
+      })
+      return next();
+    }
+
     res.status(200).json({
-      userId: user.id,
+      userId: user._id,
       name: user.name,
       username: user.username,
       email: user.email,
@@ -182,8 +194,10 @@ const getUserInfo = async (req, res, next) => {
       toNextRank,
       amountWon: user.amountWon,
       preferences: user.preferences,
+      aboutMe: user.aboutMe,
     });
   } catch (err) {
+    console.error(err);
     next(new ErrorHandler(422, 'Account information loading failed'));
   }
 };
@@ -254,13 +268,18 @@ const getOpenBetsList = async (request, response, next) => {
   }
 };
 
-const getAMMHistory = async (req, res, next) => {
+const getHistory = async (req, res, next) => {
   const { user } = req;
 
   try {
     if (user) {
       const wallet = new Wallet(user.id);
       const interactions = await wallet.getAMMInteractions();
+      const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
+        CASINO_TRADE_STATE.LOCKED,
+        CASINO_TRADE_STATE.WIN,
+        CASINO_TRADE_STATE.LOSS
+      ]);
       const transactions = [];
 
       for (const interaction of interactions) {
@@ -273,6 +292,22 @@ const getAMMHistory = async (req, res, next) => {
           investmentAmount,
           feeAmount,
           outcomeTokensBought,
+          type: 'BET',
+        });
+      }
+
+      for (const casinoTrade of casinoTrades) {
+        const isWin = casinoTrade.state === CASINO_TRADE_STATE.WIN;
+        const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
+        const outcomeTokensBought = isWin ? fromScaledBigInt(bigDecimal.multiply(BigInt(casinoTrade.stakedamount), parseFloat(casinoTrade.crashfactor))) : 0;
+        const direction = isWin ? 'PAYOUT' : 'BUY';
+
+        transactions.push({
+          direction,
+          investmentAmount,
+          outcomeTokensBought,
+          trx_timestamp: casinoTrade.created_at,
+          type: 'GAME',
         });
       }
 
@@ -356,7 +391,13 @@ const confirmEmail = async (req, res, next) => {
   if (user.emailCode === code) {
     user.emailConfirmed = true;
     await user.save();
-    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.confirmEmail);
+    await userService.rewardUserAction(user._id.toString(), WFAIR_REWARDS.confirmEmail);
+
+    if(user.ref) {
+      console.debug('[REWARD USER] ref', user.ref);
+      await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    }
+
     res.status(200).send({ status: 'OK' });
   } else {
     next(new ErrorHandler(422, 'The email code is invalid'));
@@ -417,7 +458,7 @@ exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
-exports.getAMMHistory = getAMMHistory;
+exports.getHistory = getHistory;
 exports.getTradeHistory = getTradeHistory;
 exports.confirmEmail = confirmEmail;
 exports.resendConfirmEmail = resendConfirmEmail;

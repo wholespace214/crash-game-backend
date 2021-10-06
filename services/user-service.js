@@ -28,7 +28,7 @@ exports.getUserByIdAndWallet = async (id, walletAddress, session) =>
 exports.getRefByUserId = async (id) => {
   const result = [];
   await User.find({ ref: id }).then((users) => {
-    users.forEach((entry) => result.push(pick(entry, ['id', 'name', 'email', 'date'])));
+    users.forEach((entry) => result.push(pick(entry, ['id', 'username', 'email', 'date'])));
   });
   return result;
 };
@@ -170,6 +170,16 @@ exports.updateUser = async (userId, updatedUser) => {
       data: { notificationSettings: user.notificationSettings },
     });
   }
+
+  if (user.aboutMe !== updatedUser.aboutMe) {
+    publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
+      producer: 'user',
+      producerId: userId,
+      data: { notificationSettings: user.notificationSettings },
+    });
+  }
+
+  user.aboutMe = updatedUser.aboutMe;
 
   await user.save();
 };

@@ -48,6 +48,11 @@ router.post(
   eventController.editEvent
 );
 
+router.delete(
+  '/:id',
+  eventController.deleteEvent
+);
+
 router.post(
   '/bet/create',
   [

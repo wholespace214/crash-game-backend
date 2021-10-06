@@ -33,6 +33,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: k8s-setup
       - uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
