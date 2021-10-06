@@ -194,6 +194,7 @@ const getUserInfo = async (req, res, next) => {
       toNextRank,
       amountWon: user.amountWon,
       preferences: user.preferences,
+      aboutMe: user.aboutMe,
     });
   } catch (err) {
     console.error(err);
