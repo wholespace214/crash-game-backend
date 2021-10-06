@@ -171,6 +171,16 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
+  if (user.aboutMe !== updatedUser.aboutMe) {
+    publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
+      producer: 'user',
+      producerId: userId,
+      data: { notificationSettings: user.notificationSettings },
+    });
+  }
+
+  user.aboutMe = updatedUser.aboutMe;
+
   await user.save();
 };
 
