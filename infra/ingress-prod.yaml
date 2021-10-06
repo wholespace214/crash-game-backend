@@ -4,20 +4,18 @@ metadata:
   name: backend-ingress
   namespace: staging
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # reference production issuer
+    cert-manager.io/issuer: "letsencrypt-issuer"
 spec:
+  tls:
+  - hosts:
+    - staging-api.wallfair.io
+    secretName: backend-staging-cert-secret
   rules:
-  - host: backend-k8s.wallfair.io
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: backend
-              port:
-                number: 80
-  - host: staging-backend.wallfair.io
+  - host: staging-api.wallfair.io
     http:
       paths:
         - path: /
