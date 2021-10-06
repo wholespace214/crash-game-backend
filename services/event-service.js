@@ -86,7 +86,9 @@ exports.filterEvents = async (
   betFilter = null,
   includeOffline = false,
 ) => {
-  const query = {};
+  const query = {
+    "slug": { "$exists": true, "$ne": "" }
+  };
 
   // only filter by type if it is not 'all'
   if (type !== 'all') {
