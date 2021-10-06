@@ -16,7 +16,11 @@ router.get('/list',
   checkAdmin,
   eventController.listEvents);
 
-router.get('/list/:type/:category/:count/:page/:sortby',
+router.get('/list/:type/:category/:count/:page/:sortby/:upcoming/:deactivated',
+  checkAdmin,
+  eventController.filterEvents);
+
+router.get('/list/:type/:category/:count/:page/:sortby/:upcoming/:deactivated/:searchQuery',
   checkAdmin,
   eventController.filterEvents);
 
@@ -24,17 +28,13 @@ router.get('/bets/:type/:category/:count/:page/:sortby/:searchQuery',
   checkAdmin,
   betController.filterBets);
 
-router.get('/bets',
-  checkAdmin,
-  betController.listBets);
-
 router.get('/bets/:type/:category/:count/:page/:sortby',
   checkAdmin,
   betController.filterBets);
 
-router.get('/list/:type/:category/:count/:page/:sortby/:searchQuery',
+router.get('/bets',
   checkAdmin,
-  eventController.filterEvents);
+  betController.listBets);
 
 router.get(
   '/cover/:type',

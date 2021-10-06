@@ -80,11 +80,15 @@ exports.filterEvents = async (
   count = 10,
   page = 1,
   sortby = 'name',
+  upcoming = false,
+  deactivated = false,
   searchQuery,
   betFilter = null,
   includeOffline = false,
 ) => {
-  const query = {};
+  const query = {
+    "slug": { "$exists": true, "$ne": "" }
+  };
 
   // only filter by type if it is not 'all'
   if (type !== 'all') {
@@ -100,9 +104,12 @@ exports.filterEvents = async (
     query.name = { $regex: searchQuery, $options: 'i' };
   }
 
-  if (!includeOffline) {
+  if (!includeOffline && !upcoming && !deactivated) {
     query.state = { $ne: "offline" };
   }
+
+  query.deactivatedAt = { $exists: deactivated }
+  query.date = upcoming ? { $gt: new Date() } : { $lt: new Date() };
 
   const op = Event.find(query)
     .limit(count)
@@ -249,6 +256,11 @@ exports.editEvent = async (eventId, userData) => {
   return updatedEvent;
 };
 
+exports.deleteEvent = async (eventId) => {
+  await Bet.updateMany({ event: eventId }, { event: null });
+  return await Event.findByIdAndDelete(eventId);
+}
+
 exports.saveBet = async (bet, session) => bet.save({ session });
 
 exports.getTags = async () => Event.distinct('tags.name').exec();
@@ -309,6 +321,6 @@ exports.combineBetInteractions = async (bet, direction, rangeType, rangeValue) =
   return bet.outcomes.map(outcome => ({
     outcomeName: outcome.name,
     outcomeIndex: outcome.index,
-    data: padData(lookup[outcome.index] ?? [],now, rangeType, outcome.index, latestQuotes),
+    data: padData(lookup[outcome.index] ?? [], now, rangeType, outcome.index, latestQuotes),
   }));
 };

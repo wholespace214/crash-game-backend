@@ -459,7 +459,7 @@ const deleteBet = async (req, res, next) => {
       return next(new ErrorHandler(422, 'Bet must be cancelled prior to deletion.'));
     }
 
-    const deletedBet = await Bet.deleteOne(id);
+    const deletedBet = await Bet.findByIdAndDelete(id);
 
     res.status(200).send(deletedBet);
   } catch (err) {
