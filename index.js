@@ -106,6 +106,9 @@ async function main() {
   const { initQuoteJobs } = require('./jobs/quote-storage-job');
   initQuoteJobs(subClient);
 
+  const awsS3Service = require('./services/aws-s3-service');
+  awsS3Service.init();
+
   websocketService.setPubClient(pubClient);
 
   // When message arrive from Redis, disseminate to proper channels

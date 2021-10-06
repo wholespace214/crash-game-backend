@@ -6,6 +6,7 @@ const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
+const awsS3Service = require('./aws-s3-service');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -128,7 +129,7 @@ exports.getTotalWin = (balance) => {
 exports.updateUser = async (userId, updatedUser) => {
   const user = await User.findById(userId);
 
-  if (updatedUser.name) {
+  if (updatedUser.name && updatedUser.name !== user.name) {
     user.name = updatedUser.name;
 
     publishEvent(notificationEvents.EVENT_USER_CHANGED_NAME, {
@@ -138,7 +139,7 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
-  if (updatedUser.username) {
+  if (updatedUser.username && updatedUser.username !== user.username) {
     user.username = updatedUser.username;
 
     publishEvent(notificationEvents.EVENT_USER_CHANGED_USERNAME, {
@@ -148,11 +149,13 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
-  if (updatedUser.profilePicture) {
+  if (updatedUser.image) {
     if (!user.profilePicture) {
       await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
     }
-    user.profilePicture = updatedUser.profilePicture;
+
+    const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
+    user.profilePicture = imageLocation;
 
     publishEvent(notificationEvents.EVENT_USER_UPLOADED_PICTURE, {
       producer: 'user',
@@ -161,7 +164,7 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
-  if (updatedUser.notificationSettings) {
+  if (updatedUser.notificationSettings && updatedUser.notificationSettings !== user.notificationSettings) {
     user.notificationSettings = updatedUser.notificationSettings;
 
     publishEvent(notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES, {
@@ -171,17 +174,17 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
-  if (user.aboutMe !== updatedUser.aboutMe) {
+  if (user.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
     publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
       producer: 'user',
       producerId: userId,
       data: { notificationSettings: user.notificationSettings },
     });
+
+    user.aboutMe = updatedUser.aboutMe;
   }
 
-  user.aboutMe = updatedUser.aboutMe;
-
-  await user.save();
+  return await user.save();
 };
 
 exports.updateUserPreferences = async (userId, preferences) => {
