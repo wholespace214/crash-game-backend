@@ -173,7 +173,7 @@ const getUserInfo = async (req, res, next) => {
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
-    if(!user) {
+    if (!user) {
       res.status(200).json({
         userId
       })
@@ -393,7 +393,7 @@ const confirmEmail = async (req, res, next) => {
     await user.save();
     await userService.rewardUserAction(user._id.toString(), WFAIR_REWARDS.confirmEmail);
 
-    if(user.ref) {
+    if (user.ref) {
       console.debug('[REWARD USER] ref', user.ref);
       await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
     }
@@ -426,8 +426,14 @@ const updateUser = async (req, res, next) => {
   }
 
   try {
-    await userService.updateUser(req.params.userId, req.body);
-    res.status(200).send({ status: 'OK' });
+    const user = await userService.updateUser(req.params.userId, req.body);
+    res.status(200).send({
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      aboutMe: user.aboutMe,
+      profilePicture: user.profilePicture
+    });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
   }
