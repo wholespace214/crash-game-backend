@@ -11,4 +11,6 @@ router.get(
   userController.confirmEmail
 );
 
+router.get('/:userId/info', userController.getBasicUserInfo);
+
 module.exports = router;

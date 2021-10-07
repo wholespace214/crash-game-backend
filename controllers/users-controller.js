@@ -167,18 +167,15 @@ const getLeaderboard = async (req, res) => {
 const getUserInfo = async (req, res, next) => {
   try {
     const { userId } = req.params;
-
     const user = await User.findById(userId);
+
+    if (!user) {
+      return next(new ErrorHandler(404, 'User not found'));
+    }
+
     const balance = await WFAIR.balanceOf(userId);
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
-
-    if (!user) {
-      res.status(200).json({
-        userId
-      })
-      return next();
-    }
 
     res.status(200).json({
       userId: user._id,
@@ -195,6 +192,32 @@ const getUserInfo = async (req, res, next) => {
       amountWon: user.amountWon,
       preferences: user.preferences,
       aboutMe: user.aboutMe,
+    });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, 'Account information loading failed'));
+  }
+};
+
+// get public basic user info 
+const getBasicUserInfo = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(new ErrorHandler(404, 'User not found'));
+    }
+
+    const { rank } = await userService.getRankByUserId(userId);
+
+    res.status(200).json({
+      name: user.name,
+      username: user.username,
+      profilePicture: user.profilePicture,
+      aboutMe: user.aboutMe,
+      rank,
+      amountWon: user.amountWon,
     });
   } catch (err) {
     console.error(err);
@@ -462,6 +485,7 @@ exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
+exports.getBasicUserInfo = getBasicUserInfo;
 exports.getRefList = getRefList;
 exports.getOpenBetsList = getOpenBetsList;
 exports.getHistory = getHistory;
