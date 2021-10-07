@@ -21,6 +21,8 @@
   "dependencies": {
     "@admin-bro/express": "^3.1.0",
     "@admin-bro/mongoose": "^1.1.0",
+    "@aws-sdk/client-s3": "^3.35.0",
+    "@aws-sdk/s3-request-presigner": "^3.35.0",
     "@socket.io/redis-adapter": "7.0.0",
     "@wallfair.io/smart_contract_mock": "^0.5.7",
     "@wallfair.io/wallfair-commons": "^1.7.9",

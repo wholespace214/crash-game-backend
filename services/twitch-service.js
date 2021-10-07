@@ -76,7 +76,7 @@ const getTwitchChannel = async (broadcaster_id) => {
   return channelData.data[0];
 };
 
-const getEventFromTwitchUrl = async (streamUrl) => {
+const getEventFromTwitchUrl = async (streamUrl, category) => {
   const username = streamUrl.substring(streamUrl.lastIndexOf('/') + 1);
 
   const userData = await getTwitchUser(username);
@@ -105,7 +105,7 @@ const getEventFromTwitchUrl = async (streamUrl) => {
       tags,
       date: Date.now(),
       type: 'streamed',
-      category: channelData.game_name,
+      category: category || channelData.game_name,
       metadata: {
         ...metadata,
         twitch_last_synced: null,

@@ -10,9 +10,9 @@ const getEventFromTwitchUrl = async (req, res, next) => {
   }
 
   try {
-    const { streamUrl } = req.body;
+    const { streamUrl, category } = req.body;
 
-    const event = await twitchService.getEventFromTwitchUrl(streamUrl);
+    const event = await twitchService.getEventFromTwitchUrl(streamUrl, category);
 
     res.status(201).json(event);
   } catch (err) {
