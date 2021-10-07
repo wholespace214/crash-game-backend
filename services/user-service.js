@@ -174,7 +174,7 @@ exports.updateUser = async (userId, updatedUser) => {
     });
   }
 
-  if (user.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
+  if (updatedUser.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
     publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
       producer: 'user',
       producerId: userId,
