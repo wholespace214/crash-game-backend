@@ -155,7 +155,7 @@ exports.updateUser = async (userId, updatedUser) => {
     }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
-    user.profilePicture = imageLocation;
+    user.profilePicture = imageLocation.split('?')[0];
 
     publishEvent(notificationEvents.EVENT_USER_UPLOADED_PICTURE, {
       producer: 'user',
