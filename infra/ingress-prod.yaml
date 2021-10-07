@@ -8,7 +8,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     # reference production issuer
-    cert-manager.io/issuer: "letsencrypt-issuer"
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer"
 spec:
   tls:
   - hosts:
