@@ -9,7 +9,6 @@ on:
         required: true
         default: '1.x.x'
 
-
 jobs:
   build_and_push:
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const { google } = require('googleapis');
-const logger = require('../util/logger').default;
+const logger = require('../util/logger');
 
 const generateSlug = require('../util/generateSlug');
 
@@ -18,7 +18,7 @@ const ytApi = google.youtube({
  * @param Array.<string> videoId
  * @returns Object
  */
-const getVideosById = async (/** @type string[] */ videoIds) => {
+const getVideosById = async (/** @type string[] */ videoIds, all = false) => {
   try {
     if (!videoIds || !videoIds.length) throw new Error('No or empty array of "videoIds" given');
 
@@ -26,6 +26,9 @@ const getVideosById = async (/** @type string[] */ videoIds) => {
       part: ['snippet,contentDetails,player,recordingDetails,statistics,status,topicDetails'],
       id: videoIds,
     });
+    if(all) {
+      return response?.data?.items || [];
+    }
     return response?.data?.items?.[0] || undefined;
   } catch (err) {
     logger.error(err);
@@ -82,7 +85,8 @@ const getEventFromYoutubeUrl = async (streamUrl) => {
 }
 
 module.exports = {
-  getEventFromYoutubeUrl
+  getEventFromYoutubeUrl,
+  getVideosById
 };
 
 /**

@@ -68,6 +68,9 @@ async function main() {
   const { initTwitchSubscribeJob } = require('./jobs/twitch-subscribe-job');
   initTwitchSubscribeJob();
 
+  const { initYoutubeCheckJob } = require('./jobs/youtube-live-check-job');
+  initYoutubeCheckJob();
+
   // Import Socket.io service
   const websocketService = require('./services/websocket-service');
 
@@ -105,6 +108,9 @@ async function main() {
 
   const { initQuoteJobs } = require('./jobs/quote-storage-job');
   initQuoteJobs(subClient);
+
+  const awsS3Service = require('./services/aws-s3-service');
+  awsS3Service.init();
 
   websocketService.setPubClient(pubClient);
 

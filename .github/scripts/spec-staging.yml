@@ -108,6 +108,18 @@ services:
   - key: AUTH0_CONNECTION_ID
     scope: RUN_AND_BUILD_TIME
     value: $AUTH0_CONNECTION_ID
+  - key: AWS_S3_CLIENT_ID
+    scope: RUN_AND_BUILD_TIME
+    value: $AWS_S3_CLIENT_ID
+  - key: AWS_S3_CLIENT_SECRET
+    scope: RUN_AND_BUILD_TIME
+    value: $AWS_S3_CLIENT_SECRET
+  - key: AWS_S3_CLIENT_BUCKET
+    scope: RUN_AND_BUILD_TIME
+    value: $AWS_S3_CLIENT_BUCKET
+  - key: AWS_S3_CLIENT_REGION
+    scope: RUN_AND_BUILD_TIME
+    value: $AWS_S3_CLIENT_REGION
   http_port: 80
   image:
     registry_type: DOCR
