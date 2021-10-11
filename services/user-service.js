@@ -16,7 +16,7 @@ exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).sessi
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 
 exports.getUserReducedDataById = async (id, session) => User.findOne({ _id: id }).select({
-  _id: 0,
+  _id: 1,
   username: 1,
   name: 1,
   profilePicture: 1,
