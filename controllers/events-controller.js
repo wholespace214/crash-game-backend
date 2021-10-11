@@ -247,6 +247,34 @@ const deleteEvent = async (req, res, next) => {
   }
 };
 
+const bookmarkEvent = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id
+    if(id && userId){
+      await eventService.bookmarkEvent(id, userId)
+    } else {
+      return next(new ErrorHandler(404, 'Event not found'));
+    }
+  } catch (err){
+    return next(new ErrorHandler(422, err.message));
+  }
+}
+
+const bookmarkEventCancel = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id
+    if(id && userId){
+      await eventService.bookmarkEventCancel(id, userId)
+    } else {
+      return next(new ErrorHandler(404, 'Event not found'));
+    }
+  } catch (err){
+    return next(new ErrorHandler(422, err.message));
+  }
+}
+
 const getTags = async (req, res) => {
   const tags = await eventService.getTags();
   res.status(200).json({
@@ -293,3 +321,5 @@ exports.deleteEvent = deleteEvent;
 exports.getTags = getTags;
 exports.sendEventEvaluate = sendEventEvaluate;
 exports.getCoverEvent = getCoverEvent;
+exports.bookmarkEvent = bookmarkEvent;
+exports.bookmarkEventCancel = bookmarkEventCancel;

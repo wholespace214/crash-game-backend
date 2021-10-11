@@ -261,6 +261,14 @@ exports.deleteEvent = async (eventId) => {
   return await Event.findByIdAndDelete(eventId);
 }
 
+exports.bookmarkEvent = async (eventId, userId) => {
+  return Event.update(eventId, { bookmarks: { $push: userId } })
+}
+
+exports.bookmarkEventCancel = async (eventId, userId) => {
+  return Event.update(eventId, { bookmarks: { $pull: userId } })
+}
+
 exports.saveBet = async (bet, session) => bet.save({ session });
 
 exports.getTags = async () => Event.distinct('tags.name').exec();

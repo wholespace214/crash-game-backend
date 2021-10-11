@@ -53,6 +53,9 @@ router.delete(
   eventController.deleteEvent
 );
 
+router.put('/:id/bookmark', eventController.bookmarkEvent)
+router.put('/:id/bookmark/cancel', eventController.bookmarkEventCancel)
+
 router.post(
   '/bet/create',
   [
@@ -137,5 +140,7 @@ router.delete(
   ],
   betController.deleteBet,
 );
+
+
 
 module.exports = router;
