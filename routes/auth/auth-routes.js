@@ -12,6 +12,7 @@ router.post(
   '/sign-up',
   [
     check('email').notEmpty(),
+    check('recaptchaToken').notEmpty(),
     check('passwordConfirm').notEmpty(),
     check('password')
       .notEmpty()

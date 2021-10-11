@@ -8,6 +8,7 @@ const userService = require('../services/user-service');
 const auth0Service = require('../services/auth0-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 const { publishEvent, notificationEvents } = require('../services/notification-service');
 
 
@@ -19,12 +20,18 @@ module.exports = {
     }
 
     try {
-      const { password, email, username, ref } = req.body;
+      const { password, email, username, ref, recaptchaToken } = req.body;
 
       const existing = await userApi.getUserByIdEmailPhoneOrUsername(email);
 
       if (existing) {
         return next(new ErrorHandler(400, 'User exists'));
+      }
+
+      const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`);
+
+      if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5 || recaptchaRes.data.action !== 'join') {
+        return next(new ErrorHandler(422, 'Recaptcha verification failed, please try again later.'));
       }
 
       // init data
@@ -33,7 +40,7 @@ module.exports = {
       const passwordHash = await bcrypt.hash(password, 8);
 
       // create auth0 user
-      const auth0User = auth0Service.createUser(wFairUserId,{
+      const auth0User = auth0Service.createUser(wFairUserId, {
         email,
         username: username || `wallfair-${counter}`,
         password,
@@ -77,8 +84,8 @@ module.exports = {
       });
     } catch (err) {
       logger.error(err);
+      return next(new ErrorHandler(500, 'Something went wrong.'));
     }
-    return res.status(500).send();
   },
 
   async login(req, res, next) {

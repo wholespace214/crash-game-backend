@@ -10,8 +10,6 @@ exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
       $match: { roomId: mongoose.Types.ObjectId(roomId) },
     },
     { $sort: { date: -1 } },
-    { $limit: limit },
-    { $skip: skip },
     {
       $lookup: {
         localField: 'userId',
@@ -21,42 +19,52 @@ exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
       },
     },
     {
-      $replaceRoot: {
-        newRoot: {
-          $mergeObjects: [
-            {
-              $arrayElemAt: ['$user', 0],
-            },
-            '$$ROOT',
-          ],
-        },
-      },
-    },
-    {
-      $project: {
-        userId: 1,
-        roomId: 1,
-        type: 1,
-        message: 1,
-        date: 1,
-        user: {
-          $let: {
-            vars: {
-              userMatch: {
-                $arrayElemAt: ['$user', 0],
+      $facet: {
+        total: [
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 }
+            }
+          }
+        ],
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              userId: 1,
+              roomId: 1,
+              type: 1,
+              message: 1,
+              date: 1,
+              user: {
+                $let: {
+                  vars: {
+                    userMatch: {
+                      $arrayElemAt: ['$user', 0],
+                    },
+                  },
+                  in: {
+                    username: '$$userMatch.username',
+                    name: '$$userMatch.name',
+                    profilePicture: '$$userMatch.profilePicture',
+                  },
+                },
               },
             },
-            in: {
-              username: '$$userMatch.username',
-              name: '$$userMatch.name',
-              profilePicture: '$$userMatch.profilePicture',
-              profilePictureUrl: '$$userMatch.profilePictureUrl',
-            },
-          },
-        },
+          }
+        ]
+      }
+    },
+    { $unwind: "$total" },
+    {
+      $project: {
+        total: "$total.count",
+        data: "$data",
       },
     },
-  ]);
+  ]).exec().then(items => items[0]);
 
 exports.createChatMessage = async (data) => ChatMessage.create(data);
 

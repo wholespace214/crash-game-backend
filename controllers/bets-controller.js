@@ -149,8 +149,36 @@ const editBet = async (req, res, next) => {
   if (!isAdmin(req)) return next(new ErrorHandler(403, 'Action not allowed'));
 
   try {
+    const existingBet = await Bet.findById(req.params.betId);
+    if (!existingBet) {
+      return next(new ErrorHandler(404, 'Bet not found.'));
+    }
+
+    const { outcomes: oldOutcomes } = existingBet;
+    const { outcomes: newOutcomes } = req.body;
+
+    const indexes = ({ index }) => +index;
+
+    if (
+      oldOutcomes.length !== newOutcomes.length ||
+      new Set([ // uniqify all indexes to ensure no new ones are added
+        ...newOutcomes.map(indexes),
+        ...oldOutcomes.map(indexes),
+      ]).size !== oldOutcomes.length
+    ) {
+      return next(new ErrorHandler(400, 'Cannot change outcome indexes or add/remove outcomes.'));
+    }
+
+    if (
+      new Set(newOutcomes.map(indexes)).size !== newOutcomes.length
+    ) {
+      return next(new ErrorHandler(400, 'Outcome indexes must be unique.'));
+    }
+
     const updatedEntry = await betService.editBet(req.params.betId, req.body);
-    if (!updatedEntry) return res.status(500).send();
+    if (!updatedEntry) {
+      return res.status(500).send();
+    }
     return res.status(200).json(updatedEntry);
   } catch (err) {
     return next(new ErrorHandler(422, err.message));
