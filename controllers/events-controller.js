@@ -252,12 +252,13 @@ const bookmarkEvent = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id
     if(id && userId){
-      await eventService.bookmarkEvent(id, userId)
+      const ev = await eventService.bookmarkEvent(id, userId)
+      return res.status(200).json(ev);
     } else {
       return next(new ErrorHandler(404, 'Event not found'));
     }
   } catch (err){
-    return next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, 'Failed to bookmark an event'));
   }
 }
 
@@ -266,12 +267,13 @@ const bookmarkEventCancel = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id
     if(id && userId){
-      await eventService.bookmarkEventCancel(id, userId)
+      const ev = await eventService.bookmarkEventCancel(id, userId)
+      return res.status(200).json(ev);
     } else {
       return next(new ErrorHandler(404, 'Event not found'));
     }
   } catch (err){
-    return next(new ErrorHandler(422, err.message));
+    return next(new ErrorHandler(422, 'Failed to clear bookmark'));
   }
 }
 
