@@ -6,6 +6,7 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const websocketService = require('./websocket-service');
 const { publishEvent, notificationEvents } = require('./notification-service');
+const mongoose = require('mongoose');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -259,6 +260,26 @@ exports.editEvent = async (eventId, userData) => {
 exports.deleteEvent = async (eventId) => {
   await Bet.updateMany({ event: eventId }, { event: null });
   return await Event.findByIdAndDelete(eventId);
+}
+
+exports.bookmarkEvent = async (eventId, userId) => {
+  const event = await Event.findById(eventId)
+  if(event && event.bookmarks){
+    event.bookmarks.push(mongoose.Types.ObjectId(userId));
+    return event.save()
+  } else {
+    throw new Error('Event not found')
+  }
+}
+
+exports.bookmarkEventCancel = async (eventId, userId) => {
+  const event = await Event.findById(eventId)
+  if(event && event.bookmarks){
+    event.bookmarks.pull(mongoose.Types.ObjectId(userId));
+    return event.save()
+  } else {
+    throw new Error('Event not found')
+  }
 }
 
 exports.saveBet = async (bet, session) => bet.save({ session });
