@@ -7,6 +7,7 @@ const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
 const awsS3Service = require('./aws-s3-service');
+const _ = require('lodash');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -130,22 +131,36 @@ exports.updateUser = async (userId, updatedUser) => {
   const user = await User.findById(userId);
 
   if (updatedUser.name && updatedUser.name !== user.name) {
+    const oldName = _.clone(user.name);
     user.name = updatedUser.name;
 
     publishEvent(notificationEvents.EVENT_USER_CHANGED_NAME, {
       producer: 'user',
       producerId: userId,
-      data: { username: user.name },
+      data: {
+        userId,
+        name: updatedUser.name,
+        oldName: oldName,
+        updatedAt: Date.now()
+      },
+      broadcast: true
     });
   }
 
   if (updatedUser.username && updatedUser.username !== user.username) {
+    const oldUsername = _.clone(user.username);
     user.username = updatedUser.username;
 
     publishEvent(notificationEvents.EVENT_USER_CHANGED_USERNAME, {
       producer: 'user',
       producerId: userId,
-      data: { username: user.username },
+      data: {
+        userId,
+        username: updatedUser.username,
+        oldUsername,
+        updatedAt: Date.now()
+      },
+      broadcast: true
     });
   }
 
@@ -160,7 +175,13 @@ exports.updateUser = async (userId, updatedUser) => {
     publishEvent(notificationEvents.EVENT_USER_UPLOADED_PICTURE, {
       producer: 'user',
       producerId: userId,
-      data: {},
+      data: {
+        userId,
+        username: _.get(updatedUser, 'username'),
+        image: updatedUser.image,
+        updatedAt: Date.now()
+      },
+      broadcast: true
     });
   }
 
@@ -178,7 +199,12 @@ exports.updateUser = async (userId, updatedUser) => {
     publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
       producer: 'user',
       producerId: userId,
-      data: { notificationSettings: user.notificationSettings },
+      data: {
+        userId,
+        username: updatedUser.username,
+        notificationSettings: user.notificationSettings
+      },
+      broadcast: true
     });
 
     user.aboutMe = updatedUser.aboutMe;

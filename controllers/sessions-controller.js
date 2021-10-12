@@ -69,6 +69,7 @@ module.exports = {
         producer: 'user',
         producerId: createdUser._id,
         data: {
+          email: createdUser.email,
           userId: createdUser._id,
           username: createdUser.username,
           ref,
@@ -106,6 +107,7 @@ module.exports = {
         producer: 'user',
         producerId: user._id,
         data: {
+          userIdentifier,
           userId: user._id,
           username: user.username,
           updatedAt: Date.now()
