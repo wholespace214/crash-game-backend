@@ -33,7 +33,7 @@ module.exports = {
       const passwordHash = await bcrypt.hash(password, 8);
 
       // create auth0 user
-      const auth0User = auth0Service.createUser(wFairUserId,{
+      const auth0User = auth0Service.createUser(wFairUserId, {
         email,
         username: username || `wallfair-${counter}`,
         password,
@@ -55,7 +55,7 @@ module.exports = {
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
-          currency: 'WFAIR',
+          currency: 'PFAIR',
         },
         auth0Id: auth0User.user_id,
         ref
