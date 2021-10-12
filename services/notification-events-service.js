@@ -53,3 +53,12 @@ exports.listNotificationEventsByBet = async (limit = 10, betId) => {
     'data.bet._id': mongoose.Types.ObjectId(betId)
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
 }
+
+exports.listNotificationEventsByUser = async (limit = 10, userId) => {
+  let selectedCat = _.get(categories, "users", []);
+
+  return UniversalEvent.find({
+    'performedBy': 'user',
+    'userId': userId
+  }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
+}

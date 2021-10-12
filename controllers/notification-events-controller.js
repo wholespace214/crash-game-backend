@@ -13,3 +13,11 @@ exports.listNotificationEventsByBet = async (req, res) => {
   const eventList = await notificationEventsService.listNotificationEventsByBet(limit, betId);
   res.status(200).json(eventList);
 };
+
+exports.listNotificationEventsByUser = async (req, res) => {
+  const {limit} = req.query;
+  const {userId} = req.params;
+
+  const eventList = await notificationEventsService.listNotificationEventsByUser(limit, userId);
+  res.status(200).json(eventList);
+};

@@ -11,4 +11,9 @@ router.get(
   notificationEventsController.listNotificationEventsByBet,
 );
 
+router.get(
+  '/list/users/:userId',
+  notificationEventsController.listNotificationEventsByUser,
+);
+
 module.exports = router;
