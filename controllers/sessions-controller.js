@@ -75,7 +75,14 @@ module.exports = {
       publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
         producer: 'user',
         producerId: createdUser._id,
-        data: { email: createdUser.email, username: createdUser.username, ref },
+        data: {
+          email: createdUser.email,
+          userId: createdUser._id,
+          username: createdUser.username,
+          ref,
+          updatedAt: Date.now()
+        },
+        broadcast: true
       });
 
       return res.status(201).json({
@@ -106,7 +113,13 @@ module.exports = {
       publishEvent(notificationEvents.EVENT_USER_SIGNED_IN, {
         producer: 'user',
         producerId: user._id,
-        data: { userIdentifier },
+        data: {
+          userIdentifier,
+          userId: user._id,
+          username: user.username,
+          updatedAt: Date.now()
+        },
+        broadcast: true
       });
 
       res.status(200).json({

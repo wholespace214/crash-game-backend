@@ -6,4 +6,14 @@ router.get(
   notificationEventsController.listNotificationEvents,
 );
 
+router.get(
+  '/list/bets/:betId',
+  notificationEventsController.listNotificationEventsByBet,
+);
+
+router.get(
+  '/list/users/:userId',
+  notificationEventsController.listNotificationEventsByUser,
+);
+
 module.exports = router;

@@ -22,7 +22,7 @@ const publishEvent = (event, data) => {
       ...data,
     })
   );
-  console.log('[NOTIFICATION-SERVICE] Published:', event);
+  // console.log('[NOTIFICATION-SERVICE] Published:', event);
 
   if (data.broadcast) {
     pubClient.publish(
