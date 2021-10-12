@@ -274,7 +274,9 @@ const sendEventEvaluate = async (req, res, next) => {
         bet_question,
         rating,
         comment,
+        updatedAt: Date.now()
       },
+      broadcast: true
     });
 
     res.status(200).send({ status: 'OK' });
