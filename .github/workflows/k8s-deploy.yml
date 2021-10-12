@@ -26,7 +26,7 @@ jobs:
         run: doctl registry login
       - name: Build the docker image
         id: docker_build
-        run: echo set-output name=digest::`docker build . -t registry.digitalocean.com/wallfair/backend_k8s`
+        run: echo '::set-output name=digest::'`docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s`
       - name: Publish the docker image to Digital Ocean
         run: docker push registry.digitalocean.com/wallfair/backend_k8s
   
