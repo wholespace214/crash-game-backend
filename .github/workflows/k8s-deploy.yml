@@ -40,12 +40,14 @@ jobs:
           ref: k8s-setup
       - name: echo inputs debug
         run: echo ${{ needs.build_and_push.outputs.image_digest }}
-      - name: Set up Kustomize
-        working-directory: /tmp
-        run: curl -sfLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.4.0/kustomize_v4.4.0_linux_amd64.tar.gz && tar zxf kustomize.tar.gz
+
       - name: Edit deployment image
-        run: /tmp/kustomize edit image registry.digitalocean.com/wallfair/backend_k8s@${{ needs.build_and_push.outputs.image_digest }}
-        working-directory: ./infra/environments/staging
+        uses: stefanprodan/kube-tools@v1
+        with:
+          kustomize: 4.2.0
+          command: |
+            cd infra/environments/staging
+            kustomize edit image registry.digitalocean.com/wallfair/backend_k8s@${{ needs.build_and_push.outputs.image_digest }}
       - uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
