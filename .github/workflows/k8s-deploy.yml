@@ -44,7 +44,7 @@ jobs:
           kustomize: 4.2.0
           command: |
             cd infra/environments/staging
-            kustomize edit image registry.digitalocean.com/wallfair/backend_k8s@${{ needs.build_and_push.outputs.image_digest }}
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s@${{ needs.build_and_push.outputs.image_digest }}
             kustomize build .
       - uses: actions-hub/kubectl@master
         env:
