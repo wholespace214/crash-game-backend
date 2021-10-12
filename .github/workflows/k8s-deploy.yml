@@ -1,6 +1,10 @@
 name: Deploy to Kubernetes cluster
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build_and_push:
@@ -8,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: k8s-setup
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -23,9 +25,10 @@ jobs:
       - name: Login to Digital Ocean docker registry
         run: doctl registry login
       - name: Build the docker image
-        run: docker build . -t registry.digitalocean.com/wallfair/backend_k8s
+        id: docker_build
+        run: docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
       - name: Publish the docker image to Digital Ocean
-        run: docker push registry.digitalocean.com/wallfair/backend_k8s
+        run: docker push registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
   
   deploy:
     runs-on: ubuntu-latest
@@ -33,11 +36,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Edit deployment image
+        uses: stefanprodan/kube-tools@v1
         with:
-          ref: k8s-setup
+          kustomize: 4.2.0
+          command: |
+            cd infra/environments/staging
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
+            kustomize build .
       - uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
-          args: apply -f infra
+          args: apply -k infra/environments/staging
   
