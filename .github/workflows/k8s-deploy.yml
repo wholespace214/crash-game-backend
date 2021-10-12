@@ -1,6 +1,10 @@
 name: Deploy to Kubernetes cluster
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build_and_push:
@@ -8,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: k8s-setup
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -34,8 +36,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: k8s-setup
       - name: Edit deployment image
         uses: stefanprodan/kube-tools@v1
         with:
