@@ -6,29 +6,30 @@ jobs:
   build_and_push:
     runs-on: ubuntu-latest
     outputs:
-      image_digest: ${{ steps.docker_build.outputs.digest }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: k8s-setup
-      - name: Use Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14.x'
-      - name: Install node dependencies
-        run: npm ci
-      - name: Install doctl (to be able to login on Digital Ocean)
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-      - name: Login to Digital Ocean docker registry
-        run: doctl registry login
-      - name: Build the docker image
-        id: docker_build
-        run: echo '::set-output name=digest::'`docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s`
-      - name: Publish the docker image to Digital Ocean
-        run: docker push registry.digitalocean.com/wallfair/backend_k8s
+      image_digest2: ${{ steps.docker_build.outputs.digest }}
+      image_digest: testing
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+#         with:
+#           ref: k8s-setup
+#       - name: Use Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: '14.x'
+#       - name: Install node dependencies
+#         run: npm ci
+#       - name: Install doctl (to be able to login on Digital Ocean)
+#         uses: digitalocean/action-doctl@v2
+#         with:
+#           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+#       - name: Login to Digital Ocean docker registry
+#         run: doctl registry login
+#       - name: Build the docker image
+#         id: docker_build
+#         run: echo '::set-output name=digest::'`docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s`
+#       - name: Publish the docker image to Digital Ocean
+#         run: docker push registry.digitalocean.com/wallfair/backend_k8s
   
   deploy:
     runs-on: ubuntu-latest
@@ -40,7 +41,8 @@ jobs:
           ref: k8s-setup
       - name: echo inputs debug
         run: echo ${{ needs.build_and_push.outputs.image_digest }}
-
+      - name: echo where i am
+        run: ls
       - name: Edit deployment image
         uses: stefanprodan/kube-tools@v1
         with:
