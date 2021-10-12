@@ -16,7 +16,7 @@ spec:
         app: backend 
     spec:
       containers:
-        - image: registry.digitalocean.com/wallfair/backend_k8s@sha256:e4a740beae115d99b30c0f059d55d6395f1e3c1abfdb8c4cd7acb1f4c2ef32ff
+        - image: registry.digitalocean.com/wallfair/backend_k8
           imagePullPolicy: Always
           resources:
             limits:
@@ -28,6 +28,8 @@ spec:
           envFrom:
           - configMapRef:
               name: app-config
+          - configMapRef:
+              name: app-secrets
           ports:
             - containerPort: 80
 
