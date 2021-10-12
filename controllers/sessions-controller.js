@@ -62,7 +62,7 @@ module.exports = {
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
-          currency: 'PFAIR',
+          currency: 'WFAIR',
         },
         auth0Id: auth0User.user_id,
         ref

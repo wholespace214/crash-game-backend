@@ -9,7 +9,7 @@ const { publishEvent, notificationEvents } = require('./notification-service');
 const awsS3Service = require('./aws-s3-service');
 
 const WFAIR = new Erc20('WFAIR');
-const CURRENCIES = ['WFAIR', 'EUR', 'USD', 'PFAIR'];
+const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 
