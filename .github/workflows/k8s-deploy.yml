@@ -5,8 +5,6 @@ on: workflow_dispatch
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-    outputs:
-      image_digest: ${{ steps.docker_build.outputs.digest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,7 +24,7 @@ jobs:
         run: doctl registry login
       - name: Build the docker image
         id: docker_build
-        run: echo '::set-output name=digest::'`docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s`
+        run: docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
       - name: Publish the docker image to Digital Ocean
         run: docker push registry.digitalocean.com/wallfair/backend_k8s
   
@@ -44,7 +42,7 @@ jobs:
           kustomize: 4.2.0
           command: |
             cd infra/environments/staging
-            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s@${{ needs.build_and_push.outputs.image_digest }}
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
       - uses: actions-hub/kubectl@master
         env:
