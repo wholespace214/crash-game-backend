@@ -15,7 +15,6 @@ const betsCategory = [
 ]
 
 const usersCategory = [
-  `Notification/EVENT_USER_SIGNED_IN`,
   `Notification/EVENT_USER_SIGNED_UP`,
   'Notification/EVENT_USER_REWARD',
   'Notification/EVENT_USER_UPLOADED_PICTURE',

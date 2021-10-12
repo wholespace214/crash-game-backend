@@ -202,7 +202,8 @@ exports.updateUser = async (userId, updatedUser) => {
       data: {
         userId,
         username: updatedUser.username,
-        notificationSettings: user.notificationSettings
+        notificationSettings: user.notificationSettings,
+        updatedAt: Date.now()
       },
       broadcast: true
     });
