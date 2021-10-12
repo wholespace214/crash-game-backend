@@ -26,7 +26,7 @@ jobs:
         id: docker_build
         run: docker build . -q -t registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
       - name: Publish the docker image to Digital Ocean
-        run: docker push registry.digitalocean.com/wallfair/backend_k8s
+        run: docker push registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
   
   deploy:
     runs-on: ubuntu-latest
