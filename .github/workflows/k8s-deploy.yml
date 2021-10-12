@@ -8,11 +8,11 @@ jobs:
     outputs:
       image_digest2: ${{ steps.docker_build.outputs.digest }}
       image_digest: testing
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
-#         with:
-#           ref: k8s-setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: k8s-setup
 #       - name: Use Node.js
 #         uses: actions/setup-node@v2
 #         with:
