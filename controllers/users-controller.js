@@ -199,7 +199,7 @@ const getUserInfo = async (req, res, next) => {
   }
 };
 
-// get public basic user info 
+// get public basic user info
 const getBasicUserInfo = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -222,6 +222,29 @@ const getBasicUserInfo = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     next(new ErrorHandler(422, 'Account information loading failed'));
+  }
+};
+
+// check if username already exist
+const checkUsername = async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne({
+      username
+    });
+    let isUnique = false;
+
+    if (!user) {
+      isUnique = true;
+    }
+
+    res.status(200).json({
+      username,
+      isUnique
+    });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(400, 'Check username failed'));
   }
 };
 
@@ -495,3 +518,4 @@ exports.resendConfirmEmail = resendConfirmEmail;
 exports.updateUser = updateUser;
 exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
+exports.checkUsername = checkUsername;
