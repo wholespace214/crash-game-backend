@@ -16,7 +16,7 @@ spec:
         app: backend 
     spec:
       containers:
-        - image: registry.digitalocean.com/wallfair/backend_k8
+        - image: registry.digitalocean.com/wallfair/backend_k8s
           imagePullPolicy: Always
           resources:
             limits:
