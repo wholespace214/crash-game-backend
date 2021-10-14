@@ -28,21 +28,24 @@ describe.skip('testing some statistics methods', () => {
   it('should get casino play game count per user', async () => {
     const {getCasinoGamePlayCount} = require('../../services/statistics-service')
     const data = await getCasinoGamePlayCount('616405198fca018cd9e233bf');
-    expect(data).to.be.equal(9)
+    console.log("data", data);
+    // expect(data).to.be.equal(9)
   })
 
   it('should get casino cashed-out value per user', async () => {
     const {getCasinoGameCashoutCount} = require('../../services/statistics-service')
     const data = await getCasinoGameCashoutCount('616405198fca018cd9e233bf', '6166ec17b4c87de60914e143');
-    expect(data).to.be.equal(1)
+
+    console.log("data", data);
+    // expect(data).to.be.equal(1)
   })
 
   it('should get casino total amount won per user', async () => {
     const {getCasinoGamesAmountWon} = require('../../services/statistics-service')
     const data = await getCasinoGamesAmountWon('616405198fca018cd9e233bf', '6166ec17b4c87de60914e143');
 
-    // console.log("data", data);
-    expect(data).to.deep.equal({ totalReward: 121, totalStaked: 100, totalWon: 21 })
+    console.log("data", data);
+    // expect(data).to.deep.equal({ totalReward: 121, totalStaked: 100, totalWon: 21 })
   })
 
   it('should get casino total lost per user', async () => {
@@ -51,6 +54,43 @@ describe.skip('testing some statistics methods', () => {
 
     console.log("data", data);
     // expect(data).to.deep.equal({ totalReward: 121, totalStaked: 100, totalWon: 21 })
+  })
+
+  it('should get total bets per user', async () => {
+    const {getUserBetsAmount} = require('../../services/statistics-service')
+    const data = await getUserBetsAmount('616708bfc750391a69c974ba');
+
+    console.log("data", data);
+    // expect(data).to.deep.equal({
+    //   totalBettedAmount: 7090,
+    //   totalBets: 37,
+    //   totalOutcomeAmount: 13895.8514
+    // })
+  })
+
+
+  it('should get total bets cashouts per user', async () => {
+    const {getUserBetsCashouts} = require('../../services/statistics-service')
+    const data = await getUserBetsCashouts('616708bfc750391a69c974ba');
+
+    console.log("data", data);
+    // expect(data).to.deep.equal({
+    //   totalBettedAmount: 7090,
+    //   totalBets: 37,
+    //   totalOutcomeAmount: 13895.8514
+    // })
+  })
+
+  it('should get total bets rewards per user', async () => {
+    const {getUserBetsRewards} = require('../../services/statistics-service')
+    const data = await getUserBetsRewards('616708bfc750391a69c974ba');
+
+    console.log("data", data);
+    // expect(data).to.deep.equal({
+    //   totalBettedAmount: 7090,
+    //   totalBets: 37,
+    //   totalOutcomeAmount: 13895.8514
+    // })
   })
 
 
