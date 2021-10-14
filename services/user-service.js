@@ -6,6 +6,7 @@ const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
+const { updateUserData } = require('./notification-events-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
@@ -145,6 +146,15 @@ exports.updateUser = async (userId, updatedUser) => {
       },
       broadcast: true
     });
+
+    await updateUserData({
+      userId,
+      'data.user.name': {$exists: true}
+    }, {
+      'data.user.name': updatedUser.name
+    }).catch((err)=> {
+      console.error('updateUserData failed', err)
+    })
   }
 
   if (updatedUser.username && updatedUser.username !== user.username) {
@@ -162,6 +172,17 @@ exports.updateUser = async (userId, updatedUser) => {
       },
       broadcast: true
     });
+
+    //update username across the events for this user, only when data.user exists at all, we need to have these unified across the events,
+    // so for user specific things, we need to use proper user property
+    await updateUserData({
+      userId,
+      'data.user.username': {$exists: true}
+    }, {
+      'data.user.username': updatedUser.username
+    }).catch((err)=> {
+      console.error('updateUserData failed', err)
+    })
   }
 
   if (updatedUser.image) {

@@ -61,3 +61,12 @@ exports.listNotificationEventsByUser = async (limit = 10, userId) => {
     'userId': userId
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
 }
+
+exports.updateUserData = async (filter, data) => {
+  return UniversalEvent.updateMany(
+    filter,
+    {
+      $set: data,
+    },
+  );
+}
