@@ -2,6 +2,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+const _ = require('lodash');
 // Imports from express validator to validate user input
 const { validationResult } = require('express-validator');
 
@@ -16,7 +17,7 @@ const tradeService = require('../services/trade-service');
 const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
-const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
+const { toScaledBigInt, fromScaledBigInt, calculateGain} = require('../util/number-helper');
 const { isAdmin } = require('../helper');
 const { calculateAllBetsStatus } = require('../services/event-service');
 const logger = require('../util/logger');
@@ -260,8 +261,9 @@ const pullOutBet = async (req, res, next) => {
     let sellAmount;
 
     const session = await User.startSession();
+    let newBalances;
     try {
-      let newBalances;
+
 
       await session
         .withTransaction(async () => {
@@ -287,13 +289,20 @@ const pullOutBet = async (req, res, next) => {
         })
         .catch((err) => console.error(err));
 
+      const soldOutcomeTokens = _.get(newBalances, 'soldOutcomeTokens');
+      const earnedTokens = _.get(newBalances, 'earnedTokens');
+      const investedAmountNumber = fromScaledBigInt(soldOutcomeTokens) - fromScaledBigInt(earnedTokens);
+      const earnedTokensNumber = parseFloat(fromScaledBigInt(earnedTokens));
+      const calculatedGain = calculateGain(investedAmountNumber, earnedTokensNumber,2);
+
       await eventService.pullOutBet(
         user,
         userId,
         bet,
         fromScaledBigInt(newBalances?.earnedTokens),
         outcome,
-        0n
+        0n,
+        calculatedGain
       );
     } catch (err) {
       console.error(err);

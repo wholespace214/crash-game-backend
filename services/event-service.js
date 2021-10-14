@@ -166,7 +166,7 @@ exports.placeBet = async (user, bet, investmentAmount, outcome) => {
   }
 };
 
-exports.pullOutBet = async (user, userId, bet, amount, outcome, currentPrice) => {
+exports.pullOutBet = async (user, userId, bet, amount, outcome, currentPrice, calculatedGain) => {
   if (bet) {
     const eventId = bet.event;
     const betId = bet._id;
@@ -183,7 +183,7 @@ exports.pullOutBet = async (user, userId, bet, amount, outcome, currentPrice) =>
     publishEvent(notificationEvents.EVENT_BET_CASHED_OUT, {
       producer: 'user',
       producerId: userId,
-      data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome, user },
+      data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome, user, gain: calculatedGain },
       broadcast: true
     });
   }
