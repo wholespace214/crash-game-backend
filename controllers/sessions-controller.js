@@ -22,16 +22,20 @@ module.exports = {
     try {
       const { password, email, username, ref, recaptchaToken } = req.body;
 
+      const { skip } = req.query;
+
+      if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
+        const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`);
+
+        if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5 || recaptchaRes.data.action !== 'join') {
+          return next(new ErrorHandler(422, 'Recaptcha verification failed, please try again later.'));
+        }
+      }
+
       const existing = await userApi.getUserByIdEmailPhoneOrUsername(email);
 
       if (existing) {
         return next(new ErrorHandler(400, 'User exists'));
-      }
-
-      const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`);
-
-      if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5 || recaptchaRes.data.action !== 'join') {
-        return next(new ErrorHandler(422, 'Recaptcha verification failed, please try again later.'));
       }
 
       // init data
