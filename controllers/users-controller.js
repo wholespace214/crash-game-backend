@@ -6,6 +6,7 @@ const { Erc20, Wallet, CasinoTradeContract, BetContract } = require('@wallfair.i
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
+const statsService = require('../services/statistics-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
@@ -199,7 +200,7 @@ const getUserInfo = async (req, res, next) => {
   }
 };
 
-// get public basic user info 
+// get public basic user info
 const getBasicUserInfo = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -481,6 +482,25 @@ const updateUserPreferences = async (req, res, next) => {
   }
 };
 
+const getUserStats = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await userService.getUserById(userId);
+    const stats = await statsService.getUserStats(userId).catch((err)=> {
+      console.error('[getUserStats] err', err);
+    })
+
+    res.status(200).json({
+      userId: userId,
+      username: _.get(user, 'username'),
+      stats
+    });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, 'Get user stats failed'));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -495,3 +515,4 @@ exports.resendConfirmEmail = resendConfirmEmail;
 exports.updateUser = updateUser;
 exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
+exports.getUserStats = getUserStats;

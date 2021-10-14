@@ -269,6 +269,46 @@ const getUserBetsRewards = async (userId) => {
   return _.get(query, '0') || defaultOutput;
 };
 
+const getUserStats = async (userId) => {
+  const casinoGamePlayCount = await getCasinoGamePlayCount(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const casinoGameCashoutCount = await getCasinoGameCashoutCount(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const casinoGamesAmountWon = await getCasinoGamesAmountWon(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const casinoGamesAmountLost = await getCasinoGamesAmountLost(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const userBetsAmount = await getUserBetsAmount(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const userBetsCashouts = await getUserBetsCashouts(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  const userBetsRewards = await getUserBetsRewards(userId).catch((err)=> {
+    console.error(err);
+  });
+
+  return {
+    casinoGamePlayCount,
+    casinoGameCashoutCount,
+    casinoGamesAmountWon,
+    casinoGamesAmountLost,
+    userBetsAmount,
+    userBetsCashouts,
+    userBetsRewards
+  }
+};
+
 module.exports = {
   getCasinoGamePlayCount,
   getCasinoGameCashoutCount,
@@ -276,5 +316,6 @@ module.exports = {
   getCasinoGamesAmountLost,
   getUserBetsAmount,
   getUserBetsCashouts,
-  getUserBetsRewards
+  getUserBetsRewards,
+  getUserStats
 };

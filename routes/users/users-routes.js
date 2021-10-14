@@ -13,4 +13,6 @@ router.get(
 
 router.get('/:userId/info', userController.getBasicUserInfo);
 
+router.get('/:userId/stats', userController.getUserStats);
+
 module.exports = router;
