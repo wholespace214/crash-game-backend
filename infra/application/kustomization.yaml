@@ -1,4 +1,8 @@
 resources:
   - backend-prod-deploy.yaml
-  - backend-prod-configmap.yaml
   - ingress-prod.yaml
+
+configMapGenerator:
+  - name: backend-config
+    envs:
+      - environment

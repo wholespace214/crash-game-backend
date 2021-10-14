@@ -36,12 +36,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Edit deployment image
+      - name: Edit deployment image (staging)
+        if: if: github.ref == 'refs/heads/main'
         uses: stefanprodan/kube-tools@v1
         with:
           kustomize: 4.2.0
           command: |
             cd infra/environments/staging
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
+            kustomize build .
+      - name: Edit deployment image (production)
+        if: if: github.ref == 'refs/heads/main'
+        uses: stefanprodan/kube-tools@v1
+        with:
+          kustomize: 4.2.0
+          command: |
+            cd infra/environments/production
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
       - uses: actions-hub/kubectl@master

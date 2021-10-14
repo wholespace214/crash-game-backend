@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+spec:
+  tls:
+  - hosts:
+    - production-api.wallfair.io
+    secretName: backend-production-cert-secret
+  rules:
+  - host: production-api.wallfair.io
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port:
+                number: 80
+  - host: prod-test-api.wallfair.io
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port:
+                number: 80
