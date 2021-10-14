@@ -46,7 +46,7 @@ jobs:
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
       - name: Edit deployment image (production)
-        if: if: github.ref == 'refs/heads/main'
+        if: if: github.ref == 'refs/heads/k8s-production-config'
         uses: stefanprodan/kube-tools@v1
         with:
           kustomize: 4.2.0
