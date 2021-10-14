@@ -9,4 +9,7 @@ spec:
         - name: backend
           envFrom:
           - configMapRef:
+              name: app-secrets
+          - configMapRef:
               name: backend-production-values
+

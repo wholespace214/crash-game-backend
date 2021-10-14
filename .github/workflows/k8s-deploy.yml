@@ -55,8 +55,14 @@ jobs:
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
       - uses: actions-hub/kubectl@master
+        if: github.ref == 'refs/heads/main'
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
           args: apply -k infra/environments/staging
-  
+      - uses: actions-hub/kubectl@master
+        if: github.ref == 'refs/heads/k8s-production-config'
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
+        with:
+          args: apply -k infra/environments/production
