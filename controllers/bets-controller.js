@@ -525,6 +525,53 @@ const betHistory = async (req, res, next) => {
   }
 };
 
+const calcBuySell = async (trade, outcomeCount, outcomeIndex) => {
+  let outcomeBuy = 0;
+  let outcomeSell = 0;
+
+  if (outcomeCount) {
+    const betContract = new BetContract(betId, outcomeCount);
+    outcomeBuy = await betContract.calcBuy(
+      toScaledBigInt(trade.totalInvestmentAmount),
+      outcomeIndex
+    );
+    outcomeSell = await betContract.calcSellFromAmount(
+      toScaledBigInt(trade.totalOutcomeTokens),
+      outcomeIndex
+    );
+  }
+
+  return [fromScaledBigInt(outcomeBuy), fromScaledBigInt(outcomeSell)];
+}
+
+const getOpenBetsList = async (request, response, next) => {
+  const { betId } = request.params;
+  try {
+    const allTrades = await tradeService.getTradesByStatuses(['active']);
+    const trades = await Promise.all(allTrades
+      .filter(trade => trade._id.betId === betId)
+      .map(async trade => {
+        const [currentBuyAmount, sellAmount] = await calcBuySell();
+        return {
+          betId,
+          outcome: trade._id.outcomeIndex,
+          investmentAmount: trade.totalInvestmentAmount,
+          outcomeAmount: trade.totalOutcomeTokens,
+          lastDate: trade.date,
+          currentBuyAmount,
+          sellAmount,
+          status: trade._id.status,
+        };
+      }));
+    const openBets = trades.slice(0, 20);
+
+    response.send({ openBets });
+  } catch (error) {
+    console.error(error);
+    next(new ErrorHandler(500, error.message));
+  }
+}
+
 exports.listBets = listBets;
 exports.filterBets = filterBets;
 exports.createBet = createBet;
@@ -539,3 +586,4 @@ exports.getTrade = getTrade;
 exports.resolveBet = resolveBet;
 exports.cancelBet = cancelBet;
 exports.deleteBet = deleteBet;
+exports.getOpenBetsList = getOpenBetsList;

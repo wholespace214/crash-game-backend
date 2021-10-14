@@ -2,11 +2,13 @@ const mongoose = require('mongoose');
 const { Trade } = require('@wallfair.io/wallfair-commons').models;
 const eventService = require('./event-service');
 
+exports.getTradesByStatuses = statuses => exports.getTradesByUserIdAndStatuses(null, statuses);
+
 exports.getTradesByUserIdAndStatuses = async (userId, statuses = []) =>
   await Trade.aggregate([
     {
       $match: {
-        userId: mongoose.Types.ObjectId(userId),
+        ...(userId ? { userId: mongoose.Types.ObjectId(userId) } : {}),
         status: { $in: statuses },
       },
     },
