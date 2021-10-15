@@ -440,16 +440,6 @@ const confirmEmail = async (req, res, next) => {
     await user.save();
     await userService.rewardUserAction(userId, WFAIR_REWARDS.confirmEmail);
 
-    if (user.ref) {
-      if(INFLUENCERS.indexOf(user.ref) > -1) {
-        console.debug('[REWARD BY INFLUENCER] ', user.ref);
-        await userService.rewardUserAction(userId, WFAIR_REWARDS.registeredByInfluencer);
-      } else {
-        console.debug('[REWARD BY USER] ', user.ref);
-        await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
-      }
-    }
-
     res.status(200).send({ status: 'OK' });
   } else {
     next(new ErrorHandler(422, 'The email code is invalid'));
