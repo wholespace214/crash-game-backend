@@ -7,6 +7,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
+const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
@@ -431,12 +432,13 @@ const confirmEmail = async (req, res, next) => {
 
   const user = await userService.getUserById(userId);
 
-  if (user.emailConfirmed) {
+  if (user.emailConfirmed && user.confirmed) {
     return next(new ErrorHandler(403, 'The email has been already confirmed'));
   }
 
   if (user.emailCode === code) {
     user.emailConfirmed = true;
+    user.confirmed = true;
     await user.save();
     await userService.rewardUserAction(userId, WFAIR_REWARDS.confirmEmail);
 
@@ -446,10 +448,10 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-const resendConfirmEmail = async (_, res, next) => {
+const resendConfirmEmail = async (req, res, next) => {
   try {
-    // const user = await userService.getUserById(req.user.id);
-    // TODO: Provide event to resend confirmation mail
+    const user = await userService.getUserById(req.user.id);
+    await mailService.sendConfirmMail(user);
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -504,7 +506,7 @@ const getUserStats = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await userService.getUserById(userId);
-    const stats = await statsService.getUserStats(userId).catch((err)=> {
+    const stats = await statsService.getUserStats(userId).catch((err) => {
       console.error('[getUserStats] err', err);
     })
 

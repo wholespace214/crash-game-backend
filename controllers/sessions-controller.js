@@ -6,6 +6,7 @@ const authService = require('../services/auth-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
 const auth0Service = require('../services/auth0-service');
+const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
@@ -102,6 +103,8 @@ module.exports = {
         },
         broadcast: true
       });
+
+      await mailService.sendConfirmMail(createdUser);
 
       return res.status(201).json({
         userId: createdUser.id,
@@ -212,12 +215,11 @@ module.exports = {
       const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
 
-      // generate token
       const passwordResetToken = generate(10);
-      // store user token
       const updatedUser = await userApi.updateUser({ id: user._id, passwordResetToken: passwordResetToken });
-
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
+
+      await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
       publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
         id: updatedUser._id,
