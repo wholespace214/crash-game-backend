@@ -10,6 +10,7 @@ const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { publishEvent, notificationEvents } = require('../services/notification-service');
+const {INFLUENCERS, WFAIR_REWARDS} = require("../util/constants");
 
 
 module.exports = {
@@ -76,6 +77,18 @@ module.exports = {
 
       await userService.mintUser(createdUser.id.toString());
 
+      let initialReward = 5000;
+      if (ref) {
+        if(INFLUENCERS.indexOf(ref) > -1) {
+          console.debug('[REWARD BY INFLUENCER] ', ref);
+          await userService.rewardUserAction(createdUser.id.toString(), WFAIR_REWARDS.registeredByInfluencer);
+          initialReward += WFAIR_REWARDS.registeredByInfluencer;
+        } else {
+          console.debug('[REWARD BY USER] ', ref);
+          await userService.rewardUserAction(ref, WFAIR_REWARDS.referral);
+        }
+      }
+
       publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
         producer: 'user',
         producerId: createdUser._id,
@@ -84,6 +97,7 @@ module.exports = {
           userId: createdUser._id,
           username: createdUser.username,
           ref,
+          initialReward,
           updatedAt: Date.now()
         },
         broadcast: true
@@ -92,6 +106,7 @@ module.exports = {
       return res.status(201).json({
         userId: createdUser.id,
         email: createdUser.email,
+        initialReward
       });
     } catch (err) {
       logger.error(err);
