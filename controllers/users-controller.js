@@ -9,7 +9,7 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, INFLUENCERS } = require('../util/constants');
+const { WFAIR_REWARDS } = require('../util/constants');
 
 const _ = require('lodash');
 const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
