@@ -86,7 +86,6 @@ module.exports = {
         } else {
           console.debug('[REWARD BY USER] ', ref);
           await userService.rewardUserAction(ref, WFAIR_REWARDS.referral);
-          initialReward += WFAIR_REWARDS.referral;
         }
       }
 
