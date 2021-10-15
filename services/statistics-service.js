@@ -103,13 +103,18 @@ const getCasinoGamesAmountWon = async (userId, gameId) => {
  * @returns {Promise<number>} - return negative value, when user lost in general
  */
 const getCasinoGamesAmountLost = async (userId, gameId) => {
+  const matchFilter = {
+    type: 'Casino/CASINO_PLACE_BET',
+    userId
+  };
+
+  if(gameId) {
+    matchFilter['data.gameTypeId'] = gameId;
+  }
+
   const queryTotalBetted = await UniversalEvent.aggregate([
     {
-      $match: {
-        type: 'Casino/CASINO_PLACE_BET',
-        'data.gameTypeId': gameId,
-        userId
-      }
+      $match: matchFilter
     },
     {
       $group: {
@@ -128,8 +133,7 @@ const getCasinoGamesAmountLost = async (userId, gameId) => {
   const queryTotalRewarded = await getCasinoGamesAmountWon(userId, gameId).catch((err) => {
     console.error(err);
   });
-
-  const totalBetted = parseFloat(_.get(queryTotalBetted, '0.totalBettedAmount'));
+  const totalBetted = parseFloat(_.get(queryTotalBetted, '0.totalBettedAmount', 0));
 
   if (queryTotalRewarded && queryTotalBetted) {
     const totalRewarded = parseFloat(_.get(queryTotalRewarded, 'totalReward'));
