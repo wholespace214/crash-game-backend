@@ -13,4 +13,8 @@ router.get(
 
 router.get('/:userId/info', userController.getBasicUserInfo);
 
+router.post('/check-username', userController.checkUsername);
+
+router.get('/:userId/stats', userController.getUserStats);
+
 module.exports = router;

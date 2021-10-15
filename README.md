@@ -726,6 +726,37 @@ Successful Result:
   "email": "user@example.com"
 }
 ```
+### GET http://localhost:8000/api/user/:userId/stats
+Example response
+```json
+{
+  "userId": "6167e53e758b98bbbccf11d3",
+  "username": "tester50",
+  "stats": {
+    "casinoGamePlayCount": 0,
+    "casinoGameCashoutCount": 0,
+    "casinoGamesAmountWon": {
+      "totalWon": 0,
+      "totalReward": 0,
+      "totalStaked": 0
+    },
+    "casinoGamesAmountLost": 0,
+    "userBetsAmount": {
+      "totalBettedAmount": 20035,
+      "totalBets": 50,
+      "totalOutcomeAmount": 39575.6393
+    },
+    "userBetsCashouts": {
+      "totalAmount": 15300.8771,
+      "totalCashouts": 8
+    },
+    "userBetsRewards": {
+      "totalWonAmount": 0,
+      "totalRewards": 0
+    }
+  }
+}
+```
 
 # Auth0
 
