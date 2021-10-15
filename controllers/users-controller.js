@@ -226,6 +226,29 @@ const getBasicUserInfo = async (req, res, next) => {
   }
 };
 
+// check if username already exist
+const checkUsername = async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne({
+      username
+    });
+    let isUnique = false;
+
+    if (!user) {
+      isUnique = true;
+    }
+
+    res.status(200).json({
+      username,
+      isUnique
+    });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(400, 'Check username failed'));
+  }
+};
+
 // Receive specific user information
 const getRefList = async (req, res, next) => {
   try {
@@ -515,4 +538,5 @@ exports.resendConfirmEmail = resendConfirmEmail;
 exports.updateUser = updateUser;
 exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
+exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
