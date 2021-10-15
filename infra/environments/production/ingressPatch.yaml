@@ -6,6 +6,7 @@ spec:
   tls:
   - hosts:
     - production-api.wallfair.io
+    - prod-test-api.wallfair.io
     secretName: backend-production-cert-secret
   rules:
   - host: production-api.wallfair.io
