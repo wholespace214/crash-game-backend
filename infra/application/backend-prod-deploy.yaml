@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: staging 
   labels:
     app: backend
 spec:
@@ -27,7 +26,7 @@ spec:
           name: backend
           envFrom:
           - configMapRef:
-              name: app-config
+              name: backend-config
           - configMapRef:
               name: app-secrets
           ports:
