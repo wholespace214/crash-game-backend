@@ -37,7 +37,7 @@ describe.skip('testing some statistics methods', () => {
     const data = await getCasinoGameCashoutCount('616405198fca018cd9e233bf', '6166ec17b4c87de60914e143');
 
     console.log("data", data);
-    // expect(data).to.be.equal(1)
+    expect(data).to.be.equal(1)
   })
 
   it('should get casino total amount won per user', async () => {
