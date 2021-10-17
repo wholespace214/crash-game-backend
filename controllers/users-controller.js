@@ -521,6 +521,13 @@ const getUserStats = async (req, res, next) => {
   }
 };
 
+const getUserCount = async (req, res, next) => {
+  const total = await User.countDocuments().exec();
+  res.json({
+    total
+  });
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -537,3 +544,4 @@ exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
 exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
+exports.getUserCount = getUserCount;

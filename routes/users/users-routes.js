@@ -17,4 +17,6 @@ router.post('/check-username', userController.checkUsername);
 
 router.get('/:userId/stats', userController.getUserStats);
 
+router.get('/count', userController.getUserCount)
+
 module.exports = router;
