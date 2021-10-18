@@ -76,7 +76,7 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
-          args: apply -k infra/environments/production
+          args: apply -k infra/environments/development
       - uses: actions-hub/kubectl@master
         if: github.ref == 'refs/heads/production'
         env:
