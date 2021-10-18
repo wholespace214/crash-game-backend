@@ -35,14 +35,10 @@ exports.handleJoinRoom = async function (socket, data) {
 
     if (roomId) {
       await socket.join(roomId);
-    } else {
-      console.debug(LOG_TAG, 'no room id in handle join data', data);
     }
 
     if (userId) {
       socket.join(userId);
-    } else {
-      console.debug(LOG_TAG, 'no user id in handle join data', data);
     }
   } catch (error) {
     console.error(error);
@@ -56,14 +52,10 @@ exports.handleLeaveRoom = async function (socket, data) {
 
     if (roomId) {
       await socket.leave(roomId);
-    } else {
-      console.debug(LOG_TAG, 'no room id in handle leave data', data);
     }
 
     if (userId) {
       socket.leave(userId);
-    } else {
-      console.debug(LOG_TAG, 'no user id in handle leave data', data);
     }
   } catch (error) {
     console.error(error);
