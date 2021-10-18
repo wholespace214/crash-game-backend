@@ -194,6 +194,7 @@ const getUserInfo = async (req, res, next) => {
       amountWon: user.amountWon,
       preferences: user.preferences,
       aboutMe: user.aboutMe,
+      status: user.status,
     });
   } catch (err) {
     console.error(err);
@@ -220,6 +221,7 @@ const getBasicUserInfo = async (req, res, next) => {
       aboutMe: user.aboutMe,
       rank,
       amountWon: user.amountWon,
+      status: user.status,
     });
   } catch (err) {
     console.error(err);
@@ -521,12 +523,26 @@ const getUserStats = async (req, res, next) => {
   }
 };
 
-const getUserCount = async (req, res, next) => {
+const getUserCount = async (req, res) => {
   const total = await User.countDocuments().exec();
   res.json({
     total
   });
 };
+
+const updateStatus = async (req, res, next) => {
+  if (!req.user.admin) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  try {
+    await userService.updateStatus(req.params.userId, req.body.status);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(500, 'User could not be locked'));
+  }
+}
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -545,3 +561,4 @@ exports.getLeaderboard = getLeaderboard;
 exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
+exports.updateStatus = updateStatus;

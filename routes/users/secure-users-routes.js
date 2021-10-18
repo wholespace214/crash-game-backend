@@ -57,4 +57,6 @@ router.patch(
 
 router.get('/:userId', userController.getUserInfo);
 
+router.post('/:userId/status', userController.updateStatus);
+
 module.exports = router;

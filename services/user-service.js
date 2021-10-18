@@ -273,3 +273,14 @@ exports.increaseAmountWon = async (userId, amount) => {
     await userSession.endSession();
   }
 };
+
+exports.updateStatus = async (userId, status) => {
+  let user = await User.findById(userId);
+
+  if (user) {
+    user.status = status;
+    await user.save();
+  } else {
+    throw new Error('User does not exist');
+  }
+};

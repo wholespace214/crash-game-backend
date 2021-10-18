@@ -126,6 +126,9 @@ module.exports = {
     try {
       const { userIdentifier, password } = req.body;
       const user = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
+      if (user.status === 'locked') {
+        return next(new ErrorHandler(403, 'Your account is locked'));
+      }
       const valid = user && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
