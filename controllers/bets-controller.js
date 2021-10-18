@@ -534,6 +534,19 @@ const betHistory = async (req, res, next) => {
   }
 };
 
+const getOpenBetsList = async (request, response, next) => {
+  const { betId } = request.params;
+  try {
+    const trades = await tradeService.getTradesByBetAndStatuses(betId,['active']);
+    const openBets = trades.slice(0, 20);
+
+    response.send({ openBets });
+  } catch (error) {
+    console.error(error);
+    next(new ErrorHandler(500, error.message));
+  }
+}
+
 exports.listBets = listBets;
 exports.filterBets = filterBets;
 exports.createBet = createBet;
@@ -548,3 +561,4 @@ exports.getTrade = getTrade;
 exports.resolveBet = resolveBet;
 exports.cancelBet = cancelBet;
 exports.deleteBet = deleteBet;
+exports.getOpenBetsList = getOpenBetsList;
