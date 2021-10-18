@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - production
+      - development
 
 jobs:
   build_and_push:
@@ -46,6 +47,15 @@ jobs:
             cd infra/environments/staging
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
+      - name: Edit deployment image (development)
+        if: github.ref == 'refs/heads/development'
+        uses: stefanprodan/kube-tools@v1
+        with:
+          kustomize: 4.2.0
+          command: |
+            cd infra/environments/development
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
+            kustomize build .
       - name: Edit deployment image (production)
         if: github.ref == 'refs/heads/production'
         uses: stefanprodan/kube-tools@v1
@@ -61,6 +71,12 @@ jobs:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
           args: apply -k infra/environments/staging
+      - uses: actions-hub/kubectl@master
+        if: github.ref == 'refs/heads/development'
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
+        with:
+          args: apply -k infra/environments/production
       - uses: actions-hub/kubectl@master
         if: github.ref == 'refs/heads/production'
         env:
