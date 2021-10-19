@@ -11,7 +11,7 @@ const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { publishEvent, notificationEvents } = require('../services/notification-service');
-const {INFLUENCERS, WFAIR_REWARDS} = require("../util/constants");
+const { INFLUENCERS, WFAIR_REWARDS } = require("../util/constants");
 
 
 module.exports = {
@@ -80,7 +80,7 @@ module.exports = {
 
       let initialReward = 5000;
       if (ref) {
-        if(INFLUENCERS.indexOf(ref) > -1) {
+        if (INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
           await userService.rewardUserAction(createdUser.id.toString(), WFAIR_REWARDS.registeredByInfluencer);
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
@@ -199,9 +199,12 @@ module.exports = {
       })
 
       publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        passwordResetToken: updatedUser.passwordResetToken
+        producer: 'user',
+        producerId: user._id,
+        data: {
+          email: updatedUser.email,
+          passwordResetToken: updatedUser.passwordResetToken
+        }
       });
 
       return res.status(200).send();
@@ -219,16 +222,19 @@ module.exports = {
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
 
       const passwordResetToken = generate(10);
-      const updatedUser = await userApi.updateUser({ id: user._id, passwordResetToken: passwordResetToken });
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
 
+      user.passwordResetToken = passwordResetToken;
+      await user.save();
       await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
       publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        passwordResetToken: updatedUser.passwordResetToken,
-        resetPwUrl,
+        producer: 'user',
+        producerId: user._id,
+        data: {
+          email: user.email,
+          passwordResetToken: user.passwordResetToken,
+        }
       });
 
       return res.status(200).send();
