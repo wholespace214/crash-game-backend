@@ -313,14 +313,6 @@ exports.createUserAwardEvent = async ({userId, awardData, broadcast = false}) =>
  * @returns {Promise<void>} undefined
  */
 exports.checkTotalBetsAward = async (userId) => {
-  const awardToValue = {
-    5: 100,
-    20: 200,
-    50: 300,
-    100: 500,
-    150: 1000
-  };
-
   const awardData = {
     type: 'TOTAL_BETS_ABOVE_VALUE'
   };
@@ -331,7 +323,7 @@ exports.checkTotalBetsAward = async (userId) => {
 
   const total = awardData.total = totalUserBets?.totalBets || 0;
   if(total === 5 || total === 20 || total === 50 || total === 100 || total === 150) {
-    awardData.award = awardToValue[total];
+    awardData.award = WFAIR_REWARDS.totalBets[total];
     awardData.total = total;
 
     //publish in universalevents collection and add tokens
@@ -341,7 +333,5 @@ exports.checkTotalBetsAward = async (userId) => {
     }).catch((err)=> {
       console.error('createUserAwardEvent', err)
     })
-  } else {
-    return;
   }
 }

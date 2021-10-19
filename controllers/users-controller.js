@@ -442,7 +442,16 @@ const confirmEmail = async (req, res, next) => {
     user.emailConfirmed = true;
     user.confirmed = true;
     await user.save();
-    await userService.rewardUserAction(userId, WFAIR_REWARDS.confirmEmail);
+
+    await this.createUserAwardEvent({
+      userId,
+      awardData: {
+        type: 'EMAIL_CONFIRMED',
+        award: WFAIR_REWARDS.confirmEmail
+      }
+    }).catch((err)=> {
+      console.error('createUserAwardEvent', err)
+    })
 
     res.status(200).send({ status: 'OK' });
   } else {

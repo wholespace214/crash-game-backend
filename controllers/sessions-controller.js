@@ -82,11 +82,32 @@ module.exports = {
       if (ref) {
         if(INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
-          await userService.rewardUserAction(createdUser.id.toString(), WFAIR_REWARDS.registeredByInfluencer);
+
+          await this.createUserAwardEvent({
+            userId: createdUser.id.toString(),
+            awardData: {
+              type: 'CREATED_ACCOUNT_BY_INFLUENCER',
+              award: WFAIR_REWARDS.registeredByInfluencer,
+              ref
+            }
+          }).catch((err)=> {
+            console.error('createUserAwardEvent', err)
+          })
+
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
         } else {
           console.debug('[REWARD BY USER] ', ref);
-          await userService.rewardUserAction(ref, WFAIR_REWARDS.referral);
+
+          await this.createUserAwardEvent({
+            userId: ref,
+            awardData: {
+              type: 'CREATED_ACCOUNT_BY_THIS_REF',
+              award: WFAIR_REWARDS.referral,
+              ref
+            }
+          }).catch((err)=> {
+            console.error('createUserAwardEvent', err)
+          })
         }
       }
 
