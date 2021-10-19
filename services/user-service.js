@@ -103,7 +103,7 @@ exports.createUser = async (user) => {
     })
     .catch((error) => {
       console.error(error);
-    });AVATAR_UPLOADED
+    });
 };
 
 exports.payoutUser = async (userId, bet) => {
