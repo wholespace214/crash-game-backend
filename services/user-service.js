@@ -286,7 +286,19 @@ exports.updateStatus = async (userId, status) => {
   }
 };
 
+/***
+ * create USER_AWARD event in universalevents, add proper token amount based on `awardData.award` amount
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
 exports.createUserAwardEvent = async ({userId, awardData, broadcast = false}) => {
+  //add token amount for award during event creation
+  if(awardData?.award) {
+    await this.mintUser(userId, awardData.award).catch((err)=> {
+      console.error('award mintUser', err)
+    })
+  }
+
   publishEvent(notificationEvents.EVENT_USER_AWARD, {
     producer: 'user',
     producerId: userId,
@@ -300,7 +312,6 @@ exports.createUserAwardEvent = async ({userId, awardData, broadcast = false}) =>
  * @param userId
  * @returns {Promise<void>} undefined
  */
-
 exports.checkTotalBetsAward = async (userId) => {
   const awardToValue = {
     5: 100,
@@ -323,12 +334,7 @@ exports.checkTotalBetsAward = async (userId) => {
     awardData.award = awardToValue[total];
     awardData.total = total;
 
-    //add token amount for award
-    await this.mintUser(userId, awardData.award).catch((err)=> {
-      console.error('award mintUser', err)
-    })
-
-    //publish in universalevents collection
+    //publish in universalevents collection and add tokens
     await this.createUserAwardEvent({
       userId,
       awardData
