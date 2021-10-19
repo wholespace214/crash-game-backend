@@ -323,6 +323,11 @@ exports.checkTotalBetsAward = async (userId) => {
     awardData.award = awardToValue[total];
     awardData.total = total;
 
+    //add token amount for award
+    await this.mintUser(userId, awardData.award).catch((err)=> {
+      console.error('award mintUser', err)
+    })
+
     //publish in universalevents collection
     await this.createUserAwardEvent({
       userId,
