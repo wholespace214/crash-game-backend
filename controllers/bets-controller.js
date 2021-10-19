@@ -205,6 +205,10 @@ const placeBet = async (req, res, next) => {
       minOutcomeTokens
     );
 
+    await userService.checkTotalBetsAward(req.user.id).catch((err)=> {
+      console.error('checkTotalBetsAward', err);
+    });
+
     return res.status(200).json(response);
   } catch (err) {
     console.error(err);

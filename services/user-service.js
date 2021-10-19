@@ -7,6 +7,7 @@ const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
 const { updateUserData } = require('./notification-events-service');
+const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
@@ -284,3 +285,51 @@ exports.updateStatus = async (userId, status) => {
     throw new Error('User does not exist');
   }
 };
+
+exports.createUserAwardEvent = async ({userId, awardData, broadcast = false}) => {
+  publishEvent(notificationEvents.EVENT_USER_AWARD, {
+    producer: 'user',
+    producerId: userId,
+    data: awardData,
+    broadcast
+  });
+}
+
+/***
+ * check total bets for user and save USER_AWARD event, after reaching each levels
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+
+exports.checkTotalBetsAward = async (userId) => {
+  const awardToValue = {
+    5: 100,
+    20: 200,
+    50: 300,
+    100: 500,
+    150: 1000
+  };
+
+  const awardData = {
+    type: 'TOTAL_BETS_ABOVE_VALUE'
+  };
+
+  const totalUserBets = await getUserBetsAmount(userId).catch((err)=> {
+    console.error('getUserBetsAmount', err)
+  });
+
+  const total = awardData.total = totalUserBets?.totalBets || 0;
+  if(total === 5 || total === 20 || total === 50 || total === 100 || total === 150) {
+    awardData.award = awardToValue[total];
+
+    //publish in universalevents collection
+    await this.createUserAwardEvent({
+      userId,
+      awardData
+    }).catch((err)=> {
+      console.error('createUserAwardEvent', err)
+    })
+  } else {
+    return;
+  }
+}
