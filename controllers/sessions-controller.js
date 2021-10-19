@@ -23,7 +23,6 @@ module.exports = {
 
     try {
       const { password, email, username, ref, recaptchaToken } = req.body;
-
       const { skip } = req.query;
 
       if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
@@ -37,7 +36,7 @@ module.exports = {
       const existing = await userApi.getUserByIdEmailPhoneOrUsername(email);
 
       if (existing) {
-        return next(new ErrorHandler(400, 'User exists'));
+        return next(new ErrorHandler(400, 'User with provided email/phone/username already exists'));
       }
 
       // init data
