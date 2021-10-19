@@ -189,20 +189,16 @@ module.exports = {
         return next(new ErrorHandler(401, "Passwords do not match"));
       }
 
-      const passwordHash = await bcrypt.hash(req.body.password, 8);
-      // actually update user
-      const updatedUser = await userApi.updateUser({
-        id: user.id,
-        password: passwordHash,
-        $unset: { passwordResetToken: 1 }
-      })
+      user.password = await bcrypt.hash(req.body.password, 8);
+      user.passwordResetToken = undefined;
+      await user.save();
 
       publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
         producer: 'user',
         producerId: user._id,
         data: {
-          email: updatedUser.email,
-          passwordResetToken: updatedUser.passwordResetToken
+          email: user.email,
+          passwordResetToken: req.body.passwordResetToken
         }
       });
 
