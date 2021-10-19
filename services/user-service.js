@@ -321,6 +321,7 @@ exports.checkTotalBetsAward = async (userId) => {
   const total = awardData.total = totalUserBets?.totalBets || 0;
   if(total === 5 || total === 20 || total === 50 || total === 100 || total === 150) {
     awardData.award = awardToValue[total];
+    awardData.total = total;
 
     //publish in universalevents collection
     await this.createUserAwardEvent({
