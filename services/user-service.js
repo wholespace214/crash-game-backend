@@ -103,7 +103,7 @@ exports.createUser = async (user) => {
     })
     .catch((error) => {
       console.error(error);
-    });
+    });AVATAR_UPLOADED
 };
 
 exports.payoutUser = async (userId, bet) => {
@@ -188,7 +188,15 @@ exports.updateUser = async (userId, updatedUser) => {
 
   if (updatedUser.image) {
     if (!user.profilePicture) {
-      await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
+      await this.createUserAwardEvent({
+        userId,
+        awardData: {
+          type: 'AVATAR_UPLOADED',
+          award: WFAIR_REWARDS.uploadPicture
+        }
+      }).catch((err)=> {
+        console.error('createUserAwardEvent', err)
+      })
     }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
