@@ -18,6 +18,8 @@ const { ErrorHandler } = require('../util/error-handler');
 const logger = require('../util/logger');
 const youtubeService = require('../services/youtube-service');
 const { isAdmin } = require('../helper');
+const { DEFAULT } = require('../util/constants');
+const { getProbabilityMap } = require('../util/outcomes');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -174,7 +176,11 @@ const createEvent = async (req, res, next) => {
         broadcast: true
       });
 
-      await eventService.provideLiquidityToBet(newBet);
+      await eventService.provideLiquidityToBet(
+        newBet,
+        getProbabilityMap(bet.outcomes),
+        bet.liquidity || DEFAULT.betLiquidity
+      );
       await eventService.editEvent(event._id, { bets: [newBet._id] });
     }
 
@@ -251,13 +257,13 @@ const bookmarkEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id
-    if(id && userId){
+    if (id && userId) {
       const ev = await eventService.bookmarkEvent(id, userId)
       return res.status(200).json(ev);
     } else {
       return next(new ErrorHandler(404, 'Event not found'));
     }
-  } catch (err){
+  } catch (err) {
     return next(new ErrorHandler(422, 'Failed to bookmark an event'));
   }
 }
@@ -266,13 +272,13 @@ const bookmarkEventCancel = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id
-    if(id && userId){
+    if (id && userId) {
       const ev = await eventService.bookmarkEventCancel(id, userId)
       return res.status(200).json(ev);
     } else {
       return next(new ErrorHandler(404, 'Event not found'));
     }
-  } catch (err){
+  } catch (err) {
     return next(new ErrorHandler(422, 'Failed to clear bookmark'));
   }
 }
