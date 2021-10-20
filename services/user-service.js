@@ -64,7 +64,7 @@ exports.getRankByUserId = async (userId) => {
   // it is an improvement over the previous solution, but still bad
   // we need to have a service updating the rank frequently (ex: every 15 secs)
   const users = await User.find({ username: { $exists: true } })
-    .sort({ amountWon: -1, username: 1 })
+    .sort({ amountWon: -1, date: -1 })
     .select({ _id: 1, amountWon: 1 })
     .exec();
 

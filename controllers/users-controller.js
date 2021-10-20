@@ -149,8 +149,8 @@ const getLeaderboard = async (req, res) => {
   const skip = +req.params.skip;
 
   const users = await User.find({ username: { $exists: true } })
+    .sort({ amountWon: -1, date: -1 })
     .select({ username: 1, amountWon: 1 })
-    .sort({ amountWon: -1 })
     .limit(limit)
     .skip(skip)
     .exec();
