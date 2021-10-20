@@ -40,3 +40,19 @@ exports.getOutcomeBalancesByProbability = (liquidity, probabilities) => {
 
   return balances;
 };
+
+/**
+ * @param {object[]} outcomes 
+ */
+exports.areCreationOutcomesValid = (outcomes) => {
+  return (
+    (outcomes.length < 2 || outcomes.length > 4) && // must between 2 and 4 
+    (outcomes.every(({ name, probability, index }) => !!name && !!probability && !!index)) && // each must have probability, name, and index
+    (
+      outcomes.reduce((total, { probability }) => (total + probability).toFixed(2)) === 1 || // must add up to one
+      outcomes.length === 3 && outcomes.every(({ probability }) => +probability === '0.33') // ... or be a three way split via 0.33
+    ) &&
+    (new Set(outcomes.map(({ name }) => name)).size === outcomes.length) && // must have unique names
+    (new Set(outcomes.map(({ index }) => index)).size === outcomes.length) // must have unique indices
+  );
+}

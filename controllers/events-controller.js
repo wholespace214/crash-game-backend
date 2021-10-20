@@ -19,7 +19,7 @@ const logger = require('../util/logger');
 const youtubeService = require('../services/youtube-service');
 const { isAdmin } = require('../helper');
 const { DEFAULT } = require('../util/constants');
-const { getProbabilityMap } = require('../util/outcomes');
+const { getProbabilityMap, areCreationOutcomesValid } = require('../util/outcomes');
 
 // Controller to sign up a new user
 const listEvents = async (req, res, next) => {
@@ -115,13 +115,13 @@ const createEvent = async (req, res, next) => {
           true
         ))
     ) {
-      throw new Error('Non-streamed event must have a bet.');
+      throw new Error('Non-streamed event must include a bet object under the \'bet\' key upon creation.');
     } else if (!isNonStreamedEvent && !streamUrl) {
-      throw new Error('Streamed event must have a streamUrl.');
+      throw new Error('Streamed event must have a \'streamUrl\'.');
     }
 
-    if (isNonStreamedEvent && (bet.outcomes.length < 2 || bet.outcomes.length > 4)) {
-      throw new Error('Bet must have between 2 and 4 outcomes.');
+    if (isNonStreamedEvent && !areCreationOutcomesValid(bet.outcomes)) {
+      throw new Error('Bet must have between 2 and 4 outcomes, have unique names and indexes, and have probabilities that add up to 1.');
     }
 
     console.debug(LOG_TAG, 'Create a new Event', {
