@@ -83,7 +83,7 @@ module.exports = {
         if(INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
 
-          await this.createUserAwardEvent({
+          await userService.createUserAwardEvent({
             userId: createdUser.id.toString(),
             awardData: {
               type: 'CREATED_ACCOUNT_BY_INFLUENCER',
@@ -98,7 +98,7 @@ module.exports = {
         } else {
           console.debug('[REWARD BY USER] ', ref);
 
-          await this.createUserAwardEvent({
+          await userService.createUserAwardEvent({
             userId: ref,
             awardData: {
               type: 'CREATED_ACCOUNT_BY_THIS_REF',

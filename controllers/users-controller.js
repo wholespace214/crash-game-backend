@@ -443,7 +443,7 @@ const confirmEmail = async (req, res, next) => {
     user.confirmed = true;
     await user.save();
 
-    await this.createUserAwardEvent({
+    await userService.createUserAwardEvent({
       userId,
       awardData: {
         type: 'EMAIL_CONFIRMED',
