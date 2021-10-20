@@ -18,3 +18,4 @@ patches:
 - prodConfigPatch.yaml
 - resourcesPatch.yaml
 - replicasPatch.yaml
+- hpaPatch.yaml
