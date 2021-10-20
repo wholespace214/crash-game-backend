@@ -41,8 +41,6 @@ router.get('/history', userController.getHistory);
 
 router.get('/trade-history', userController.getTradeHistory);
 
-router.get('/resend-confirm', userController.resendConfirmEmail);
-
 router.patch(
   '/:userId',
   oneOf([[check('username').isLength({ min: 3, max: 25 }), check('email').isEmail()]]),

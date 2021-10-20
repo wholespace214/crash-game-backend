@@ -11,6 +11,10 @@ router.get(
   userController.confirmEmail
 );
 
+router.get('/resend-confirm',
+  [check('userId').isString()],
+  userController.resendConfirmEmail);
+
 router.get('/:userId/info', userController.getBasicUserInfo);
 
 router.post('/check-username', userController.checkUsername);
