@@ -558,6 +558,26 @@ const updateStatus = async (req, res, next) => {
   }
 }
 
+const requestTokens = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const user = await userService.getUserById(userId);
+    if(!user) return next(new ErrorHandler(403, 'Action not allowed'));
+    const balance = await WFAIR.balanceOf(userId);
+    if(balance >= toScaledBigInt(5000) || balance < 0){
+      return next(new ErrorHandler(403, 'Action not allowed'))
+    }
+
+    user.amountWon = 0;
+      await WFAIR.mint(userId, toScaledBigInt(5000) - balance)
+      await user.save()
+    res.status(200).send();
+  } catch (err){
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -576,3 +596,4 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
+exports.requestTokens = requestTokens;
