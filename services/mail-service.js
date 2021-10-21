@@ -28,13 +28,27 @@ exports.sendPasswordResetMail = async (email, resetUrl) => {
   await sendMail(email, 'Password reset', generatedTemplate);
 }
 
-const sendMail = async (email, subject, template) => {
+/***
+ *
+ * @param email
+ * @param subject
+ * @param template
+ * @param attachments we can target this in email using 'src="cid:imagecid"'
+ * example attachments [{
+      filename: "image.png",
+      content: base64,
+      content_id: "imagecid",
+   }]
+ * @returns {Promise<void>}
+ */
+const sendMail = async (email, subject, template, attachments = []) => {
   try {
     const info = {
       to: email,
       from: 'no-reply@wallfair.io',
       subject: subject,
       html: template,
+      attachments
     };
 
     await sendGridMail.send(info);
