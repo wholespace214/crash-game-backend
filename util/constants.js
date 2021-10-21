@@ -11,7 +11,12 @@ const INFLUENCERS = [
   "earlygame"
 ];
 
+const DEFAULT = {
+  betLiquidity: 50_0000n,
+};
+
 module.exports = {
   WFAIR_REWARDS,
-  INFLUENCERS
+  INFLUENCERS,
+  DEFAULT,
 };
