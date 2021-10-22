@@ -2,6 +2,7 @@
 # kind: Kustomization
 resources:
 - ../../application
+- podDisruptionBudget.yaml
 
 namespace: production
 commonLabels:
@@ -19,3 +20,4 @@ patches:
 - resourcesPatch.yaml
 - replicasPatch.yaml
 - hpaPatch.yaml
+- priorityPatch.yaml
