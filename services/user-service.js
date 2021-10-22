@@ -330,7 +330,7 @@ exports.checkTotalBetsAward = async (userId) => {
   });
 
   const total = awardData.total = totalUserBets?.totalBets || 0;
-  if(total === 5 || total === 20 || total === 50 || total === 100 || total === 150) {
+  if([5, 20, 50, 100, 150].includes(total)) {
     awardData.award = WFAIR_REWARDS.totalBets[total];
     awardData.total = total;
 
