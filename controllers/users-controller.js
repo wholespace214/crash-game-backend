@@ -149,8 +149,8 @@ const getLeaderboard = async (req, res) => {
   const skip = +req.params.skip;
 
   const users = await User.find({ username: { $exists: true } })
+    .sort({ amountWon: -1, date: -1 })
     .select({ username: 1, amountWon: 1 })
-    .sort({ amountWon: -1 })
     .limit(limit)
     .skip(skip)
     .exec();
@@ -435,7 +435,7 @@ const confirmEmail = async (req, res, next) => {
   const user = await userService.getUserById(userId);
 
   if (user.emailConfirmed && user.confirmed) {
-    return next(new ErrorHandler(403, 'The email has been already confirmed'));
+    return  res.status(200).send({ status: 'The email has been already confirmed' });
   }
 
   if (user.emailCode === code) {
@@ -461,7 +461,21 @@ const confirmEmail = async (req, res, next) => {
 
 const resendConfirmEmail = async (req, res, next) => {
   try {
-    const user = await userService.getUserById(req.user.id);
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(res.status(400).send(errors));
+    }
+
+    // Defining User Inputs
+    const { userId } = req.query;
+
+    const user = await userService.getUserById(userId);
+
+    if (user.emailConfirmed && user.confirmed) {
+      return  res.status(200).send({ status: 'The email has been already confirmed' });
+    }
+
     await mailService.sendConfirmMail(user);
     res.status(200).send({ status: 'OK' });
   } catch (err) {
@@ -553,6 +567,26 @@ const updateStatus = async (req, res, next) => {
   }
 }
 
+const requestTokens = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const user = await userService.getUserById(userId);
+    if(!user) return next(new ErrorHandler(403, 'Action not allowed'));
+    const balance = await WFAIR.balanceOf(userId);
+    if(balance >= toScaledBigInt(5000) || balance < 0){
+      return next(new ErrorHandler(403, 'Action not allowed'))
+    }
+
+    user.amountWon = 0;
+      await WFAIR.mint(userId, toScaledBigInt(5000) - balance)
+      await user.save()
+    res.status(200).send();
+  } catch (err){
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -571,3 +605,4 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
+exports.requestTokens = requestTokens;

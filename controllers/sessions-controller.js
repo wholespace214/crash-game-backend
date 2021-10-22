@@ -5,13 +5,12 @@ const { ErrorHandler } = require('../util/error-handler');
 const authService = require('../services/auth-service');
 const { validationResult } = require('express-validator');
 const userService = require('../services/user-service');
-const auth0Service = require('../services/auth0-service');
 const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { publishEvent, notificationEvents } = require('../services/notification-service');
-const {INFLUENCERS, WFAIR_REWARDS} = require("../util/constants");
+const { INFLUENCERS, WFAIR_REWARDS } = require("../util/constants");
 
 
 module.exports = {
@@ -23,7 +22,6 @@ module.exports = {
 
     try {
       const { password, email, username, ref, recaptchaToken } = req.body;
-
       const { skip } = req.query;
 
       if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
@@ -37,27 +35,13 @@ module.exports = {
       const existing = await userApi.getUserByIdEmailPhoneOrUsername(email);
 
       if (existing) {
-        return next(new ErrorHandler(400, 'User exists'));
+        return next(new ErrorHandler(400, 'User with provided email/phone/username already exists'));
       }
 
       // init data
       const wFairUserId = new ObjectId().toHexString();
       const counter = ((await userApi.getUserEntriesAmount()) || 0) + 1;
       const passwordHash = await bcrypt.hash(password, 8);
-
-      // create auth0 user
-      const auth0User = auth0Service.createUser(wFairUserId, {
-        email,
-        username: username || `wallfair-${counter}`,
-        password,
-        app_metadata: {},
-        user_metadata: {
-          // this reflects our own user mongoDB user Id
-          appId: wFairUserId,
-        },
-      });
-
-      if (!auth0User) throw new Error("Couldn't create auth0 user")
 
       const emailCode = generate(6);
 
@@ -70,7 +54,6 @@ module.exports = {
         preferences: {
           currency: 'WFAIR',
         },
-        auth0Id: auth0User.user_id,
         ref
       });
 
@@ -80,7 +63,7 @@ module.exports = {
 
       let initialReward = 5000;
       if (ref) {
-        if(INFLUENCERS.indexOf(ref) > -1) {
+        if (INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
 
           await userService.createUserAwardEvent({
@@ -211,18 +194,17 @@ module.exports = {
         return next(new ErrorHandler(401, "Passwords do not match"));
       }
 
-      const passwordHash = await bcrypt.hash(req.body.password, 8);
-      // actually update user
-      const updatedUser = await userApi.updateUser({
-        id: user.id,
-        password: passwordHash,
-        $unset: { passwordResetToken: 1 }
-      })
+      user.password = await bcrypt.hash(req.body.password, 8);
+      user.passwordResetToken = undefined;
+      await user.save();
 
       publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        passwordResetToken: updatedUser.passwordResetToken
+        producer: 'user',
+        producerId: user._id,
+        data: {
+          email: user.email,
+          passwordResetToken: req.body.passwordResetToken
+        }
       });
 
       return res.status(200).send();
@@ -240,16 +222,19 @@ module.exports = {
       if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
 
       const passwordResetToken = generate(10);
-      const updatedUser = await userApi.updateUser({ id: user._id, passwordResetToken: passwordResetToken });
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
 
+      user.passwordResetToken = passwordResetToken;
+      await user.save();
       await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
       publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        passwordResetToken: updatedUser.passwordResetToken,
-        resetPwUrl,
+        producer: 'user',
+        producerId: user._id,
+        data: {
+          email: user.email,
+          passwordResetToken: user.passwordResetToken,
+        }
       });
 
       return res.status(200).send();

@@ -40,8 +40,7 @@ router.get('/open-bets', userController.getOpenBetsList);
 router.get('/history', userController.getHistory);
 
 router.get('/trade-history', userController.getTradeHistory);
-
-router.get('/resend-confirm', userController.resendConfirmEmail);
+router.post('/requestTokens', userController.requestTokens);
 
 router.patch(
   '/:userId',

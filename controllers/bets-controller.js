@@ -20,6 +20,8 @@ const { ErrorHandler } = require('../util/error-handler');
 const { toScaledBigInt, fromScaledBigInt, calculateGain} = require('../util/number-helper');
 const { isAdmin } = require('../helper');
 const { calculateAllBetsStatus } = require('../services/event-service');
+const { DEFAULT } = require('../util/constants');
+const { getProbabilityMap } = require('../util/outcomes');
 const logger = require('../util/logger');
 
 const listBets = async (req, res, next) => {
@@ -80,6 +82,7 @@ const createBet = async (req, res, next) => {
       date,
       published,
       endDate,
+      liquidity = DEFAULT.betLiquidity,
     } = req.body;
 
     let event = await eventService.getEvent(eventId);
@@ -131,7 +134,11 @@ const createBet = async (req, res, next) => {
         event.bets.push(dbBet._id);
         event = await eventService.saveEvent(event, session);
 
-        await eventService.provideLiquidityToBet(createdBet);
+        await eventService.provideLiquidityToBet(
+          createdBet,
+          getProbabilityMap(outcomes),
+          liquidity
+        );
       });
 
       await eventService.betCreated(createdBet, req.user);

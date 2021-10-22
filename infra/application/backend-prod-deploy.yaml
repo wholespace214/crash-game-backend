@@ -5,7 +5,7 @@ metadata:
   labels:
     app: backend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -23,6 +23,18 @@ spec:
             requests:
               cpu: 1000m
               memory: 1024Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 2
+            periodSeconds: 3
           name: backend
           envFrom:
           - configMapRef:
@@ -30,14 +42,13 @@ spec:
           - configMapRef:
               name: app-secrets
           ports:
-            - containerPort: 80
+            - containerPort: 8000
 
 ---
 
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  namespace: staging
   name: backend
 spec:
   maxReplicas: 10
