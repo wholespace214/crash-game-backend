@@ -1,10 +1,10 @@
 // Import Event model
-const {URL} = require('url');
+const { URL } = require('url');
 const _ = require('lodash');
 const { Event } = require('@wallfair.io/wallfair-commons').models;
 const logger = require('../util/logger');
 
-const {getVideosById} = require('../services/youtube-service');
+const { getVideosById } = require('../services/youtube-service');
 
 const checkYoutubeVideos = async () => {
   const session = await Event.startSession();
@@ -17,20 +17,20 @@ const checkYoutubeVideos = async () => {
           type: 'streamed',
           streamUrl: { $regex: 'youtube.com', $options: 'i' },
           $or: [
-            { 'metadata.youtube_last_synced': {$exists: false} },
-            { 'metadata.youtube_last_synced': {$exists: true} }
+            { 'metadata.youtube_last_synced': { $exists: false } },
+            { 'metadata.youtube_last_synced': { $exists: true } }
           ]
         }, null, {
-          sort: { 'metadata.youtube_last_synced': -1 }
-        }
+        sort: { 'metadata.youtube_last_synced': -1 }
+      }
       )
         .limit(10)
         .exec();
 
       const videosIdsToQuery = [];
 
-      _.each(eventsList,(checkEvent)=> {
-        const {streamUrl} = checkEvent;
+      _.each(eventsList, (checkEvent) => {
+        const { streamUrl } = checkEvent;
         const parsedUrl = new URL(streamUrl);
         const urlParams = parsedUrl.searchParams;
         const videoId = urlParams.get('v');
@@ -41,21 +41,25 @@ const checkYoutubeVideos = async () => {
         })
       });
 
+      if (videosIdsToQuery.length == 0) {
+        return;
+      }
+
       const params = videosIdsToQuery.map(a => a.videoId);
 
-      const checkVideosState = await getVideosById(params, true).catch((err)=> {
+      const checkVideosState = await getVideosById(params, true).catch((err) => {
         logger.error(err);
       });
 
       for (const checkEvent of eventsList) {
-        const currentVideoId = _.get(_.find(videosIdsToQuery, {_id: checkEvent._id}), 'videoId');
-        const findVideoResponse = _.find(checkVideosState, {id: currentVideoId});
+        const currentVideoId = _.get(_.find(videosIdsToQuery, { _id: checkEvent._id }), 'videoId');
+        const findVideoResponse = _.find(checkVideosState, { id: currentVideoId });
         const channelId = _.get(findVideoResponse, 'snippet.channelId');
         const liveBroadcastingContent = _.get(findVideoResponse, 'snippet.liveBroadcastContent', 'none');
 
         const isLive = liveBroadcastingContent === "live" ? true : false;
 
-        if(isLive) {
+        if (isLive) {
           checkEvent.state = "online";
         } else {
           checkEvent.state = "offline";
