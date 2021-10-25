@@ -4,8 +4,9 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 // Import services
 
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
-const websocketService = require('./websocket-service');
-const { publishEvent, notificationEvents } = require('./notification-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('./amqp-service');
+const { onNewBet } = require('./quote-storage-service');
 const mongoose = require('mongoose');
 const { DEFAULT } = require('../util/constants');
 const outcomesUtil = require('../util/outcomes');
@@ -153,41 +154,16 @@ exports.getCoverEvent = async (type) => {
 exports.getBet = async (id, session) =>
   Bet.findOne({ _id: id }).session(session).map(calculateBetStatus);
 
-exports.placeBet = async (user, bet, investmentAmount, outcome) => {
-  if (bet) {
-    const eventId = bet.event;
-    const betId = bet._id;
-
-    await websocketService.emitPlaceBetToAllByEventId(
-      eventId,
-      betId,
-      user,
-      investmentAmount,
-      outcome
-    );
-  }
-};
-
 exports.pullOutBet = async (user, userId, bet, amount, outcome, currentPrice, calculatedGain) => {
   if (bet) {
-    const eventId = bet.event;
-    const betId = bet._id;
-
-    await websocketService.emitPullOutBetToAllByEventId(
-      eventId,
-      betId,
-      user,
-      amount,
-      outcome,
-      currentPrice
-    );
-
-    publishEvent(notificationEvents.EVENT_BET_CASHED_OUT, {
+    amqp.send('universal_events', 'event.bet_cashed_out', JSON.stringify({
+      event: notificationEvents.EVENT_BET_CASHED_OUT,
       producer: 'user',
       producerId: userId,
       data: { bet, amount: amount.toString(), currentPrice: currentPrice.toString(), outcome, user, gain: calculatedGain },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
   }
 };
 
@@ -200,10 +176,8 @@ exports.isBetTradable = (bet) => bet.status === BET_STATUS.active;
  */
 exports.betCreated = async (bet, user) => {
   if (bet) {
-    const eventId = bet.event;
-    const betId = bet._id;
-
-    publishEvent(notificationEvents.EVENT_NEW_BET, {
+    amqp.send('universal_events', 'event.new_bet', JSON.stringify({
+      event: notificationEvents.EVENT_NEW_BET,
       producer: 'user',
       producerId: user.id,
       data: {
@@ -214,10 +188,11 @@ exports.betCreated = async (bet, user) => {
           amountWon: user.amountWon
         }
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
 
-    await websocketService.emitBetCreatedByEventId(eventId, user.id, betId, bet.title);
+    onNewBet(bet);
   }
 };
 
@@ -238,15 +213,19 @@ exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liqui
   );
 };
 
-exports.saveEvent = async (event, session) => {
+exports.saveEvent = async (event, session, existing = false) => {
   const savedEvent = await event.save({ session });
 
-  publishEvent(notificationEvents.EVENT_NEW, {
-    producer: 'system',
-    producerId: 'notification-service',
-    data: { event },
-    broadcast: true
-  });
+  if (!existing) {
+    amqp.send('universal_events', 'event.new_event', JSON.stringify({
+      event: notificationEvents.EVENT_NEW,
+      producer: 'system',
+      producerId: 'notification-service',
+      data: { event },
+      date: Date.now(),
+      broadcast: true
+    }));
+  }
 
   return savedEvent;
 };
@@ -254,12 +233,14 @@ exports.saveEvent = async (event, session) => {
 exports.editEvent = async (eventId, userData) => {
   const updatedEvent = await Event.findByIdAndUpdate(eventId, userData, { new: true });
 
-  publishEvent(notificationEvents.EVENT_UPDATED, {
+  amqp.send('universal_events', 'event.event_updated', JSON.stringify({
+    event: notificationEvents.EVENT_UPDATED,
     producer: 'system',
     producerId: 'notification-service',
     data: { updatedEvent },
+    date: Date.now(),
     broadcast: true
-  });
+  }));
 
   return updatedEvent;
 };

@@ -132,7 +132,7 @@ const createBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Save Bet to Event');
         event.bets.push(dbBet._id);
-        event = await eventService.saveEvent(event, session);
+        event = await eventService.saveEvent(event, session, true);
 
         await eventService.provideLiquidityToBet(
           createdBet,

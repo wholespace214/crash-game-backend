@@ -7,6 +7,8 @@ const { User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade } =
 const WFAIR = new Erc20('WFAIR');
 const flatten = require('flat');
 
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+
 const AdminBro = require('admin-bro');
 const AdminBroExpress = require('@admin-bro/express');
 const AdminBroMongoose = require('@admin-bro/mongoose');
@@ -150,12 +152,20 @@ exports.initialize = function () {
                   const event = await eventService.getEvent(dbBet.event);
 
                   for (const userId of userIds) {
-                    websocketService.emitEventCancelNotification(
-                      userId,
-                      dbBet.event,
-                      event.name,
-                      dbBet.reasonOfCancellation
-                    );
+                    amqp.send('universal_events', 'event.event_cancel', JSON.stringify({
+                      event: notificationEvents.EVENT_CANCEL,
+                      producer: 'system',
+                      producerId: 'notification-service',
+                      data: {
+                        userId,
+                        eventId: dbBet.event,
+                        eventName: event.name,
+                        reasonOfCancellation: dbBet.reasonOfCancellation,
+                        previewImageUrl: event.previewImageUrl,
+                      },
+                      date: Date.now(),
+                      broadcast: true
+                    }));
                   }
                 }
 
@@ -255,16 +265,17 @@ exports.initialize = function () {
                     // must be done inside transaction
                     await userService.increaseAmountWon(userId, winToken);
 
-                    // send notification to this user
-                    websocketService.emitBetResolveNotification(
-                      userId,
-                      id,
-                      bet.marketQuestion,
-                      bet.outcomes[indexOutcome].name,
-                      Math.round(investedValues[userId]),
-                      event.previewImageUrl,
-                      winToken
-                    );
+                    // save uniEvent and send notification to this user
+                    amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+                      event: notificationEvents.EVENT_USER_REWARD,
+                      producer: 'system',
+                      producerId: 'notification-service',
+                      data: {
+                        bet, event, userId, winToken: winToken.toString(), amountTraded: +investedValues[userId], betOutcome: bet.outcomes[indexOutcome].name
+                      },
+                      date: Date.now(),
+                      broadcast: true
+                    }));
                   }
                 }
                 return {
@@ -380,10 +391,10 @@ exports.initialize = function () {
 };
 const passport = require('passport');
 const twitchService = require('./twitch-service');
-const websocketService = require('./websocket-service');
 const betService = require('./bet-service');
 const eventService = require('./event-service');
 const userService = require('./user-service');
+const amqp = require('./amqp-service');
 
 exports.getRootPath = function () {
   return adminBro.options.rootPath;

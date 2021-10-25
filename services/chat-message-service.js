@@ -2,8 +2,6 @@ const mongoose = require('mongoose');
 // Import ChatMessage model
 const { ChatMessage } = require('@wallfair.io/wallfair-commons').models;
 
-exports.getChatMessagesByEvent = async (eventId) => ChatMessage.find({ roomId: eventId });
-
 exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
   ChatMessage.aggregate([
     {
@@ -65,7 +63,3 @@ exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
       },
     },
   ]).exec().then(items => items[0]);
-
-exports.createChatMessage = async (data) => ChatMessage.create(data);
-
-exports.saveChatMessage = async (chatMessage) => chatMessage.save();

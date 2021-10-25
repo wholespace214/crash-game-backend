@@ -8,7 +8,9 @@ const { validationResult } = require('express-validator');
 
 // Import Event model
 const { Event, Bet } = require('@wallfair.io/wallfair-commons').models;
-const { publishEvent, notificationEvents } = require('../services/notification-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('../services/amqp-service');
+const { onNewBet } = require('../services/quote-storage-service');
 
 // Import service
 const eventService = require('../services/event-service');
@@ -161,7 +163,8 @@ const createEvent = async (req, res, next) => {
       });
       const newBet = await createdBet.save();
 
-      publishEvent(notificationEvents.EVENT_NEW_BET, {
+      amqp.send('universal_events', 'event.new_bet', JSON.stringify({
+        event: notificationEvents.EVENT_NEW_BET,
         producer: 'user',
         producerId: user.id,
         data: {
@@ -173,8 +176,9 @@ const createEvent = async (req, res, next) => {
             amountWon: user.amountWon
           }
         },
+        date: Date.now(),
         broadcast: true
-      });
+      }))
 
       await eventService.provideLiquidityToBet(
         newBet,
@@ -182,6 +186,7 @@ const createEvent = async (req, res, next) => {
         bet.liquidity || DEFAULT.betLiquidity
       );
       await eventService.editEvent(event._id, { bets: [newBet._id] });
+      onNewBet(newBet);
     }
 
     return res.status(201).json(event);
@@ -303,7 +308,8 @@ const sendEventEvaluate = async (req, res, next) => {
     const rating = ratings[payload.rating];
     const { comment } = payload;
 
-    publishEvent(notificationEvents.EVENT_BET_EVALUATED, {
+    amqp.send('universal_events', 'event.bet_evaluated', JSON.stringify({
+      event: notificationEvents.EVENT_BET_EVALUATED,
       producer: 'system',
       producerId: 'notification-service',
       data: {
@@ -312,8 +318,9 @@ const sendEventEvaluate = async (req, res, next) => {
         comment,
         updatedAt: Date.now()
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }))
 
     res.status(200).send({ status: 'OK' });
   } catch (err) {

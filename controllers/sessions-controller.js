@@ -9,8 +9,9 @@ const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const { publishEvent, notificationEvents } = require('../services/notification-service');
 const { INFLUENCERS, WFAIR_REWARDS } = require("../util/constants");
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('../services/amqp-service');
 
 
 module.exports = {
@@ -94,7 +95,8 @@ module.exports = {
         }
       }
 
-      publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
+      amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
+        event: notificationEvents.EVENT_USER_SIGNED_UP,
         producer: 'user',
         producerId: createdUser._id,
         data: {
@@ -105,8 +107,9 @@ module.exports = {
           initialReward,
           updatedAt: Date.now()
         },
+        date: Date.now(),
         broadcast: true
-      });
+      }));
 
       await mailService.sendConfirmMail(createdUser);
 
@@ -139,7 +142,8 @@ module.exports = {
         return next(new ErrorHandler(401, 'Invalid login'));
       }
 
-      publishEvent(notificationEvents.EVENT_USER_SIGNED_IN, {
+      amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
+        event: notificationEvents.EVENT_USER_SIGNED_IN,
         producer: 'user',
         producerId: user._id,
         data: {
@@ -147,9 +151,8 @@ module.exports = {
           userId: user._id,
           username: user.username,
           updatedAt: Date.now()
-        },
-        broadcast: true
-      });
+        }
+      }))
 
       res.status(200).json({
         userId: user.id,
@@ -198,14 +201,15 @@ module.exports = {
       user.passwordResetToken = undefined;
       await user.save();
 
-      publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
+      amqp.send('universal_events', 'event.user_changed_password', JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_PASSWORD,
         producer: 'user',
         producerId: user._id,
         data: {
           email: user.email,
-          passwordResetToken: req.body.passwordResetToken
+          passwordResetToken: user.passwordResetToken
         }
-      });
+      }))
 
       return res.status(200).send();
     } catch (err) {
@@ -228,14 +232,15 @@ module.exports = {
       await user.save();
       await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
-      publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
+      amqp.send('universal_events', 'event.user_forgot_password', JSON.stringify({
+        event: notificationEvents.EVENT_USER_FORGOT_PASSWORD,
         producer: 'user',
         producerId: user._id,
         data: {
           email: user.email,
           passwordResetToken: user.passwordResetToken,
         }
-      });
+      }))
 
       return res.status(200).send();
     } catch (err) {
