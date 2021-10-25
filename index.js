@@ -24,6 +24,13 @@ let mongoURL = process.env.DB_CONNECTION;
 const corsOptions = {
   origin: '*',
   credentials: true,
+  allowedMethods: [
+    'GET',
+    'PUT',
+    'POST',
+    'PATCH',
+    'DELETE',
+  ],
   allowedHeaders: [
     'Origin',
     'X-Requested-With',
@@ -190,7 +197,7 @@ async function main() {
       const token = jwt.verify(socket.handshake.query.token, process.env.JWT_KEY);
       userId = token.userId;
     } catch (e) {
-      console.debug('[SOCKET] Invalid user token');
+      console.debug('[SOCKET] Non-logged in user connected');
     }
 
     socket.userId = userId;

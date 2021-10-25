@@ -1,5 +1,7 @@
 # Wallfair. Playmoney V1 Server-Side
 
+This is the backend code for the playmoney version of the wallfair platform.
+
 # Usage
 
 Step 1: Download repo and install modules

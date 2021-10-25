@@ -7,6 +7,7 @@ const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
 const { updateUserData } = require('./notification-events-service');
+const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
@@ -64,7 +65,7 @@ exports.getRankByUserId = async (userId) => {
   // it is an improvement over the previous solution, but still bad
   // we need to have a service updating the rank frequently (ex: every 15 secs)
   const users = await User.find({ username: { $exists: true } })
-    .sort({ amountWon: -1, username: 1 })
+    .sort({ amountWon: -1, date: -1 })
     .select({ _id: 1, amountWon: 1 })
     .exec();
 
@@ -187,7 +188,15 @@ exports.updateUser = async (userId, updatedUser) => {
 
   if (updatedUser.image) {
     if (!user.profilePicture) {
-      await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
+      await this.createUserAwardEvent({
+        userId,
+        awardData: {
+          type: 'AVATAR_UPLOADED',
+          award: WFAIR_REWARDS.uploadPicture
+        }
+      }).catch((err)=> {
+        console.error('createUserAwardEvent', err)
+      })
     }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
@@ -273,3 +282,64 @@ exports.increaseAmountWon = async (userId, amount) => {
     await userSession.endSession();
   }
 };
+
+exports.updateStatus = async (userId, status) => {
+  let user = await User.findById(userId);
+
+  if (user) {
+    user.status = status;
+    await user.save();
+  } else {
+    throw new Error('User does not exist');
+  }
+};
+
+/***
+ * create USER_AWARD event in universalevents, add proper token amount based on `awardData.award` amount
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.createUserAwardEvent = async ({userId, awardData, broadcast = false}) => {
+  //add token amount for award during event creation
+  if(awardData?.award) {
+    await this.mintUser(userId, awardData.award).catch((err)=> {
+      console.error('award mintUser', err)
+    })
+  }
+
+  publishEvent(notificationEvents.EVENT_USER_AWARD, {
+    producer: 'user',
+    producerId: userId,
+    data: awardData,
+    broadcast
+  });
+}
+
+/***
+ * check total bets for user and save USER_AWARD event, after reaching each levels
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkTotalBetsAward = async (userId) => {
+  const awardData = {
+    type: 'TOTAL_BETS_ABOVE_VALUE'
+  };
+
+  const totalUserBets = await getUserBetsAmount(userId).catch((err)=> {
+    console.error('getUserBetsAmount', err)
+  });
+
+  const total = awardData.total = totalUserBets?.totalBets || 0;
+  if([5, 20, 50, 100, 150].includes(total)) {
+    awardData.award = WFAIR_REWARDS.totalBets[total];
+    awardData.total = total;
+
+    //publish in universalevents collection and add tokens
+    await this.createUserAwardEvent({
+      userId,
+      awardData
+    }).catch((err)=> {
+      console.error('createUserAwardEvent', err)
+    })
+  }
+}

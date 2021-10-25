@@ -7,6 +7,8 @@ const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const websocketService = require('./websocket-service');
 const { publishEvent, notificationEvents } = require('./notification-service');
 const mongoose = require('mongoose');
+const { DEFAULT } = require('../util/constants');
+const outcomesUtil = require('../util/outcomes');
 
 const WFAIR = new Erc20('WFAIR');
 
@@ -219,16 +221,21 @@ exports.betCreated = async (bet, user) => {
   }
 };
 
-exports.provideLiquidityToBet = async (createBet) => {
+exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liquidityAmount = DEFAULT.betLiquidity) => {
   const LOG_TAG = '[CREATE-BET]';
-  const liquidityAmount = 50_0000n; // bets start with 50 liquidity
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
   const betContract = new BetContract(createBet.id, createBet.outcomes.length);
+  const liquidity = BigInt(liquidityAmount) * WFAIR.ONE;
+  const outcomeBalanceDistribution = outcomesUtil.getOutcomeBalancesByProbability(liquidity, probabilityDistribution);
 
   console.debug(LOG_TAG, 'Minting new Tokens');
-  await WFAIR.mint(liquidityProviderWallet, liquidityAmount * WFAIR.ONE);
+  await WFAIR.mint(liquidityProviderWallet, liquidity);
   console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-  await betContract.addLiquidity(liquidityProviderWallet, liquidityAmount * WFAIR.ONE);
+  await betContract.addLiquidity(
+    liquidityProviderWallet,
+    liquidity,
+    outcomeBalanceDistribution,
+  );
 };
 
 exports.saveEvent = async (event, session) => {
@@ -264,7 +271,7 @@ exports.deleteEvent = async (eventId) => {
 
 exports.bookmarkEvent = async (eventId, userId) => {
   const event = await Event.findById(eventId)
-  if(event && event.bookmarks){
+  if (event && event.bookmarks) {
     event.bookmarks.push(mongoose.Types.ObjectId(userId));
     return event.save()
   } else {
@@ -274,7 +281,7 @@ exports.bookmarkEvent = async (eventId, userId) => {
 
 exports.bookmarkEventCancel = async (eventId, userId) => {
   const event = await Event.findById(eventId)
-  if(event && event.bookmarks){
+  if (event && event.bookmarks) {
     event.bookmarks.pull(mongoose.Types.ObjectId(userId));
     return event.save()
   } else {
