@@ -1,4 +1,4 @@
-const { User } = require('@wallfair.io/wallfair-commons').models;
+const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
@@ -184,6 +184,23 @@ exports.updateUser = async (userId, updatedUser) => {
     }).catch((err)=> {
       console.error('updateUserData failed', err)
     })
+
+    //handle SET_USERNAME award
+    const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err)=> {
+      console.error('checkAwardExist err', err);
+    })
+
+    if(checkUsernameAward.length === 0) {
+      await this.createUserAwardEvent({
+        userId,
+        awardData: {
+          type: 'SET_USERNAME',
+          award: WFAIR_REWARDS.setUsername
+        }
+      }).catch((err)=> {
+        console.error('createUserAwardEvent', err)
+      })
+    }
   }
 
   if (updatedUser.image) {
@@ -192,7 +209,7 @@ exports.updateUser = async (userId, updatedUser) => {
         userId,
         awardData: {
           type: 'AVATAR_UPLOADED',
-          award: WFAIR_REWARDS.uploadPicture
+          award: WFAIR_REWARDS.setAvatar
         }
       }).catch((err)=> {
         console.error('createUserAwardEvent', err)
@@ -342,4 +359,16 @@ exports.checkTotalBetsAward = async (userId) => {
       console.error('createUserAwardEvent', err)
     })
   }
+}
+
+/***
+ * check award exist for username and defined type
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkAwardExist = async (userId, type) => {
+  return UniversalEvent.find({
+    userId,
+    'data.type': type
+  });
 }
