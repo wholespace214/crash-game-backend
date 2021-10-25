@@ -81,16 +81,20 @@ module.exports = {
         } else {
           console.debug('[REWARD BY USER] ', ref);
 
-          await userService.createUserAwardEvent({
-            userId: ref,
-            awardData: {
-              type: 'CREATED_ACCOUNT_BY_THIS_REF',
-              award: WFAIR_REWARDS.referral,
-              ref
-            }
-          }).catch((err)=> {
-            console.error('createUserAwardEvent', err)
-          })
+          const refList = await userService.getRefByUserId(ref);
+          //max ref awards elements per user
+          if(refList.length <= 10) {
+            await userService.createUserAwardEvent({
+              userId: ref,
+              awardData: {
+                type: 'CREATED_ACCOUNT_BY_THIS_REF',
+                award: WFAIR_REWARDS.referral,
+                ref
+              }
+            }).catch((err)=> {
+              console.error('createUserAwardEvent', err)
+            })
+          }
         }
       }
 
