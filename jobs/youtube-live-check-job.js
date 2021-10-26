@@ -81,7 +81,7 @@ const checkYoutubeVideos = async () => {
 const initYoutubeCheckJob = () => {
   // only start the service if the env var is set
   if (process.env.GOOGLE_API_KEY) {
-    setInterval(checkYoutubeVideos, 10_000);
+    // setInterval(checkYoutubeVideos, 1000 * 60 * 5); // check every 5 min
   }
 };
 
