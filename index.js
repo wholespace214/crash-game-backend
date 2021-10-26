@@ -63,6 +63,9 @@ async function connectMongoDB() {
 async function main() {
   const mongoDBConnection = await connectMongoDB();
 
+  const amqp = require('./services/amqp-service');
+  amqp.init();
+
   // Import Admin service
   const adminService = require('./services/admin-service');
   adminService.setMongoose(mongoDBConnection);
@@ -88,9 +91,6 @@ async function main() {
   const server = express();
   const httpServer = http.createServer(server);
   server.use(cors(corsOptions));
-
-  const amqp = require('./services/amqp-service');
-  amqp.init();
 
   const awsS3Service = require('./services/aws-s3-service');
   awsS3Service.init();
