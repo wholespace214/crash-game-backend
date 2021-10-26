@@ -1,2 +1,2 @@
 BACKEND_URL=https://dev-api.wallfair.io
-POSTGRES_DB=devdb
+POSTGRES_SSL=false
