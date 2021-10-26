@@ -20,6 +20,8 @@ const { ErrorHandler } = require('../util/error-handler');
 const { toScaledBigInt, fromScaledBigInt, calculateGain} = require('../util/number-helper');
 const { isAdmin } = require('../helper');
 const { calculateAllBetsStatus } = require('../services/event-service');
+const { DEFAULT } = require('../util/constants');
+const { getProbabilityMap } = require('../util/outcomes');
 const logger = require('../util/logger');
 
 const listBets = async (req, res, next) => {
@@ -80,6 +82,7 @@ const createBet = async (req, res, next) => {
       date,
       published,
       endDate,
+      liquidity = DEFAULT.betLiquidity,
     } = req.body;
 
     let event = await eventService.getEvent(eventId);
@@ -129,9 +132,13 @@ const createBet = async (req, res, next) => {
 
         console.debug(LOG_TAG, 'Save Bet to Event');
         event.bets.push(dbBet._id);
-        event = await eventService.saveEvent(event, session);
+        event = await eventService.saveEvent(event, session, true);
 
-        await eventService.provideLiquidityToBet(createdBet);
+        await eventService.provideLiquidityToBet(
+          createdBet,
+          getProbabilityMap(outcomes),
+          liquidity
+        );
       });
 
       await eventService.betCreated(createdBet, req.user);
@@ -204,6 +211,10 @@ const placeBet = async (req, res, next) => {
       outcome,
       minOutcomeTokens
     );
+
+    await userService.checkTotalBetsAward(req.user.id).catch((err)=> {
+      console.error('checkTotalBetsAward', err);
+    });
 
     return res.status(200).json(response);
   } catch (err) {
@@ -534,6 +545,19 @@ const betHistory = async (req, res, next) => {
   }
 };
 
+const getOpenBetsList = async (request, response, next) => {
+  const { betId } = request.params;
+  try {
+    const trades = await tradeService.getTradesByBetAndStatuses(betId,['active']);
+    const openBets = trades.slice(0, 20);
+
+    response.send({ openBets });
+  } catch (error) {
+    console.error(error);
+    next(new ErrorHandler(500, error.message));
+  }
+}
+
 exports.listBets = listBets;
 exports.filterBets = filterBets;
 exports.createBet = createBet;
@@ -548,3 +572,4 @@ exports.getTrade = getTrade;
 exports.resolveBet = resolveBet;
 exports.cancelBet = cancelBet;
 exports.deleteBet = deleteBet;
+exports.getOpenBetsList = getOpenBetsList;

@@ -36,6 +36,10 @@ router.get('/bets',
   checkAdmin,
   betController.listBets);
 
+router.get('/bet/:betId/open-bets',
+  [check('betId').notEmpty()],
+  betController.getOpenBetsList);
+
 router.get(
   '/cover/:type',
   [check('type').notEmpty()],

@@ -7,9 +7,10 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
+const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, INFLUENCERS } = require('../util/constants');
+const { WFAIR_REWARDS } = require('../util/constants');
 
 const _ = require('lodash');
 const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
@@ -148,8 +149,8 @@ const getLeaderboard = async (req, res) => {
   const skip = +req.params.skip;
 
   const users = await User.find({ username: { $exists: true } })
+    .sort({ amountWon: -1, date: -1 })
     .select({ username: 1, amountWon: 1 })
-    .sort({ amountWon: -1 })
     .limit(limit)
     .skip(skip)
     .exec();
@@ -193,6 +194,7 @@ const getUserInfo = async (req, res, next) => {
       amountWon: user.amountWon,
       preferences: user.preferences,
       aboutMe: user.aboutMe,
+      status: user.status,
     });
   } catch (err) {
     console.error(err);
@@ -219,6 +221,7 @@ const getBasicUserInfo = async (req, res, next) => {
       aboutMe: user.aboutMe,
       rank,
       amountWon: user.amountWon,
+      status: user.status,
     });
   } catch (err) {
     console.error(err);
@@ -431,24 +434,24 @@ const confirmEmail = async (req, res, next) => {
 
   const user = await userService.getUserById(userId);
 
-  if (user.emailConfirmed) {
-    return next(new ErrorHandler(403, 'The email has been already confirmed'));
+  if (user.emailConfirmed && user.confirmed) {
+    return  res.status(200).send({ status: 'The email has been already confirmed' });
   }
 
   if (user.emailCode === code) {
     user.emailConfirmed = true;
+    user.confirmed = true;
     await user.save();
-    await userService.rewardUserAction(userId, WFAIR_REWARDS.confirmEmail);
 
-    if (user.ref) {
-      if(INFLUENCERS.indexOf(user.ref) > -1) {
-        console.debug('[REWARD BY INFLUENCER] ', user.ref);
-        await userService.rewardUserAction(userId, WFAIR_REWARDS.registeredByInfluencer);
-      } else {
-        console.debug('[REWARD BY USER] ', user.ref);
-        await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    await userService.createUserAwardEvent({
+      userId,
+      awardData: {
+        type: 'EMAIL_CONFIRMED',
+        award: WFAIR_REWARDS.confirmEmail
       }
-    }
+    }).catch((err)=> {
+      console.error('createUserAwardEvent', err)
+    })
 
     res.status(200).send({ status: 'OK' });
   } else {
@@ -456,10 +459,24 @@ const confirmEmail = async (req, res, next) => {
   }
 };
 
-const resendConfirmEmail = async (_, res, next) => {
+const resendConfirmEmail = async (req, res, next) => {
   try {
-    // const user = await userService.getUserById(req.user.id);
-    // TODO: Provide event to resend confirmation mail
+    // Validating User Inputs
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(res.status(400).send(errors));
+    }
+
+    // Defining User Inputs
+    const { userId } = req.query;
+
+    const user = await userService.getUserById(userId);
+
+    if (user.emailConfirmed && user.confirmed) {
+      return  res.status(200).send({ status: 'The email has been already confirmed' });
+    }
+
+    await mailService.sendConfirmMail(user);
     res.status(200).send({ status: 'OK' });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -514,7 +531,7 @@ const getUserStats = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await userService.getUserById(userId);
-    const stats = await statsService.getUserStats(userId).catch((err)=> {
+    const stats = await statsService.getUserStats(userId).catch((err) => {
       console.error('[getUserStats] err', err);
     })
 
@@ -528,6 +545,47 @@ const getUserStats = async (req, res, next) => {
     next(new ErrorHandler(422, 'Get user stats failed'));
   }
 };
+
+const getUserCount = async (req, res) => {
+  const total = await User.countDocuments().exec();
+  res.json({
+    total
+  });
+};
+
+const updateStatus = async (req, res, next) => {
+  if (!req.user.admin) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  try {
+    await userService.updateStatus(req.params.userId, req.body.status);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(500, 'User could not be locked'));
+  }
+}
+
+const requestTokens = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    const user = await userService.getUserById(userId);
+    if(!user) return next(new ErrorHandler(403, 'Action not allowed'));
+    const balance = await WFAIR.balanceOf(userId);
+    if(balance >= toScaledBigInt(5000) || balance < 0){
+      return next(new ErrorHandler(403, 'Action not allowed'))
+    }
+
+    user.amountWon = 0;
+      await WFAIR.mint(userId, toScaledBigInt(5000) - balance)
+      await user.save()
+    res.status(200).send();
+  } catch (err){
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -545,3 +603,6 @@ exports.updateUserPreferences = updateUserPreferences;
 exports.getLeaderboard = getLeaderboard;
 exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
+exports.getUserCount = getUserCount;
+exports.updateStatus = updateStatus;
+exports.requestTokens = requestTokens;

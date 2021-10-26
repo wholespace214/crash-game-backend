@@ -5,8 +5,10 @@ const axios = require('axios');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS } = require('../util/constants');
-const { publishEvent, notificationEvents } = require('./notification-service');
 const { updateUserData } = require('./notification-events-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('./amqp-service');
+const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
@@ -64,7 +66,7 @@ exports.getRankByUserId = async (userId) => {
   // it is an improvement over the previous solution, but still bad
   // we need to have a service updating the rank frequently (ex: every 15 secs)
   const users = await User.find({ username: { $exists: true } })
-    .sort({ amountWon: -1, username: 1 })
+    .sort({ amountWon: -1, date: -1 })
     .select({ _id: 1, amountWon: 1 })
     .exec();
 
@@ -135,7 +137,8 @@ exports.updateUser = async (userId, updatedUser) => {
     const oldName = _.clone(user.name);
     user.name = updatedUser.name;
 
-    publishEvent(notificationEvents.EVENT_USER_CHANGED_NAME, {
+    amqp.send('universal_events', 'event.user_changed_name', JSON.stringify({
+      event: notificationEvents.EVENT_USER_CHANGED_NAME,
       producer: 'user',
       producerId: userId,
       data: {
@@ -144,15 +147,16 @@ exports.updateUser = async (userId, updatedUser) => {
         oldName: oldName,
         updatedAt: Date.now()
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
 
     await updateUserData({
       userId,
-      'data.user.name': {$exists: true}
+      'data.user.name': { $exists: true }
     }, {
       'data.user.name': updatedUser.name
-    }).catch((err)=> {
+    }).catch((err) => {
       console.error('updateUserData failed', err)
     })
   }
@@ -161,7 +165,8 @@ exports.updateUser = async (userId, updatedUser) => {
     const oldUsername = _.clone(user.username);
     user.username = updatedUser.username;
 
-    publishEvent(notificationEvents.EVENT_USER_CHANGED_USERNAME, {
+    amqp.send('universal_events', 'event.user_changed_username', JSON.stringify({
+      event: notificationEvents.EVENT_USER_CHANGED_USERNAME,
       producer: 'user',
       producerId: userId,
       data: {
@@ -170,30 +175,40 @@ exports.updateUser = async (userId, updatedUser) => {
         oldUsername,
         updatedAt: Date.now()
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
 
     //update username across the events for this user, only when data.user exists at all, we need to have these unified across the events,
     // so for user specific things, we need to use proper user property
     await updateUserData({
       userId,
-      'data.user.username': {$exists: true}
+      'data.user.username': { $exists: true }
     }, {
       'data.user.username': updatedUser.username
-    }).catch((err)=> {
+    }).catch((err) => {
       console.error('updateUserData failed', err)
     })
   }
 
   if (updatedUser.image) {
     if (!user.profilePicture) {
-      await this.rewardUserAction(user.ref, WFAIR_REWARDS.uploadPicture);
+      await this.createUserAwardEvent({
+        userId,
+        awardData: {
+          type: 'AVATAR_UPLOADED',
+          award: WFAIR_REWARDS.uploadPicture
+        }
+      }).catch((err) => {
+        console.error('createUserAwardEvent', err)
+      })
     }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
     user.profilePicture = imageLocation.split('?')[0];
 
-    publishEvent(notificationEvents.EVENT_USER_UPLOADED_PICTURE, {
+    amqp.send('universal_events', 'event.user_uploaded_picture', JSON.stringify({
+      event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
       producer: 'user',
       producerId: userId,
       data: {
@@ -202,22 +217,25 @@ exports.updateUser = async (userId, updatedUser) => {
         image: updatedUser.image,
         updatedAt: Date.now()
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
   }
 
   if (updatedUser.notificationSettings && updatedUser.notificationSettings !== user.notificationSettings) {
     user.notificationSettings = updatedUser.notificationSettings;
 
-    publishEvent(notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES, {
+    amqp.send('universal_events', 'event.user_updated_email_preferences', JSON.stringify({
+      event: notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES,
       producer: 'user',
       producerId: userId,
-      data: { notificationSettings: user.notificationSettings },
-    });
+      data: { notificationSettings: user.notificationSettings }
+    }));
   }
 
   if (updatedUser.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
-    publishEvent(notificationEvents.EVENT_USER_CHANGED_ABOUT_ME, {
+    amqp.send('universal_events', 'event.user_changed_about_me', JSON.stringify({
+      event: notificationEvents.EVENT_USER_CHANGED_ABOUT_ME,
       producer: 'user',
       producerId: userId,
       data: {
@@ -226,8 +244,9 @@ exports.updateUser = async (userId, updatedUser) => {
         notificationSettings: user.notificationSettings,
         updatedAt: Date.now()
       },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
 
     user.aboutMe = updatedUser.aboutMe;
   }
@@ -246,11 +265,12 @@ exports.updateUserPreferences = async (userId, preferences) => {
     user.preferences.currency = preferences.currency;
   }
 
-  publishEvent(notificationEvents.EVENT_USER_SET_CURRENCY, {
+  amqp.send('universal_events', 'event.user_set_currency', JSON.stringify({
+    event: notificationEvents.EVENT_USER_SET_CURRENCY,
     producer: 'user',
     producerId: userId,
     data: { currency: user.preferences.currency },
-  });
+  }));
 
   return await user.save();
 };
@@ -273,3 +293,65 @@ exports.increaseAmountWon = async (userId, amount) => {
     await userSession.endSession();
   }
 };
+
+exports.updateStatus = async (userId, status) => {
+  let user = await User.findById(userId);
+
+  if (user) {
+    user.status = status;
+    await user.save();
+  } else {
+    throw new Error('User does not exist');
+  }
+};
+
+/***
+ * create USER_AWARD event in universalevents, add proper token amount based on `awardData.award` amount
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) => {
+  //add token amount for award during event creation
+  if (awardData?.award) {
+    await this.mintUser(userId, awardData.award).catch((err) => {
+      console.error('award mintUser', err)
+    })
+  }
+
+  amqp.send('universal_events', 'event.user_award', JSON.stringify({
+    event: notificationEvents.EVENT_USER_AWARD,
+    producer: 'user',
+    producerId: userId,
+    data: awardData,
+    broadcast
+  }));
+}
+
+/***
+ * check total bets for user and save USER_AWARD event, after reaching each levels
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkTotalBetsAward = async (userId) => {
+  const awardData = {
+    type: 'TOTAL_BETS_ABOVE_VALUE'
+  };
+
+  const totalUserBets = await getUserBetsAmount(userId).catch((err) => {
+    console.error('getUserBetsAmount', err)
+  });
+
+  const total = awardData.total = totalUserBets?.totalBets || 0;
+  if ([5, 20, 50, 100, 150].includes(total)) {
+    awardData.award = WFAIR_REWARDS.totalBets[total];
+    awardData.total = total;
+
+    //publish in universalevents collection and add tokens
+    await this.createUserAwardEvent({
+      userId,
+      awardData
+    }).catch((err) => {
+      console.error('createUserAwardEvent', err)
+    })
+  }
+}

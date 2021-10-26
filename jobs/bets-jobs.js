@@ -1,7 +1,7 @@
 // Import User and Bet models
 const { Bet } = require('@wallfair.io/wallfair-commons').models;
-const websocketService = require('../services/websocket-service');
-const { publishEvent, notificationEvents } = require('../services/notification-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('../services/amqp-service');
 
 const betsActiveNotification = async () => {
   const now = new Date();
@@ -15,17 +15,17 @@ const betsActiveNotification = async () => {
     .exec();
 
   for (const bet of bets) {
-    websocketService.emitBetStarted(bet);
-
     bet.activeNotificationSend = true;
     await bet.save();
 
-    publishEvent(notificationEvents.EVENT_BET_STARTED, {
+    amqp.send('universal_events', 'event.bet_started', JSON.stringify({
+      event: notificationEvents.EVENT_BET_STARTED,
       producer: 'system',
       producerId: 'notification-service',
       data: { bet },
+      date: Date.now(),
       broadcast: true
-    });
+    }));
   }
 };
 
