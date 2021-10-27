@@ -41,6 +41,8 @@ spec:
               name: backend-config
           - configMapRef:
               name: app-secrets
+          - configMapRef:
+              name: mongo-conn
           ports:
             - containerPort: 8000
 
