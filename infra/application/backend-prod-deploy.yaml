@@ -43,6 +43,10 @@ spec:
               name: app-secrets
           - configMapRef:
               name: mongo-conn
+          - configMapRef:
+              name: postgres-conn
+          - configMapRef:
+              name: redis-conn
           ports:
             - containerPort: 8000
 
