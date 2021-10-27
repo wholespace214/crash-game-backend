@@ -27,31 +27,5 @@ exports.setMessageRead = async (req, res) => {
 };
 
 exports.sendMessage = async (req, res) => {
-  // console.log('sending a test message');
-
-  // // SEND OASIS EVENT RESOLVED
-  // setTimeout(async () => {
-  //   const event = await eventService.getEvent('61792b2bc986908179b4e4b5');
-  //   event.bookmarks.map(async (u) => {
-  //     await websocketService.emitBetResolveNotification(u, event, event.bets[0], 0, 100);
-  //   });
-  // }, 2000);
-
-  // // SEND ELON EVENT RESOLVED
-  // setTimeout(async () => {
-  //   const event = await eventService.getEvent('617950d40a97aa8c14679fd0');
-  //   event.bookmarks.map(async (u) => {
-  //     await websocketService.emitBetResolveNotification(u, event, event.bets[0], 0, 0);
-  //   });
-  // }, 4500);
-
-  // // SEND UEFA CANCELLED
-  // setTimeout(async () => {
-  //   const event = await eventService.getEvent('61797d87fce07aa1dfc00b5c');
-  //   event.bookmarks.map(async (u) => {
-  //     await websocketService.emitEventCancelNotification(u, event, event.bets[0]);
-  //   });
-  // }, 18000);
-
   return res.status(200).send({});
 };
