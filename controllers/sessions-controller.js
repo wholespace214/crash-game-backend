@@ -28,6 +28,7 @@ module.exports = {
         const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`);
 
         if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5 || recaptchaRes.data.action !== 'join') {
+          console.log("ERROR", "Recaptcha verification failed", recaptchaRes ? recaptchaRes.data : "NULL")
           return next(new ErrorHandler(422, 'Recaptcha verification failed, please try again later.'));
         }
       }
@@ -65,11 +66,32 @@ module.exports = {
       if (ref) {
         if (INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
-          await userService.rewardUserAction(createdUser.id.toString(), WFAIR_REWARDS.registeredByInfluencer);
+
+          await userService.createUserAwardEvent({
+            userId: createdUser.id.toString(),
+            awardData: {
+              type: 'CREATED_ACCOUNT_BY_INFLUENCER',
+              award: WFAIR_REWARDS.registeredByInfluencer,
+              ref
+            }
+          }).catch((err) => {
+            console.error('createUserAwardEvent', err)
+          })
+
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
         } else {
           console.debug('[REWARD BY USER] ', ref);
-          await userService.rewardUserAction(ref, WFAIR_REWARDS.referral);
+
+          await userService.createUserAwardEvent({
+            userId: ref,
+            awardData: {
+              type: 'CREATED_ACCOUNT_BY_THIS_REF',
+              award: WFAIR_REWARDS.referral,
+              ref
+            }
+          }).catch((err) => {
+            console.error('createUserAwardEvent', err)
+          })
         }
       }
 
@@ -109,10 +131,16 @@ module.exports = {
     try {
       const { userIdentifier, password } = req.body;
       const user = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
+
+      if (!user) {
+        console.log("ERROR ", "User not found upon login!", req.body);
+        return next(new ErrorHandler(401, 'Invalid login'));
+      }
+
+      const valid = user && (await bcrypt.compare(password, user.password));
       if (user.status === 'locked') {
         return next(new ErrorHandler(403, 'Your account is locked'));
       }
-      const valid = user && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
         return next(new ErrorHandler(401, 'Invalid login'));
@@ -198,7 +226,10 @@ module.exports = {
   async forgotPassword(req, res, next) {
     try {
       const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
-      if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
+      if (!user) {
+        console.log("ERROR", "Forgot password: User not found ", req.body)
+        return next(new ErrorHandler(404, "Couldn't find user"));
+      }
 
       const passwordResetToken = generate(10);
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`

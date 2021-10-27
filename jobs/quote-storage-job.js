@@ -37,7 +37,10 @@ async function onBetPlaced(message) {
   );
 
   const values = await Promise.all(valuePromises);
-  await pool.query(format(INSERT_PRICE_ACTION, values));
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+    //ignore this error for now
+    // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
+  });
 }
 
 async function onNewBet(message) {
@@ -51,7 +54,10 @@ async function onNewBet(message) {
     outcome.index,
     initialQuote,
   ]);
-  await pool.query(format(INSERT_PRICE_ACTION, values));
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+    //ignore this error for now
+    // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
+  });
 }
 
 module.exports = {

@@ -14,7 +14,7 @@ const getCasinoGamePlayCount = async (userId, gameId) => {
   };
 
   if (gameId) {
-    _.set(filter, 'data.gameTypeId', gameId);
+    filter['data.gameTypeId'] = gameId;
   }
 
   const query = await UniversalEvent.countDocuments(filter).catch((err) => {
