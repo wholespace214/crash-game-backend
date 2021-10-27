@@ -29,6 +29,7 @@ module.exports = {
         const recaptchaRes = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`);
 
         if (!recaptchaRes.data.success || recaptchaRes.data.score < 0.5 || recaptchaRes.data.action !== 'join') {
+          console.log("ERROR", "Recaptcha verification failed", recaptchaRes ? recaptchaRes.data : "NULL")
           return next(new ErrorHandler(422, 'Recaptcha verification failed, please try again later.'));
         }
       }
@@ -74,7 +75,7 @@ module.exports = {
               award: WFAIR_REWARDS.registeredByInfluencer,
               ref
             }
-          }).catch((err)=> {
+          }).catch((err) => {
             console.error('createUserAwardEvent', err)
           })
 
@@ -89,7 +90,7 @@ module.exports = {
               award: WFAIR_REWARDS.referral,
               ref
             }
-          }).catch((err)=> {
+          }).catch((err) => {
             console.error('createUserAwardEvent', err)
           })
         }
@@ -133,10 +134,16 @@ module.exports = {
     try {
       const { userIdentifier, password } = req.body;
       const user = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
+
+      if (!user) {
+        console.log("ERROR ", "User not found upon login!", req.body);
+        return next(new ErrorHandler(401, 'Invalid login'));
+      }
+
+      const valid = user && (await bcrypt.compare(password, user.password));
       if (user.status === 'locked') {
         return next(new ErrorHandler(403, 'Your account is locked'));
       }
-      const valid = user && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
         return next(new ErrorHandler(401, 'Invalid login'));
@@ -223,7 +230,10 @@ module.exports = {
   async forgotPassword(req, res, next) {
     try {
       const user = await userApi.getUserByIdEmailPhoneOrUsername(req.body.email);
-      if (!user) return next(new ErrorHandler(404, "Couldn't find user"));
+      if (!user) {
+        console.log("ERROR", "Forgot password: User not found ", req.body)
+        return next(new ErrorHandler(404, "Couldn't find user"));
+      }
 
       const passwordResetToken = generate(10);
       const resetPwUrl = `${process.env.CLIENT_URL}/reset-password?email=${user.email}&passwordResetToken=${passwordResetToken}`
