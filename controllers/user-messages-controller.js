@@ -1,7 +1,4 @@
-const websocketService = require('../services/websocket-service');
 const chatMessageService = require('../services/chat-message-service');
-const eventService = require('../services/event-service');
-const _ = require('lodash');
 
 exports.getMessagesByUser = async (req, res) => {
   const skip = req.query.skip ? +req.query.skip : 0;
