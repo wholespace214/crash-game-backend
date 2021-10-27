@@ -1,10 +1,10 @@
 // Import Event model
-const { URL } = require('url');
-const _ = require('lodash');
-const { Event } = require('@wallfair.io/wallfair-commons').models;
-const logger = require('../util/logger');
-
-const { getVideosById } = require('../services/youtube-service');
+// const { URL } = require('url');
+// const _ = require('lodash');
+// const { Event } = require('@wallfair.io/wallfair-commons').models;
+// const logger = require('../util/logger');
+//
+// const { getVideosById } = require('../services/youtube-service');
 
 // const checkYoutubeVideos = async () => {
 //   const session = await Event.startSession();
