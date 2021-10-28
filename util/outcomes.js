@@ -61,10 +61,8 @@ exports.areCreationOutcomesValid = (outcomes) => (
   (outcomes.length >= 2 || outcomes.length <= 4) && // must between 2 and 4 
   (outcomes.every(({ name, probability, index }) => !!name && !!probability && (!!index || index === 0))) && // each must have probability, name, and index
   (
-    outcomes.reduce((total, { probability }) => +(total + probability).toFixed(2), 0) === 1 || // must add up to one
-    outcomes.length === 3 && outcomes.every(({ probability }) => +probability === '0.33') // ... or be a three way split via 0.33
-    //outcomes.reduce((total, { probability }) => +(total + (+probability)).toFixed(2), 0) === 1 || // must add up to one
-    //outcomes.length === 3 && outcomes.every(({ probability }) => +probability === 0.33) // ... or be a three way split via 0.33
+    outcomes.reduce((total, { probability }) => +(total + (+probability)).toFixed(2), 0) === 1 || // must add up to one
+    outcomes.length === 3 && outcomes.every(({ probability }) => +probability === 0.33) // ... or be a three way split via 0.33
   ) &&
   (new Set(outcomes.map(({ name }) => name)).size === outcomes.length) && // must have unique names
   (new Set(outcomes.map(({ index }) => index)).size === outcomes.length) // must have unique indices
