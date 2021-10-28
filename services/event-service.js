@@ -115,12 +115,14 @@ exports.filterEvents = async (
   query.deactivatedAt = { $exists: deactivated }
   query.date = upcoming ? { $gt: new Date() } : { $lt: new Date() };
 
+  const direction = sortby === 'date' ? -1 : 1;
+
   const op = Event.find(query)
     .populate('bets')
     .limit(count)
     .skip(count * (page - 1))
     .collation({ locale: 'en' })
-    .sort(sortby)
+    .sort({ [sortby]: direction })
     .map(calculateAllBetsStatus)
     .map(filterPublishedBets);
 
