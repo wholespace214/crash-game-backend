@@ -26,7 +26,7 @@ const onBetPlaced = async (bet) => {
   const timestamp = new Date().toISOString();
   const valuePromises = outcomes.map(
     outcome => betContract.calcBuy(WFAIR.ONE, outcome.index).then(p => [
-      betId,
+      betId.toString(),
       timestamp,
       outcome.index,
       Math.min(1 / (parseInt(p) / one), 1),
@@ -34,7 +34,7 @@ const onBetPlaced = async (bet) => {
   );
 
   const values = await Promise.all(valuePromises);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });
@@ -46,12 +46,12 @@ const onNewBet = async (bet) => {
   const timestamp = new Date();
   timestamp.setMinutes(timestamp.getMinutes() - 5);
   const values = outcomes.map(outcome => [
-    betId,
+    betId.toString(),
     timestamp.toISOString(),
     outcome.index,
     initialQuote,
   ]);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });

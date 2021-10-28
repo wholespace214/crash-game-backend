@@ -186,7 +186,7 @@ const createEvent = async (req, res, next) => {
         bet.liquidity || DEFAULT.betLiquidity
       );
       await eventService.editEvent(event._id, { bets: [newBet._id] });
-      onNewBet(newBet);
+      await onNewBet(newBet);
     }
 
     return res.status(201).json(event);

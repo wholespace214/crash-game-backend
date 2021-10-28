@@ -196,7 +196,7 @@ exports.betCreated = async (bet, user) => {
       broadcast: true
     }));
 
-    onNewBet(bet);
+    await onNewBet(bet);
   }
 };
 
