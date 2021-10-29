@@ -24,13 +24,7 @@ let mongoURL = process.env.DB_CONNECTION;
 const corsOptions = {
   origin: '*',
   credentials: true,
-  allowedMethods: [
-    'GET',
-    'PUT',
-    'POST',
-    'PATCH',
-    'DELETE',
-  ],
+  allowedMethods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: [
     'Origin',
     'X-Requested-With',
@@ -41,7 +35,7 @@ const corsOptions = {
   ],
   exposedHeaders: ['Content-Length'],
   preflightContinue: false,
-}
+};
 
 // Connection to Database
 async function connectMongoDB() {
@@ -83,10 +77,6 @@ async function main() {
 
   // Import cors
   const cors = require('cors');
-
-  // Import middleware for jwt verification
-  const passport = require('passport');
-  require('./util/auth');
 
   // Initialise server using express
   const server = express();
@@ -135,9 +125,13 @@ async function main() {
 
   subClient.subscribe('message');
 
-  // Giving server ability to parse json
+  // Jwt verification
+  const passport = require('passport');
+  const auth = require('./util/auth');
+  auth.setPassportStrategies();
   server.use(passport.initialize());
   server.use(passport.session());
+  server.use(auth.evaluateIsAdmin);
   adminService.buildRouter();
 
   server.use(adminService.getRootPath(), adminService.getRouter());
@@ -163,10 +157,10 @@ async function main() {
   const chatRoutes = require('./routes/users/chat-routes');
   const notificationEventsRoutes = require('./routes/users/notification-events-routes');
   const authRoutes = require('./routes/auth/auth-routes');
+  const userMessagesRoutes = require('./routes/users/user-messages-routes');
 
   const auth0ShowcaseRoutes = require('./routes/auth0-showcase-routes');
   server.use(auth0ShowcaseRoutes);
-
 
   // Using Routes
   server.use('/api/event', eventRoutes);
@@ -183,6 +177,11 @@ async function main() {
   server.use('/api/chat', chatRoutes);
   server.use('/api/notification-events', notificationEventsRoutes);
   server.use('/api/auth', authRoutes);
+  server.use(
+    '/api/user-messages',
+    passport.authenticate('jwt', { session: false }),
+    userMessagesRoutes
+  );
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars

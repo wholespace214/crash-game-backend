@@ -5,7 +5,7 @@ const chatsController = require('../../controllers/chats-controller');
 router.get(
   '/chat-messages/:roomId',
   [check('roomId').notEmpty()],
-  chatsController.getChatMessagesByRoom,
+  chatsController.getChatMessagesByRoom
 );
 
 module.exports = router;

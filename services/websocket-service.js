@@ -20,7 +20,9 @@ exports.handleChatMessage = async function (socket, data, userId) {
 
     console.debug(LOG_TAG, `user ${userId} sends message "${message}" to room ${roomId}`);
 
-    await persist(data);
+    if (data) {
+      await ChatMessageService.createChatMessage(data);
+    }
 
     emitToAllByEventId(roomId, 'chatMessage', responseData);
   } catch (error) {
@@ -71,7 +73,7 @@ exports.emitBetStarted = async (bet) => {
     eventId: event.id,
     bet,
     type: 'BET_STARTED',
-  }
+  };
 
   emitToAllByEventId(event.id, 'BET_STARTED', payload);
 };
@@ -131,59 +133,62 @@ exports.emitBetCreatedByEventId = async (eventId, userId, betId, title) => {
   await handleBetMessage(eventId, 'betCreated', betCreationData);
 };
 
+const handleBetMessage = async (eventId, emitEventName, data) => {
+  emitToAllByEventId(eventId, emitEventName, data);
+};
+
 exports.emitEventStartNotification = (userId, eventId, eventName) => {
   console.log(userId, eventId, eventName);
   // const message = `The event ${eventName} begins in 60s. Place your token.`;
   // emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_START, eventId, message });
 };
 
-exports.emitBetResolveNotification = (
-  userId,
-  betId,
-  betQuestion,
-  betOutcome,
-  amountTraded,
-  eventPhotoUrl,
-  tokensWon
-) => {
-  let message = `The bet ${betQuestion} was resolved. The outcome is ${betOutcome}. You traded ${amountTraded} WFAIR.`;
-  if (tokensWon > 0) {
-    message += ` You won ${tokensWon} WFAIR.`;
-  }
-
-  emitToAllByUserId(userId, 'notification', {
-    type: notificationTypes.EVENT_RESOLVE,
-    betId,
-    message,
-    betQuestion,
-    betOutcome,
+exports.emitBetResolveNotification = async (userId, event, bet, amountTraded, tokensWon) => {
+  const outcome =
+    tokensWon > 0 ? `Don't forget to cash out!` : `Unfortunately you haven't won this time.`;
+  const message = `Your favourite [event] has finished. ${outcome}`;
+  await emitUserMessage(notificationTypes.EVENT_RESOLVE, userId, message, {
+    imageUrl: event.previewImageUrl,
+    eventId: event.id,
+    eventName: event.name,
+    eventSlug: event.slug,
+    betId: bet.id,
+    betQuestion: bet?.marketQuestion,
     amountTraded,
-    eventPhotoUrl,
     tokensWon,
   });
 };
 
-exports.emitEventCancelNotification = (userId, eventId, eventName, cancellationDescription) => {
-  console.log(userId, eventId, eventName, cancellationDescription);
-  const message = `The event ${eventName} was cancelled due to ${cancellationDescription}.`;
-  emitToAllByUserId(userId, 'notification', { type: notificationTypes.EVENT_CANCEL, eventId, message });
+exports.emitEventResolvedNotification = async (userId, event, bet) => {
+  const message = `Your favourite [event] has finished.`;
+  await emitUserMessage(notificationTypes.EVENT_RESOLVE, userId, message, {
+    imageUrl: event?.previewImageUrl,
+    eventId: event?.id,
+    eventName: event?.name,
+    eventSlug: event?.slug,
+    betQuestion: bet?.marketQuestion,
+  });
 };
 
-const handleBetMessage = async (eventId, emitEventName, data) => {
-  // await persist(data); TODO: Check if we need to persist these types of messages
-  emitToAllByEventId(eventId, emitEventName, data);
-};
-
-const persist = async (data) => {
-  if (data) {
-    const chatMessage = await ChatMessageService.createChatMessage(data);
-    await ChatMessageService.saveChatMessage(chatMessage);
+exports.emitEventCancelNotification = async (userId, event, bet) => {
+  let { reasonOfCancellation, marketQuestion } = bet;
+  let message = `Your favourite [event] was cancelled`;
+  if (reasonOfCancellation) {
+    message = message + ': ' + reasonOfCancellation;
+  } else {
+    message = message + '.';
   }
+  await emitUserMessage(notificationTypes.EVENT_CANCEL, userId, message, {
+    imageUrl: event?.previewImageUrl,
+    eventId: event?.id,
+    eventName: event?.name,
+    eventSlug: event?.slug,
+    betQuestion: marketQuestion,
+  });
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
-  // io.of('/').to(eventId.toString()).emit(emitEventName, data);
   pubClient.publish(
     'message',
     JSON.stringify({
@@ -194,15 +199,29 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
   );
 };
 
-const emitToAllByUserId = (userId, emitEventName, data) => {
-  console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in user room ${userId}`);
-  // io.of('/').to(userId.toString()).emit(emitEventName, {date: new Date(), ...data});
+/**
+ * Creates and pushes over the websocket a UserMessage.
+ */
+const emitUserMessage = async (type, userId, message, payload) => {
+  const savedMessage = await ChatMessageService.createChatMessage({
+    type,
+    userId,
+    message,
+    payload,
+  });
+  if (!userId) {
+    console.error(
+      LOG_TAG,
+      'websocket-service: emitUserMessage was called without a userId, skipping it.'
+    );
+    return;
+  }
   pubClient.publish(
     'message',
     JSON.stringify({
       to: userId.toString(),
-      event: emitEventName,
-      data: { date: new Date(), ...data },
+      event: 'notification',
+      data: { type, userId, message, ...payload, messageId: savedMessage._id },
     })
   );
 };
