@@ -9,10 +9,8 @@ const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
 
 exports.listBets = async (q) => {
-  return Bet.find(q).populate('event')
-    .map(calculateAllBetsStatus)
-    .map(filterPublishedBets);
-}
+  return Bet.find(q).populate('event').map(calculateAllBetsStatus).map(filterPublishedBets);
+};
 
 exports.filterBets = async (
   type = 'all',
@@ -24,7 +22,7 @@ exports.filterBets = async (
   status = 'active',
   published = true,
   resolved = false,
-  canceled = false,
+  canceled = false
 ) => {
   const eventQuery = {};
   const betQuery = {};
@@ -63,7 +61,6 @@ exports.filterBets = async (
 
   return result;
 };
-
 
 exports.editBet = async (betId, betData) => {
   const updatedEvent = await Bet.findByIdAndUpdate(betId, betData, { new: true });
@@ -132,7 +129,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
       producer: 'user',
       producerId: userId,
       data: { bet, trade: response.trade, user, event },
-      broadcast: true
+      broadcast: true,
     });
     return response;
   } catch (err) {
@@ -200,7 +197,7 @@ exports.refundUserHistory = async (bet, session) => {
       bet,
       userIds,
     },
-    broadcast: true
+    broadcast: true,
   });
 
   return userIds;
@@ -253,7 +250,7 @@ exports.resolve = async ({
       producer: 'system',
       producerId: 'notification-service',
       data: { bet, event },
-      broadcast: true
+      broadcast: true,
     });
   } catch (err) {
     console.debug(err);
@@ -297,18 +294,16 @@ exports.resolve = async ({
       producer: 'system',
       producerId: 'notification-service',
       data: { bet, event, userId, winToken: winToken.toString() },
-      broadcast: true
+      broadcast: true,
     });
 
     // send notification to this user
     websocketService.emitBetResolveNotification(
       // eslint-disable-line no-unsafe-finally
       userId,
-      betId,
-      bet.marketQuestion,
-      bet.outcomes[outcomeIndex].name,
+      event,
+      bet,
       +investedValues[userId],
-      event.previewImageUrl,
       winToken
     );
   }
@@ -349,14 +344,9 @@ exports.cancel = async (bet, cancellationReason) => {
           reasonOfCancellation: dbBet.reasonOfCancellation,
           previewImageUrl: event.previewImageUrl,
         },
-        broadcast: true
+        broadcast: true,
       });
-      websocketService.emitEventCancelNotification(
-        userId,
-        dbBet.event,
-        event.name,
-        dbBet.reasonOfCancellation
-      );
+      websocketService.emitEventCancelNotification(userId, event, dbBet);
     }
   }
 

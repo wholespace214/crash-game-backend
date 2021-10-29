@@ -11,6 +11,7 @@ const AdminBro = require('admin-bro');
 const AdminBroExpress = require('@admin-bro/express');
 const AdminBroMongoose = require('@admin-bro/mongoose');
 const { Router } = require('express');
+const _ = require('lodash');
 
 AdminBro.registerAdapter(AdminBroMongoose);
 
@@ -148,14 +149,12 @@ exports.initialize = function () {
 
                 if (dbBet) {
                   const event = await eventService.getEvent(dbBet.event);
-
+                  if (event.bookmarks) {
+                    // union of users who placed a bet and have bookmarked the event
+                    userIds = _.union(userIds, event.bookmarks);
+                  }
                   for (const userId of userIds) {
-                    websocketService.emitEventCancelNotification(
-                      userId,
-                      dbBet.event,
-                      event.name,
-                      dbBet.reasonOfCancellation
-                    );
+                    websocketService.emitEventCancelNotification(userId, event, dbBet);
                   }
                 }
 
@@ -191,7 +190,7 @@ exports.initialize = function () {
                 const indexOutcome = request.fields.index;
                 const { evidenceActual } = request.fields;
                 const { evidenceDescription } = request.fields;
-
+                let stillToNotifyUsersIds = event.bookmarks;
                 if (bet.status !== 'active' && bet.status !== 'closed') {
                   context.record.params.message =
                     'Event can only be resolved if it is active or closed';
@@ -256,14 +255,21 @@ exports.initialize = function () {
                     await userService.increaseAmountWon(userId, winToken);
 
                     // send notification to this user
-                    websocketService.emitBetResolveNotification(
+                    await websocketService.emitBetResolveNotification(
                       userId,
-                      id,
-                      bet.marketQuestion,
-                      bet.outcomes[indexOutcome].name,
+                      event,
+                      bet,
                       Math.round(investedValues[userId]),
-                      event.previewImageUrl,
                       winToken
+                    );
+                    stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
+                  }
+
+                  if (stillToNotifyUsersIds) {
+                    // the users who bookmarked but didn't place a bet
+                    stillToNotifyUsersIds.map(
+                      async (u) =>
+                        await websocketService.emitEventResolvedNotification(u, event, bet)
                     );
                   }
                 }

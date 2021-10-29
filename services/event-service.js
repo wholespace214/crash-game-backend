@@ -90,7 +90,8 @@ exports.filterEvents = async (
   includeOffline = false,
 ) => {
   const query = {
-    "slug": { "$exists": true, "$ne": "" }
+    "slug": { "$exists": true, "$ne": "" },
+    "bets": { $ne: [] },
   };
 
   // only filter by type if it is not 'all'
@@ -114,11 +115,16 @@ exports.filterEvents = async (
   query.deactivatedAt = { $exists: deactivated }
   query.date = upcoming ? { $gt: new Date() } : { $lt: new Date() };
 
+  const direction = sortby === 'date' ? -1 : 1;
+
   const op = Event.find(query)
+    .populate('bets')
     .limit(count)
     .skip(count * (page - 1))
     .collation({ locale: 'en' })
-    .sort(sortby)
+    .sort({ [sortby]: direction })
+    .map(calculateAllBetsStatus)
+    .map(filterPublishedBets);
 
   if (betFilter) {
     op.find(betFilter)
