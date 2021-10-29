@@ -172,7 +172,6 @@ exports.emitEventResolvedNotification = async (userId, event, bet) => {
 
 exports.emitEventCancelNotification = async (userId, event, bet) => {
   let { reasonOfCancellation, marketQuestion } = bet;
-
   let message = `Your favourite [event] was cancelled`;
   if (reasonOfCancellation) {
     message = message + ': ' + reasonOfCancellation;
@@ -204,7 +203,13 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
  * Creates and pushes over the websocket a UserMessage.
  */
 const emitUserMessage = async (type, userId, message, payload) => {
-  await ChatMessageService.createChatMessage(type, userId, null, message, payload);
+  const savedMessage = await ChatMessageService.createChatMessage(
+    type,
+    userId,
+    null,
+    message,
+    payload
+  );
   if (!userId) {
     console.error(
       LOG_TAG,
@@ -217,7 +222,7 @@ const emitUserMessage = async (type, userId, message, payload) => {
     JSON.stringify({
       to: userId.toString(),
       event: 'notification',
-      data: { type, userId, message, ...payload },
+      data: { type, userId, message, ...payload, messageId: savedMessage._id },
     })
   );
 };
