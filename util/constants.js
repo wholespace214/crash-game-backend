@@ -1,6 +1,7 @@
 const WFAIR_REWARDS = {
   referral: 1000,
-  uploadPicture: 150,
+  setAvatar: 500,
+  setUsername: 500,
   confirmEmail: 100,
   registeredByInfluencer: 2500,
   totalBets: {
