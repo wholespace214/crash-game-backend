@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const { ChatMessage } = require('@wallfair.io/wallfair-commons').models;
 const { ForbiddenError, NotFoundError } = require('../util/error-handler');
+const notificationTypes = {
+  EVENT_START: 'Notification/EVENT_START',
+  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
+  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
+  BET_STARTED: 'Notification/BET_STARTED',
+  EVENT_USER_AWARD: 'Notification/EVENT_USER_AWARD',
+};
 
 exports.getChatMessagesByEvent = async (eventId) => ChatMessage.find({ roomId: eventId });
 
@@ -75,7 +82,11 @@ exports.saveChatMessage = async (chatMessage) => chatMessage.save();
 exports.getLatestChatMessagesByUserId = async (userId, limit = 100, skip = 0) =>
   ChatMessage.aggregate([
     {
-      $match: { userId: mongoose.Types.ObjectId(userId), read: { $exists: false } },
+      $match: {
+        userId: mongoose.Types.ObjectId(userId),
+        read: { $exists: false },
+        type: { $in: Object.values(notificationTypes) },
+      },
     },
     { $sort: { date: -1 } },
     {
