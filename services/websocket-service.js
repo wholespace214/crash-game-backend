@@ -8,6 +8,7 @@ const notificationTypes = {
   EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
   EVENT_CANCEL: 'Notification/EVENT_CANCEL',
   BET_STARTED: 'Notification/BET_STARTED',
+  EVENT_USER_AWARD: 'Notification/EVENT_USER_AWARD',
 };
 
 exports.setPubClient = (newpub) => (pubClient = newpub);
@@ -187,6 +188,18 @@ exports.emitEventCancelNotification = async (userId, event, bet) => {
   });
 };
 
+exports.emitUserAwardNotification = async (userId, awardData) => {
+  if (!awardData || !awardData.award) {
+    console.error(
+      LOG_TAG,
+      'websocket-service: emitUserAwardNotification was called without an award, skipping it.'
+    );
+  }
+  const message = `Congratulations! you've been awarded ${awardData.award} tokens!!`;
+
+  await emitUserMessage(notificationTypes.EVENT_USER_AWARD, userId, message, awardData);
+};
+
 const emitToAllByEventId = (eventId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
   pubClient.publish(
@@ -221,7 +234,7 @@ const emitUserMessage = async (type, userId, message, payload) => {
     JSON.stringify({
       to: userId.toString(),
       event: 'notification',
-      data: { type, userId, message, ...payload, messageId: savedMessage._id },
+      data: { type, userId, message, payload, messageId: savedMessage._id },
     })
   );
 };
