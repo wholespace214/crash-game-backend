@@ -174,7 +174,7 @@ async function main() {
     secureBetTemplateRoute
   );
   server.use('/webhooks/twitch/', twitchWebhook);
-  server.use('/api/chat', passport.authenticate('jwt', { session: false }), chatRoutes);
+  server.use('/api/chat', chatRoutes);
   server.use('/api/notification-events', notificationEventsRoutes);
   server.use('/api/auth', authRoutes);
   server.use(

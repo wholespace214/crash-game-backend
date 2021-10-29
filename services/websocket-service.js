@@ -203,13 +203,12 @@ const emitToAllByEventId = (eventId, emitEventName, data) => {
  * Creates and pushes over the websocket a UserMessage.
  */
 const emitUserMessage = async (type, userId, message, payload) => {
-  const savedMessage = await ChatMessageService.createChatMessage(
+  const savedMessage = await ChatMessageService.createChatMessage({
     type,
     userId,
-    null,
     message,
-    payload
-  );
+    payload,
+  });
   if (!userId) {
     console.error(
       LOG_TAG,
