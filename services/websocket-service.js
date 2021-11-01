@@ -8,7 +8,7 @@ const notificationTypes = {
   EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
   EVENT_CANCEL: 'Notification/EVENT_CANCEL',
   BET_STARTED: 'Notification/BET_STARTED',
-  EVENT_USER_AWARD: 'Notification/EVENT_USER_AWARD',
+  USER_AWARD: 'Notification/USER_AWARD',
 };
 
 exports.setPubClient = (newpub) => (pubClient = newpub);
@@ -197,7 +197,7 @@ exports.emitUserAwardNotification = async (userId, awardData) => {
   }
   const message = `Congratulations! you've been awarded ${awardData.award} tokens!!`;
 
-  await emitUserMessage(notificationTypes.EVENT_USER_AWARD, userId, message, awardData);
+  await emitUserMessage(notificationTypes.USER_AWARD, userId, message, awardData);
 };
 
 const emitToAllByEventId = (eventId, emitEventName, data) => {
