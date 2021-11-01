@@ -329,7 +329,7 @@ exports.updateStatus = async (userId, status) => {
  * @param userId
  * @returns {Promise<void>} undefined
  */
-exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) => {
+exports.createUserAwardEvent = async ({ userId, awardData }) => {
   //add token amount for award during event creation
   if (awardData?.award) {
     await this.mintUser(userId, awardData.award).catch((err) => {
