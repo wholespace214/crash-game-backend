@@ -3,7 +3,7 @@ const ChatMessageService = require('./chat-message-service');
 const LOG_TAG = '[SOCKET] ';
 let pubClient = null;
 
-const notificationTypes = {
+export const notificationTypes = {
   EVENT_START: 'Notification/EVENT_START',
   EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
   EVENT_CANCEL: 'Notification/EVENT_CANCEL',
