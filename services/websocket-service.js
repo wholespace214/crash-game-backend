@@ -1,4 +1,5 @@
 const ChatMessageService = require('./chat-message-service');
+const { AWARD_TYPES } = require('../util/constants');
 
 const LOG_TAG = '[SOCKET] ';
 let pubClient = null;
@@ -189,7 +190,23 @@ exports.emitUserAwardNotification = async (userId, awardData) => {
       'websocket-service: emitUserAwardNotification was called without an award, skipping it.'
     );
   }
-  const message = `Congratulations! you've been awarded ${awardData.award} tokens!!`;
+  let message;
+  const tokens = `${awardData?.award} PFAIR tokens`;
+  switch (awardData?.type) {
+    case AWARD_TYPES.AVATAR_UPLOADED:
+      message = `Congratulations! You have received ${tokens} for uploading a picture for the first time. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+    case AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER:
+    case AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF:
+      message = `Congratulations! because you signed up via ${awardData.ref} you've been awarded ${tokens}!`;
+      break;
+    case AWARD_TYPES.EMAIL_CONFIRMED:
+      message = `Congratulations! You have received ${tokens} for confirming your email. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+    case AWARD_TYPES.SET_USERNAME:
+      message = `Congratulations! You have received ${tokens} for changing the username for the first time. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+  }
 
   await emitUserMessage(notificationTypes.USER_AWARD, userId, message, awardData);
 };

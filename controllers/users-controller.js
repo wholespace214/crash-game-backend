@@ -2,7 +2,12 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const { validationResult } = require('express-validator');
-const { Erc20, Wallet, CasinoTradeContract, BetContract } = require('@wallfair.io/smart_contract_mock');
+const {
+  Erc20,
+  Wallet,
+  CasinoTradeContract,
+  BetContract,
+} = require('@wallfair.io/smart_contract_mock');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
@@ -10,7 +15,7 @@ const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS } = require('../util/constants');
+const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 
 const _ = require('lodash');
 const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
@@ -234,7 +239,7 @@ const checkUsername = async (req, res, next) => {
   try {
     const { username } = req.body;
     const user = await User.findOne({
-      username
+      username,
     });
     let isUnique = false;
 
@@ -244,7 +249,7 @@ const checkUsername = async (req, res, next) => {
 
     res.status(200).json({
       username,
-      isUnique
+      isUnique,
     });
   } catch (err) {
     console.error(err);
@@ -328,7 +333,7 @@ const getHistory = async (req, res, next) => {
       const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
         CASINO_TRADE_STATE.LOCKED,
         CASINO_TRADE_STATE.WIN,
-        CASINO_TRADE_STATE.LOSS
+        CASINO_TRADE_STATE.LOSS,
       ]);
       const transactions = [];
 
@@ -349,7 +354,14 @@ const getHistory = async (req, res, next) => {
       for (const casinoTrade of casinoTrades) {
         const isWin = casinoTrade.state === CASINO_TRADE_STATE.WIN;
         const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
-        const outcomeTokensBought = isWin ? fromScaledBigInt(bigDecimal.multiply(BigInt(casinoTrade.stakedamount), parseFloat(casinoTrade.crashfactor))) : 0;
+        const outcomeTokensBought = isWin
+          ? fromScaledBigInt(
+              bigDecimal.multiply(
+                BigInt(casinoTrade.stakedamount),
+                parseFloat(casinoTrade.crashfactor)
+              )
+            )
+          : 0;
         const direction = isWin ? 'PAYOUT' : 'BUY';
 
         transactions.push({
@@ -435,7 +447,7 @@ const confirmEmail = async (req, res, next) => {
   const user = await userService.getUserById(userId);
 
   if (user.emailConfirmed && user.confirmed) {
-    return  res.status(200).send({ status: 'The email has been already confirmed' });
+    return res.status(200).send({ status: 'The email has been already confirmed' });
   }
 
   if (user.emailCode === code) {
@@ -443,15 +455,17 @@ const confirmEmail = async (req, res, next) => {
     user.confirmed = true;
     await user.save();
 
-    await userService.createUserAwardEvent({
-      userId,
-      awardData: {
-        type: 'EMAIL_CONFIRMED',
-        award: WFAIR_REWARDS.confirmEmail
-      }
-    }).catch((err)=> {
-      console.error('createUserAwardEvent', err)
-    })
+    await userService
+      .createUserAwardEvent({
+        userId,
+        awardData: {
+          type: AWARD_TYPES.EMAIL_CONFIRMED,
+          award: WFAIR_REWARDS.confirmEmail,
+        },
+      })
+      .catch((err) => {
+        console.error('createUserAwardEvent', err);
+      });
 
     res.status(200).send({ status: 'OK' });
   } else {
@@ -473,7 +487,7 @@ const resendConfirmEmail = async (req, res, next) => {
     const user = await userService.getUserById(userId);
 
     if (user.emailConfirmed && user.confirmed) {
-      return  res.status(200).send({ status: 'The email has been already confirmed' });
+      return res.status(200).send({ status: 'The email has been already confirmed' });
     }
 
     await mailService.sendConfirmMail(user);
@@ -501,7 +515,7 @@ const updateUser = async (req, res, next) => {
       username: user.username,
       email: user.email,
       aboutMe: user.aboutMe,
-      profilePicture: user.profilePicture
+      profilePicture: user.profilePicture,
     });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -533,12 +547,12 @@ const getUserStats = async (req, res, next) => {
     const user = await userService.getUserById(userId);
     const stats = await statsService.getUserStats(userId).catch((err) => {
       console.error('[getUserStats] err', err);
-    })
+    });
 
     res.status(200).json({
       userId: userId,
       username: _.get(user, 'username'),
-      stats
+      stats,
     });
   } catch (err) {
     console.error(err);
@@ -549,7 +563,7 @@ const getUserStats = async (req, res, next) => {
 const getUserCount = async (req, res) => {
   const total = await User.countDocuments().exec();
   res.json({
-    total
+    total,
   });
 };
 
@@ -565,27 +579,27 @@ const updateStatus = async (req, res, next) => {
     console.error(err);
     next(new ErrorHandler(500, 'User could not be locked'));
   }
-}
+};
 
 const requestTokens = async (req, res, next) => {
   try {
-    const userId = req.user.id
+    const userId = req.user.id;
     const user = await userService.getUserById(userId);
-    if(!user) return next(new ErrorHandler(403, 'Action not allowed'));
+    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
     const balance = await WFAIR.balanceOf(userId);
-    if(balance >= toScaledBigInt(5000) || balance < 0){
-      return next(new ErrorHandler(403, 'Action not allowed'))
+    if (balance >= toScaledBigInt(5000) || balance < 0) {
+      return next(new ErrorHandler(403, 'Action not allowed'));
     }
 
     user.amountWon = 0;
-      await WFAIR.mint(userId, toScaledBigInt(5000) - balance)
-      await user.save()
+    await WFAIR.mint(userId, toScaledBigInt(5000) - balance);
+    await user.save();
     res.status(200).send();
-  } catch (err){
+  } catch (err) {
     console.error(err);
     next(new ErrorHandler(422, err.message));
   }
-}
+};
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;

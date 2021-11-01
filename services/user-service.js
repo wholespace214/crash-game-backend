@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { fromScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS } = require('../util/constants');
+const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const { publishEvent, notificationEvents } = require('./notification-service');
 const { updateUserData } = require('./notification-events-service');
 const { getUserBetsAmount } = require('./statistics-service');
@@ -204,7 +204,7 @@ exports.updateUser = async (userId, updatedUser) => {
       await this.createUserAwardEvent({
         userId,
         awardData: {
-          type: 'SET_USERNAME',
+          type: AWARD_TYPES.SET_USERNAME,
           award: WFAIR_REWARDS.setUsername,
         },
       }).catch((err) => {
@@ -218,7 +218,7 @@ exports.updateUser = async (userId, updatedUser) => {
       await this.createUserAwardEvent({
         userId,
         awardData: {
-          type: 'AVATAR_UPLOADED',
+          type: AWARD_TYPES.AVATAR_UPLOADED,
           award: WFAIR_REWARDS.setAvatar,
         },
       }).catch((err) => {
