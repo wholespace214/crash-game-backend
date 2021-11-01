@@ -1,14 +1,10 @@
 const ChatMessageService = require('./chat-message-service');
+const { AWARD_TYPES } = require('../util/constants');
 
 const LOG_TAG = '[SOCKET] ';
 let pubClient = null;
 
-const notificationTypes = {
-  EVENT_START: 'Notification/EVENT_START',
-  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
-  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
-  BET_STARTED: 'Notification/BET_STARTED',
-};
+const notificationTypes = ChatMessageService.NotificationTypes;
 
 exports.setPubClient = (newpub) => (pubClient = newpub);
 
@@ -187,6 +183,34 @@ exports.emitEventCancelNotification = async (userId, event, bet) => {
   });
 };
 
+exports.emitUserAwardNotification = async (userId, awardData) => {
+  if (!awardData || !awardData.award) {
+    console.error(
+      LOG_TAG,
+      'websocket-service: emitUserAwardNotification was called without an award, skipping it.'
+    );
+  }
+  let message;
+  const tokens = `${awardData?.award} PFAIR tokens`;
+  switch (awardData?.type) {
+    case AWARD_TYPES.AVATAR_UPLOADED:
+      message = `Congratulations! You have received ${tokens} for uploading a picture for the first time. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+    case AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER:
+    case AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF:
+      message = `Congratulations! because you signed up via ${awardData.ref} you've been awarded ${tokens}!`;
+      break;
+    case AWARD_TYPES.EMAIL_CONFIRMED:
+      message = `Congratulations! You have received ${tokens} for confirming your email. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+    case AWARD_TYPES.SET_USERNAME:
+      message = `Congratulations! You have received ${tokens} for changing the username for the first time. There are many hidden ways to earn tokens, can you find them all?`;
+      break;
+  }
+
+  await emitUserMessage(notificationTypes.USER_AWARD, userId, message, awardData);
+};
+
 const emitToAllByEventId = (eventId, emitEventName, data) => {
   console.debug(LOG_TAG, `emitting event "${emitEventName}" to all in event room ${eventId}`);
   pubClient.publish(
@@ -221,7 +245,7 @@ const emitUserMessage = async (type, userId, message, payload) => {
     JSON.stringify({
       to: userId.toString(),
       event: 'notification',
-      data: { type, userId, message, ...payload, messageId: savedMessage._id },
+      data: { type, userId, message, payload, messageId: savedMessage._id },
     })
   );
 };
