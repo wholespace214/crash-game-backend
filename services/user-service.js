@@ -214,8 +214,7 @@ exports.updateUser = async (userId, updatedUser) => {
   }
 
   if (updatedUser.image) {
-    if (true) {
-      //!user.profilePicture)
+    if (!user.profilePicture) {
       await this.createUserAwardEvent({
         userId,
         awardData: {
