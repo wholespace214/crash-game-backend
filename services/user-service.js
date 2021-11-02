@@ -11,7 +11,6 @@ const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
-const websocketService = require('../services/websocket-service');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -351,7 +350,10 @@ exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) 
     event: notificationEvents.EVENT_USER_AWARD,
     producer: 'user',
     producerId: userId,
-    data: awardData,
+    data: {
+      userId,
+      awardData
+    },
     broadcast
   }));
 }

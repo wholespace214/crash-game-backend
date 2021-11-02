@@ -172,6 +172,7 @@ exports.initialize = function () {
                       date: Date.now(),
                       broadcast: true
                     }));
+                  }
                 }
 
                 return {
@@ -295,7 +296,6 @@ exports.initialize = function () {
                     // the users who bookmarked but didn't place a bet
                     stillToNotifyUsersIds.map(
                       async (u) =>
-                      // save uniEvent and send notification to this user
                         await amqp.send('universal_events', 'event.user_reward', JSON.stringify({
                           event: notificationEvents.EVENT_RESOLVE,
                           producer: 'system',
@@ -309,12 +309,13 @@ exports.initialize = function () {
                           broadcast: true
                         }))
                     );
+                  }
                 }
 
                 return {
                   record: context.record.toJSON(context.currentAdmin),
-                };
-              },
+                }
+              }
             },
           },
         },
