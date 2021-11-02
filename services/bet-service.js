@@ -10,10 +10,8 @@ const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
 
 exports.listBets = async (q) => {
-  return Bet.find(q).populate('event')
-    .map(calculateAllBetsStatus)
-    .map(filterPublishedBets);
-}
+  return Bet.find(q).populate('event').map(calculateAllBetsStatus).map(filterPublishedBets);
+};
 
 exports.filterBets = async (
   type = 'all',
@@ -25,7 +23,7 @@ exports.filterBets = async (
   status = 'active',
   published = true,
   resolved = false,
-  canceled = false,
+  canceled = false
 ) => {
   const eventQuery = {};
   const betQuery = {};
@@ -64,7 +62,6 @@ exports.filterBets = async (
 
   return result;
 };
-
 
 exports.editBet = async (betId, betData) => {
   const updatedEvent = await Bet.findByIdAndUpdate(betId, betData, { new: true });
@@ -137,6 +134,7 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
     }));
 
     onBetPlaced(bet);
+
     return response;
   } catch (err) {
     console.error(LOG_TAG, err);
@@ -207,7 +205,6 @@ exports.refundUserHistory = async (bet, session) => {
     date: Date.now(),
     broadcast: true
   }));
-
   return userIds;
 };
 
@@ -264,6 +261,7 @@ exports.resolve = async ({
       date: Date.now(),
       broadcast: true
     }));
+
   } catch (err) {
     console.debug(err);
   } finally {
@@ -309,7 +307,12 @@ exports.resolve = async ({
       producer: 'system',
       producerId: 'notification-service',
       data: {
-        bet, event, userId, winToken: winToken.toString(), amountTraded: +investedValues[userId], betOutcome: bet.outcomes[outcomeIndex].name
+        bet,
+        event,
+        userId,
+        winToken: winToken.toString(),
+        amountTraded: +investedValues[userId],
+        betOutcome: bet.outcomes[outcomeIndex].name,
       },
       date: Date.now(),
       broadcast: true
@@ -348,10 +351,12 @@ exports.cancel = async (bet, cancellationReason) => {
         producerId: 'notification-service',
         data: {
           userId,
-          eventId: dbBet.event,
+          eventId: event.id,
           eventName: event.name,
-          reasonOfCancellation: dbBet.reasonOfCancellation,
-          previewImageUrl: event.previewImageUrl,
+          eventSlug: event.slug,
+          reasonOfCancellation: cancellationReason,
+          imageUrl: event.previewImageUrl,
+          marketQuestion: dbBet.marketQuestion,
         },
         date: Date.now(),
         broadcast: true

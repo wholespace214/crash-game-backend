@@ -13,6 +13,7 @@ const AdminBro = require('admin-bro');
 const AdminBroExpress = require('@admin-bro/express');
 const AdminBroMongoose = require('@admin-bro/mongoose');
 const { Router } = require('express');
+const _ = require('lodash');
 
 AdminBro.registerAdapter(AdminBroMongoose);
 
@@ -150,7 +151,10 @@ exports.initialize = function () {
 
                 if (dbBet) {
                   const event = await eventService.getEvent(dbBet.event);
-
+                  if (event.bookmarks) {
+                    // union of users who placed a bet and have bookmarked the event
+                    userIds = _.union(userIds, event.bookmarks);
+                  }
                   for (const userId of userIds) {
                     amqp.send('universal_events', 'event.event_cancel', JSON.stringify({
                       event: notificationEvents.EVENT_CANCEL,
@@ -161,12 +165,13 @@ exports.initialize = function () {
                         eventId: dbBet.event,
                         eventName: event.name,
                         reasonOfCancellation: dbBet.reasonOfCancellation,
-                        previewImageUrl: event.previewImageUrl,
+                        imageUrl: event.previewImageUrl,
+                        eventSlug: event.slug,
+                        marketQuestion: dbBet.marketQuestion,
                       },
                       date: Date.now(),
                       broadcast: true
                     }));
-                  }
                 }
 
                 return {
@@ -201,7 +206,7 @@ exports.initialize = function () {
                 const indexOutcome = request.fields.index;
                 const { evidenceActual } = request.fields;
                 const { evidenceDescription } = request.fields;
-
+                let stillToNotifyUsersIds = event.bookmarks;
                 if (bet.status !== 'active' && bet.status !== 'closed') {
                   context.record.params.message =
                     'Event can only be resolved if it is active or closed';
@@ -266,18 +271,46 @@ exports.initialize = function () {
                     await userService.increaseAmountWon(userId, winToken);
 
                     // save uniEvent and send notification to this user
-                    amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+                    await amqp.send('universal_events', 'event.user_reward', JSON.stringify({
                       event: notificationEvents.EVENT_USER_REWARD,
                       producer: 'system',
                       producerId: 'notification-service',
                       data: {
-                        bet, event, userId, winToken: winToken.toString(), amountTraded: +investedValues[userId], betOutcome: bet.outcomes[indexOutcome].name
+                        bet,
+                        event,
+                        userId,
+                        winToken: winToken.toString(),
+                        amountTraded: +investedValues[userId],
+                        betOutcome: bet.outcomes[indexOutcome].name
                       },
                       date: Date.now(),
                       broadcast: true
                     }));
+
+                    stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
                   }
+
+
+                  if (stillToNotifyUsersIds) {
+                    // the users who bookmarked but didn't place a bet
+                    stillToNotifyUsersIds.map(
+                      async (u) =>
+                      // save uniEvent and send notification to this user
+                        await amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+                          event: notificationEvents.EVENT_RESOLVE,
+                          producer: 'system',
+                          producerId: 'notification-service',
+                          data: {
+                            bet,
+                            event,
+                            userId: u
+                          },
+                          date: Date.now(),
+                          broadcast: true
+                        }))
+                    );
                 }
+
                 return {
                   record: context.record.toJSON(context.currentAdmin),
                 };

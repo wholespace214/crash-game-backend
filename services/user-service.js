@@ -1,16 +1,17 @@
-const { User } = require('@wallfair.io/wallfair-commons').models;
+const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
 const { fromScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS } = require('../util/constants');
+const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
+const websocketService = require('../services/websocket-service');
 
 const WFAIR = new Erc20('WFAIR');
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -19,13 +20,16 @@ exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).sessi
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 
-exports.getUserReducedDataById = async (id, session) => User.findOne({ _id: id }).select({
-  _id: 1,
-  username: 1,
-  name: 1,
-  profilePicture: 1,
-  amountWon: 1
-}).session(session);
+exports.getUserReducedDataById = async (id, session) =>
+  User.findOne({ _id: id })
+    .select({
+      _id: 1,
+      username: 1,
+      name: 1,
+      profilePicture: 1,
+      amountWon: 1,
+    })
+    .session(session);
 
 exports.getUserByIdAndWallet = async (id, walletAddress, session) =>
   User.findOne({ _id: id }).session(session);
@@ -145,7 +149,7 @@ exports.updateUser = async (userId, updatedUser) => {
         userId,
         name: updatedUser.name,
         oldName: oldName,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       },
       date: Date.now(),
       broadcast: true
@@ -173,7 +177,7 @@ exports.updateUser = async (userId, updatedUser) => {
         userId,
         username: updatedUser.username,
         oldUsername,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       },
       date: Date.now(),
       broadcast: true
@@ -181,14 +185,34 @@ exports.updateUser = async (userId, updatedUser) => {
 
     //update username across the events for this user, only when data.user exists at all, we need to have these unified across the events,
     // so for user specific things, we need to use proper user property
-    await updateUserData({
-      userId,
-      'data.user.username': { $exists: true }
-    }, {
-      'data.user.username': updatedUser.username
-    }).catch((err) => {
-      console.error('updateUserData failed', err)
-    })
+    await updateUserData(
+      {
+        userId,
+        'data.user.username': { $exists: true },
+      },
+      {
+        'data.user.username': updatedUser.username,
+      }
+    ).catch((err) => {
+      console.error('updateUserData failed', err);
+    });
+
+    //handle SET_USERNAME award
+    const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err) => {
+      console.error('checkAwardExist err', err);
+    });
+
+    if (checkUsernameAward.length === 0) {
+      await this.createUserAwardEvent({
+        userId,
+        awardData: {
+          type: AWARD_TYPES.SET_USERNAME,
+          award: WFAIR_REWARDS.setUsername,
+        },
+      }).catch((err) => {
+        console.error('createUserAwardEvent', err);
+      });
+    }
   }
 
   if (updatedUser.image) {
@@ -196,12 +220,12 @@ exports.updateUser = async (userId, updatedUser) => {
       await this.createUserAwardEvent({
         userId,
         awardData: {
-          type: 'AVATAR_UPLOADED',
-          award: WFAIR_REWARDS.uploadPicture
-        }
+          type: AWARD_TYPES.AVATAR_UPLOADED,
+          award: WFAIR_REWARDS.setAvatar,
+        },
       }).catch((err) => {
-        console.error('createUserAwardEvent', err)
-      })
+        console.error('createUserAwardEvent', err);
+      });
     }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
@@ -215,14 +239,18 @@ exports.updateUser = async (userId, updatedUser) => {
         userId,
         username: _.get(updatedUser, 'username'),
         image: updatedUser.image,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       },
+
       date: Date.now(),
       broadcast: true
     }));
   }
 
-  if (updatedUser.notificationSettings && updatedUser.notificationSettings !== user.notificationSettings) {
+  if (
+    updatedUser.notificationSettings &&
+    updatedUser.notificationSettings !== user.notificationSettings
+  ) {
     user.notificationSettings = updatedUser.notificationSettings;
 
     amqp.send('universal_events', 'event.user_updated_email_preferences', JSON.stringify({
@@ -242,11 +270,12 @@ exports.updateUser = async (userId, updatedUser) => {
         userId,
         username: updatedUser.username,
         notificationSettings: user.notificationSettings,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       },
       date: Date.now(),
       broadcast: true
     }));
+
 
     user.aboutMe = updatedUser.aboutMe;
   }
@@ -334,14 +363,14 @@ exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) 
  */
 exports.checkTotalBetsAward = async (userId) => {
   const awardData = {
-    type: 'TOTAL_BETS_ABOVE_VALUE'
+    type: 'TOTAL_BETS_ABOVE_VALUE',
   };
 
   const totalUserBets = await getUserBetsAmount(userId).catch((err) => {
-    console.error('getUserBetsAmount', err)
+    console.error('getUserBetsAmount', err);
   });
 
-  const total = awardData.total = totalUserBets?.totalBets || 0;
+  const total = (awardData.total = totalUserBets?.totalBets || 0);
   if ([5, 20, 50, 100, 150].includes(total)) {
     awardData.award = WFAIR_REWARDS.totalBets[total];
     awardData.total = total;
@@ -349,9 +378,21 @@ exports.checkTotalBetsAward = async (userId) => {
     //publish in universalevents collection and add tokens
     await this.createUserAwardEvent({
       userId,
-      awardData
+      awardData,
     }).catch((err) => {
-      console.error('createUserAwardEvent', err)
-    })
+      console.error('createUserAwardEvent', err);
+    });
   }
-}
+};
+
+/***
+ * check award exist for username and defined type
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkAwardExist = async (userId, type) => {
+  return UniversalEvent.find({
+    userId,
+    'data.type': type,
+  });
+};
