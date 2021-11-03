@@ -80,8 +80,8 @@ module.exports = {
       if (ref) {
         if (INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
-
-          await userService
+          setTimeout(async () => {
+            await userService
             .createUserAwardEvent({
               userId: createdUser.id.toString(),
               awardData: {
@@ -93,6 +93,7 @@ module.exports = {
             .catch((err) => {
               console.error('createUserAwardEvent', err);
             });
+          }, 3000);
 
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
         } else {
@@ -101,7 +102,8 @@ module.exports = {
           const refList = await userService.getRefByUserId(ref);
           //max ref awards elements per user
           if (refList.length <= 10) {
-            await userService
+            setTimeout(async () => {
+              await userService
               .createUserAwardEvent({
                 userId: ref,
                 awardData: {
@@ -113,6 +115,7 @@ module.exports = {
               .catch((err) => {
                 console.error('createUserAwardEvent', err);
               });
+            }, 3000);
           }
         }
       }
