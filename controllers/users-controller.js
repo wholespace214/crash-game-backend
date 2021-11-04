@@ -200,6 +200,7 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
+      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id')
     });
   } catch (err) {
     console.error(err);
