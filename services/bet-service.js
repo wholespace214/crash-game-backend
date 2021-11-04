@@ -8,6 +8,7 @@ const { onBetPlaced } = require('./quote-storage-service');
 const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
+const _ = require('lodash');
 
 exports.listBets = async (q) => {
   return Bet.find(q).populate('event').map(calculateAllBetsStatus).map(filterPublishedBets);
@@ -366,7 +367,8 @@ exports.cancel = async (bet, cancellationReason) => {
 
   if (dbBet) {
     const event = await eventService.getEvent(dbBet.event);
-
+    // add also the bookmarked user to event notification
+    userIds = _.union(userIds, event.bookmarks);
     for (const userId of userIds) {
       amqp.send('universal_events', 'event.event_cancel', JSON.stringify({
         event: notificationEvents.EVENT_CANCEL,
