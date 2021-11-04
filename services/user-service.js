@@ -338,6 +338,12 @@ exports.createUserAwardEvent = async ({ userId, awardData }) => {
   }
 
   await websocketService.emitUserAwardNotification(userId, awardData);
+
+  publishEvent(notificationEvents.EVENT_USER_AWARD, {
+    producer: 'user',
+    producerId: userId,
+    data: awardData
+  });
 };
 
 /***
