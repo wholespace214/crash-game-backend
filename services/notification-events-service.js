@@ -11,12 +11,12 @@ const betsCategory = [
   'Notification/EVENT_BET_CASHED_OUT',
   'Notification/EVENT_BET_RESOLVED',
   'Notification/EVENT_BET_CANCELED',
-  'Notification/EVENT_BET_EVALUATED'
+  'Notification/EVENT_BET_EVALUATED',
+  'Notification/EVENT_USER_REWARD' //its only for bet_resolve reward, so should be in bets category
 ]
 
 const usersCategory = [
   `Notification/EVENT_USER_SIGNED_UP`,
-  'Notification/EVENT_USER_REWARD',
   'Notification/EVENT_USER_UPLOADED_PICTURE',
   'Notification/EVENT_USER_CHANGED_USERNAME',
   'Notification/EVENT_USER_CHANGED_NAME',

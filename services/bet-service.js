@@ -290,10 +290,13 @@ exports.resolve = async ({
     // update the balance of tokens won of a user, to be used for leaderboards
     // must be done inside transaction
     await userService.increaseAmountWon(userId, winToken);
+
+    const user = await userService.getUserReducedDataById(userId);
+
     publishEvent(notificationEvents.EVENT_USER_REWARD, {
       producer: 'system',
       producerId: 'notification-service',
-      data: { bet, event, userId, winToken: winToken.toString() },
+      data: { bet, event, userId, user, winToken: winToken.toString() },
       broadcast: true,
     });
 
