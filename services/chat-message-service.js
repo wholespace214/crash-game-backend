@@ -1,16 +1,7 @@
 const mongoose = require('mongoose');
 const { ChatMessage } = require('@wallfair.io/wallfair-commons').models;
+const notificationsTypes = require('@wallfair.io/wallfair-commons').constants.events.notification;
 const { ForbiddenError, NotFoundError } = require('../util/error-handler');
-
-const notificationTypes = {
-  EVENT_START: 'Notification/EVENT_START',
-  EVENT_RESOLVE: 'Notification/EVENT_RESOLVE',
-  EVENT_CANCEL: 'Notification/EVENT_CANCEL',
-  BET_STARTED: 'Notification/BET_STARTED',
-  USER_AWARD: 'Notification/USER_AWARD',
-};
-
-exports.NotificationTypes = notificationTypes;
 
 exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
   ChatMessage.aggregate([
@@ -89,7 +80,7 @@ exports.getLatestChatMessagesByUserId = async (userId, limit = 100, skip = 0) =>
       $match: {
         userId: mongoose.Types.ObjectId(userId),
         read: { $exists: false },
-        type: { $in: Object.values(notificationTypes) },
+        type: { $in: Object.values(notificationsTypes) },
       },
     },
     { $sort: { date: -1 } },
