@@ -25,7 +25,8 @@ const usersCategory = [
 
 const elonGameCategory = [
   'Casino/CASINO_PLACE_BET',
-  'Casino/CASINO_CASHOUT'
+  'Casino/CASINO_CASHOUT',
+  'Casino/EVENT_CASINO_LOST'
 ]
 
 const categories = {

@@ -8,6 +8,7 @@ const { onBetPlaced } = require('./quote-storage-service');
 const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
+const _ = require('lodash');
 
 exports.listBets = async (q) => {
   return Bet.find(q).populate('event').map(calculateAllBetsStatus).map(filterPublishedBets);
@@ -226,7 +227,7 @@ exports.resolve = async ({
 
   const bet = await eventService.getBet(betId);
   const event = await Event.findById(bet.event);
-
+  let stillToNotifyUsersIds = event.bookmarks;
   if (bet.status !== 'active' && bet.status !== 'closed') {
     throw new Error('Event can only be resolved if it is active or closed');
   }
@@ -317,6 +318,29 @@ exports.resolve = async ({
       date: Date.now(),
       broadcast: true
     }));
+
+    stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
+  }
+
+
+  if (stillToNotifyUsersIds) {
+    // the users who bookmarked but didn't place a bet
+    stillToNotifyUsersIds.map(
+      async (u) =>
+        await amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+          event: notificationEvents.EVENT_RESOLVE,
+          producer: 'system',
+          producerId: 'notification-service',
+          data: {
+            bet,
+            event,
+            userId: u
+          },
+          date: Date.now(),
+          broadcast: true
+        }))
+    );
+
   }
   return bet;
 };
@@ -343,7 +367,8 @@ exports.cancel = async (bet, cancellationReason) => {
 
   if (dbBet) {
     const event = await eventService.getEvent(dbBet.event);
-
+    // add also the bookmarked user to event notification
+    userIds = _.union(userIds, event.bookmarks);
     for (const userId of userIds) {
       amqp.send('universal_events', 'event.event_cancel', JSON.stringify({
         event: notificationEvents.EVENT_CANCEL,
