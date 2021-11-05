@@ -1,19 +1,10 @@
 const mongoose = require('mongoose');
-const WebPurify = require('webpurify');
+const axios = require('axios');
 const { ChatMessage } = require('@wallfair.io/wallfair-commons').models;
 const { ForbiddenError, NotFoundError } = require('../util/error-handler');
 
-const profanityReplacement = '****';
+const profanityReplacement = '*';
 exports.profanityReplacement = profanityReplacement;
-
-const webPurify = process.env.PROFANITY_FILTER_API_KEY && new WebPurify({
-  api_key: process.env.PROFANITY_FILTER_API_KEY,
-  endpoint: 'eu',
-  enterprise: true,
-});
-if (webPurify == null) {
-  console.log('Profanity filter key not found. Profanity filter disabled');
-}
 
 const notificationTypes = {
   EVENT_START: 'Notification/EVENT_START',
@@ -91,12 +82,25 @@ exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
     .exec()
     .then((items) => items[0]);
 
+
+async function replaceProfanity(text) {
+  return axios.get('http://api1.webpurify.com/services/rest/', {
+    params: {
+      method: 'webpurify.live.replace',
+      api_key: process.env.PROFANITY_FILTER_API_KEY,
+      text,
+      replacesymbol: profanityReplacement,
+      format: 'json',
+    },
+  }).then(x => x.data?.rsp.text);
+}
+
 async function profanityFilter(data) {
-  if (!webPurify) {
+  if (!process.env.PROFANITY_FILTER_API_KEY) {
     return data;
   }
 
-  const parsed = await webPurify.replace(data.message, profanityReplacement);
+  const parsed = await replaceProfanity(data.message);
   if (parsed !== data.message) {
     console.debug(`Profanity filter. Replaced '${data.message}' with ${parsed}`);
   }

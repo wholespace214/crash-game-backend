@@ -65,7 +65,6 @@
     "socket.io-redis": "^6.1.1",
     "tslib": "^2.3.1",
     "twilio": "^3.67.2",
-    "webpurify": "^2.1.0",
     "ws": "^7.5.5"
   },
   "devDependencies": {
