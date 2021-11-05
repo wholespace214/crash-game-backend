@@ -10,6 +10,8 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
  * @param {Boolean} userData.confirmed
  * @param {Boolean} userData.admin
  * @param {Date} userData.date
+ * @param {Birth} userData.birthdate //to do
+ * @param {Country} userData.country //to do
  * @param {String} userData.password
  * @param {String} userData.passwordResetToken
  */
