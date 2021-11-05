@@ -302,26 +302,19 @@ exports.resolve = async ({
     // must be done inside transaction
     await userService.increaseAmountWon(userId, winToken);
 
+    const user = await userService.getUserReducedDataById(userId);
+
     // save uniEvent and send notification to this user
     amqp.send('universal_events', 'event.user_reward', JSON.stringify({
       event: notificationEvents.EVENT_USER_REWARD,
       producer: 'system',
       producerId: 'notification-service',
-      data: {
-        bet,
-        event,
-        userId,
-        winToken: winToken.toString(),
-        amountTraded: +investedValues[userId],
-        betOutcome: bet.outcomes[outcomeIndex].name,
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
+      data: { bet, event, userId, user, winToken: winToken.toString() },
+      broadcast: true,
+    });
 
     stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
   }
-
 
   if (stillToNotifyUsersIds) {
     // the users who bookmarked but didn't place a bet
@@ -342,6 +335,7 @@ exports.resolve = async ({
     );
 
   }
+
   return bet;
 };
 

@@ -200,6 +200,7 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
+      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id')
     });
   } catch (err) {
     console.error(err);
@@ -502,10 +503,13 @@ const updateUser = async (req, res, next) => {
     return next(new ErrorHandler(403, 'Action not allowed'));
   }
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = errors.errors[0].nestedErrors[0];
-    return next(new ErrorHandler(400, `${error?.param}: ${error?.value} - ${error?.msg}`));
+  //allow notificationSettings to save without additional params
+  if(req.body.username || req.body.email) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = errors.errors[0].nestedErrors[0];
+      return next(new ErrorHandler(400, `${error?.param}: ${error?.value} - ${error?.msg}`));
+    }
   }
 
   try {
