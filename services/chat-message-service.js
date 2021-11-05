@@ -9,6 +9,7 @@ exports.profanityReplacement = profanityReplacement;
 const webPurify = process.env.PROFANITY_FILTER_API_KEY && new WebPurify({
   api_key: process.env.PROFANITY_FILTER_API_KEY,
   endpoint: 'eu',
+  enterprise: true,
 });
 if (webPurify == null) {
   console.log('Profanity filter key not found. Profanity filter disabled');
