@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const mongoose = require("mongoose");
 const { UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 
 const betsCategory = [

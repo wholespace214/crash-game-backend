@@ -311,7 +311,7 @@ exports.resolve = async ({
       producerId: 'notification-service',
       data: { bet, event, userId, user, winToken: winToken.toString() },
       broadcast: true,
-    });
+    }));
 
     stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
   }
