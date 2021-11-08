@@ -21,9 +21,8 @@ module.exports = {
     }
 
     try {
-      const { password, email, username, ref, recaptchaToken } = req.body;
+      const { password, email, username, ref, recaptchaToken, country, birth } = req.body;
       const { skip } = req.query;
-
       if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
         const recaptchaRes = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
@@ -57,13 +56,13 @@ module.exports = {
       const wFairUserId = new ObjectId().toHexString();
       const counter = ((await userApi.getUserEntriesAmount()) || 0) + 1;
       const passwordHash = await bcrypt.hash(password, 8);
-
       const emailCode = generate(6);
-
       const createdUser = await userApi.createUser({
         _id: wFairUserId,
         email,
         emailCode,
+        birthdate: new Date(birth),
+        country,
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
