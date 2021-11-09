@@ -1,6 +1,7 @@
 // Import the express Router to create routes
 const router = require('express').Router();
-const { publishEvent, notificationEvents } = require('../../services/notification-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('../../services/amqp-service');
 const { removeSubscription } = require('../../services/twitch-service');
 
 // Import Event model
@@ -63,12 +64,14 @@ router.post('/', async (req, res) => {
         event.state = type === 'stream.online' ? 'online' : 'offline';
         await event.save();
 
-        publishEvent(type === 'stream.online' ? notificationEvents.EVENT_ONLINE : notificationEvents.EVENT_OFFLINE, {
+        amqp.send('universal_events', 'event.stream_status', JSON.stringify({
+          event: type === 'stream.online' ? notificationEvents.EVENT_ONLINE : notificationEvents.EVENT_OFFLINE,
           producer: 'system',
           producerId: 'notification-service',
           data: { event },
+          date: Date.now(),
           broadcast: true
-        });
+        }));
       });
     } catch (err) {
       console.log('Twitch webhook event error', err);

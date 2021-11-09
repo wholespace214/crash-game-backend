@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const mongoose = require("mongoose");
 const { UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 
 const betsCategory = [
@@ -50,7 +49,7 @@ exports.listNotificationEventsByBet = async (limit = 10, betId) => {
   let selectedCat = _.get(categories, "bets", []);
 
   return UniversalEvent.find({
-    'data.bet._id': mongoose.Types.ObjectId(betId)
+    'data.bet._id': betId
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
 }
 

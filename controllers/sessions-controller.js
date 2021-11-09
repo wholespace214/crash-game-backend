@@ -9,8 +9,9 @@ const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const { publishEvent, notificationEvents } = require('../services/notification-service');
-const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
+const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require("../util/constants");
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('../services/amqp-service');
 
 module.exports = {
   async createUser(req, res, next) {
@@ -78,8 +79,8 @@ module.exports = {
       if (ref) {
         if (INFLUENCERS.indexOf(ref) > -1) {
           console.debug('[REWARD BY INFLUENCER] ', ref);
-
-          await userService
+          setTimeout(async () => {
+            await userService
             .createUserAwardEvent({
               userId: createdUser.id.toString(),
               awardData: {
@@ -91,6 +92,7 @@ module.exports = {
             .catch((err) => {
               console.error('createUserAwardEvent', err);
             });
+          }, 3000);
 
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
         } else {
@@ -99,7 +101,8 @@ module.exports = {
           const refList = await userService.getRefByUserId(ref);
           //max ref awards elements per user
           if (refList.length <= 10) {
-            await userService
+            setTimeout(async () => {
+              await userService
               .createUserAwardEvent({
                 userId: ref,
                 awardData: {
@@ -111,11 +114,13 @@ module.exports = {
               .catch((err) => {
                 console.error('createUserAwardEvent', err);
               });
+            }, 3000);
           }
         }
       }
 
-      publishEvent(notificationEvents.EVENT_USER_SIGNED_UP, {
+      amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
+        event: notificationEvents.EVENT_USER_SIGNED_UP,
         producer: 'user',
         producerId: createdUser._id,
         data: {
@@ -126,8 +131,9 @@ module.exports = {
           initialReward,
           updatedAt: Date.now(),
         },
-        broadcast: true,
-      });
+        date: Date.now(),
+        broadcast: true
+      }));
 
       await mailService.sendConfirmMail(createdUser);
 
@@ -166,7 +172,8 @@ module.exports = {
         return next(new ErrorHandler(401, 'Invalid login'));
       }
 
-      publishEvent(notificationEvents.EVENT_USER_SIGNED_IN, {
+      amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
+        event: notificationEvents.EVENT_USER_SIGNED_IN,
         producer: 'user',
         producerId: user._id,
         data: {
@@ -176,8 +183,7 @@ module.exports = {
           updatedAt: Date.now(),
         },
         broadcast: true,
-      });
-
+      }));
       res.status(200).json({
         userId: user.id,
         session: await authService.generateJwt(user),
@@ -225,14 +231,15 @@ module.exports = {
       user.passwordResetToken = undefined;
       await user.save();
 
-      publishEvent(notificationEvents.EVENT_USER_CHANGED_PASSWORD, {
+      amqp.send('universal_events', 'event.user_changed_password', JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_PASSWORD,
         producer: 'user',
         producerId: user._id,
         data: {
           email: user.email,
-          passwordResetToken: req.body.passwordResetToken,
-        },
-      });
+          passwordResetToken: req.body.passwordResetToken
+        }
+      }))
 
       return res.status(200).send();
     } catch (err) {
@@ -257,14 +264,16 @@ module.exports = {
       await user.save();
       await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
-      publishEvent(notificationEvents.EVENT_USER_FORGOT_PASSWORD, {
+      amqp.send('universal_events', 'event.user_forgot_password', JSON.stringify({
+        event: notificationEvents.EVENT_USER_FORGOT_PASSWORD,
         producer: 'user',
         producerId: user._id,
         data: {
           email: user.email,
           passwordResetToken: user.passwordResetToken,
-        },
-      });
+        }
+      }))
+
 
       return res.status(200).send();
     } catch (err) {

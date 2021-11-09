@@ -1,12 +1,14 @@
 const userService = require('./user-service');
 const tradeService = require('./trade-service');
 const eventService = require('./event-service');
-const websocketService = require('./websocket-service');
 const { Bet, Trade, Event } = require('@wallfair.io/wallfair-commons').models;
-const { publishEvent, notificationEvents } = require('./notification-service');
+const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const amqp = require('./amqp-service');
+const { onBetPlaced } = require('./quote-storage-service');
 const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
+const _ = require('lodash');
 
 exports.listBets = async (q) => {
   return Bet.find(q).populate('event').map(calculateAllBetsStatus).map(filterPublishedBets);
@@ -123,14 +125,17 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
       console.debug(LOG_TAG, 'Trade saved successfully');
     });
 
-    await eventService.placeBet(user, bet, fromScaledBigInt(amount), outcome);
-
-    publishEvent(notificationEvents.EVENT_BET_PLACED, {
+    amqp.send('universal_events', 'event.bet_placed', JSON.stringify({
+      event: notificationEvents.EVENT_BET_PLACED,
       producer: 'user',
       producerId: userId,
       data: { bet, trade: response.trade, user, event },
-      broadcast: true,
-    });
+      date: Date.now(),
+      broadcast: true
+    }));
+
+    onBetPlaced(bet);
+
     return response;
   } catch (err) {
     console.error(LOG_TAG, err);
@@ -190,16 +195,17 @@ exports.refundUserHistory = async (bet, session) => {
     }
   }
 
-  publishEvent(notificationEvents.EVENT_BET_CANCELED, {
+  amqp.send('universal_events', 'event.bet_canceled', JSON.stringify({
+    event: notificationEvents.EVENT_BET_CANCELED,
     producer: 'system',
     producerId: 'notification-service',
     data: {
       bet,
-      userIds,
+      userIds
     },
-    broadcast: true,
-  });
-
+    date: Date.now(),
+    broadcast: true
+  }));
   return userIds;
 };
 
@@ -221,7 +227,7 @@ exports.resolve = async ({
 
   const bet = await eventService.getBet(betId);
   const event = await Event.findById(bet.event);
-
+  let stillToNotifyUsersIds = event.bookmarks;
   if (bet.status !== 'active' && bet.status !== 'closed') {
     throw new Error('Event can only be resolved if it is active or closed');
   }
@@ -246,12 +252,17 @@ exports.resolve = async ({
       ammInteraction = await betContract.getUserAmmInteractions();
     });
 
-    publishEvent(notificationEvents.EVENT_BET_RESOLVED, {
+    amqp.send('universal_events', 'event.bet_resolved', JSON.stringify({
+      event: notificationEvents.EVENT_BET_RESOLVED,
       producer: 'system',
       producerId: 'notification-service',
-      data: { bet, event },
-      broadcast: true,
-    });
+      data: {
+        bet, event
+      },
+      date: Date.now(),
+      broadcast: true
+    }));
+
   } catch (err) {
     console.debug(err);
   } finally {
@@ -293,23 +304,38 @@ exports.resolve = async ({
 
     const user = await userService.getUserReducedDataById(userId);
 
-    publishEvent(notificationEvents.EVENT_USER_REWARD, {
+    // save uniEvent and send notification to this user
+    amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+      event: notificationEvents.EVENT_USER_REWARD,
       producer: 'system',
       producerId: 'notification-service',
       data: { bet, event, userId, user, winToken: winToken.toString() },
       broadcast: true,
-    });
+    }));
 
-    // send notification to this user
-    websocketService.emitBetResolveNotification(
-      // eslint-disable-line no-unsafe-finally
-      userId,
-      event,
-      bet,
-      +investedValues[userId],
-      winToken
-    );
+    stillToNotifyUsersIds = stillToNotifyUsersIds.filter((u) => u != userId);
   }
+
+  if (stillToNotifyUsersIds) {
+    // the users who bookmarked but didn't place a bet
+    stillToNotifyUsersIds.map(
+      async (u) =>
+        await amqp.send('universal_events', 'event.user_reward', JSON.stringify({
+          event: notificationEvents.EVENT_RESOLVE,
+          producer: 'system',
+          producerId: 'notification-service',
+          data: {
+            bet,
+            event,
+            userId: u
+          },
+          date: Date.now(),
+          broadcast: true
+        }))
+    );
+
+  }
+
   return bet;
 };
 
@@ -335,21 +361,25 @@ exports.cancel = async (bet, cancellationReason) => {
 
   if (dbBet) {
     const event = await eventService.getEvent(dbBet.event);
-
+    // add also the bookmarked user to event notification
+    userIds = _.union(userIds, event.bookmarks);
     for (const userId of userIds) {
-      publishEvent(notificationEvents.EVENT_CANCEL, {
+      amqp.send('universal_events', 'event.event_cancel', JSON.stringify({
+        event: notificationEvents.EVENT_CANCEL,
         producer: 'system',
         producerId: 'notification-service',
         data: {
           userId,
-          eventId: dbBet.event,
+          eventId: event.id,
           eventName: event.name,
-          reasonOfCancellation: dbBet.reasonOfCancellation,
-          previewImageUrl: event.previewImageUrl,
+          eventSlug: event.slug,
+          reasonOfCancellation: cancellationReason,
+          imageUrl: event.previewImageUrl,
+          marketQuestion: dbBet.marketQuestion,
         },
-        broadcast: true,
-      });
-      websocketService.emitEventCancelNotification(userId, event, dbBet);
+        date: Date.now(),
+        broadcast: true
+      }));
     }
   }
 

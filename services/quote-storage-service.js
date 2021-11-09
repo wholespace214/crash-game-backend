@@ -1,5 +1,5 @@
 /**
- * This job listens to bets being placed in the system, and then stores the price of every option after the price has been calculated.
+ * When bets being placed in the system, stores the price of every option after the price has been calculated.
  * This generates a time series to be consumed later to display price action history (how each option delevoped in price over time).
  *
  * TODO Move this logic to a microservice
@@ -13,23 +13,20 @@
  * );
  */
 const format = require('pg-format');
-const DEFAULT_CHANNEL = 'system';
-let subClient;
-
 const { BetContract, Erc20, pool } = require('@wallfair.io/smart_contract_mock');
 const WFAIR = new Erc20('WFAIR');
 let one = parseInt(WFAIR.ONE);
 
 const INSERT_PRICE_ACTION = 'INSERT INTO amm_price_action (betid, trx_timestamp, outcomeindex, quote) values %L'
 
-async function onBetPlaced(message) {
-  const { _id: betId, outcomes } = message.data.bet;
+const onBetPlaced = async (bet) => {
+  const { _id: betId, outcomes } = bet;
   const betContract = new BetContract(betId, outcomes.length);
 
   const timestamp = new Date().toISOString();
   const valuePromises = outcomes.map(
     outcome => betContract.calcBuy(WFAIR.ONE, outcome.index).then(p => [
-      betId,
+      betId.toString(),
       timestamp,
       outcome.index,
       Math.min(1 / (parseInt(p) / one), 1),
@@ -37,47 +34,30 @@ async function onBetPlaced(message) {
   );
 
   const values = await Promise.all(valuePromises);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });
 }
 
-async function onNewBet(message) {
-  const { _id: betId, outcomes } = message.data.bet;
+const onNewBet = async (bet) => {
+  const { _id: betId, outcomes } = bet;
   const initialQuote = 1 / outcomes.length;
   const timestamp = new Date();
   timestamp.setMinutes(timestamp.getMinutes() - 5);
   const values = outcomes.map(outcome => [
-    betId,
+    betId.toString(),
     timestamp.toISOString(),
     outcome.index,
     initialQuote,
   ]);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(()=> {
+  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });
 }
 
 module.exports = {
-  initQuoteJobs: (_subClient) => {
-    subClient = _subClient;
-
-    subClient.subscribe(DEFAULT_CHANNEL, (error, channel) => {
-      console.log(error || 'QuoteStorageJob subscribed to channel:', channel);
-    });
-
-    subClient.on('message', async (_, message) => {
-      const messageObj = JSON.parse(message);
-      if (messageObj.event === 'Notification/EVENT_BET_PLACED') {
-        await onBetPlaced(messageObj);
-        return;
-      }
-
-      if (messageObj.event === 'Notification/EVENT_NEW_BET') {
-        await onNewBet(messageObj);
-      }
-    });
-  }
+  onNewBet,
+  onBetPlaced
 }
