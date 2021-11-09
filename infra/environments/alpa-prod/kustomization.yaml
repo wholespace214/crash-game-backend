@@ -5,9 +5,9 @@ resources:
 - podDisruptionBudget.yaml
 - certificate.yaml
 
-namespace: production
+namespace: alpa-prod
 commonLabels:
-  environment: production
+  environment: alpa-prod
 
 configMapGenerator:
   - name: backend-config
