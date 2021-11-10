@@ -5,53 +5,34 @@ exports.getProbabilityMap = (outcomes) =>
   );
 
 /**
- * 
- * @param {number} probability 
- * @param {bigint} liquidity 
- * @param {number} numberOfOutcomes 
- */
-exports.calculateBalanceByProbability = (probability, liquidity, numberOfOutcomes) => {
-  const baseProbability = 1 / numberOfOutcomes;
-  const outcomeDelta = probability - baseProbability;
-  const roundedOutcomeDelta = BigInt(Math.round(outcomeDelta * 100));
-  const balanceDelta = (roundedOutcomeDelta * liquidity) / 100n;
-  return liquidity - balanceDelta;
-};
-
-/**
  * @param {bigint} liquidity 
  * @param {{ [key: number]: string }} probabilities 
  * @returns { bigint[] }
  */
-exports.getOutcomeBalancesByProbability = (liquidity, probabilities) => {
-  const balances = Object.keys(probabilities)
+exports.getOutcomeDistributionHints = (probabilities) => {
+  const hints = Object.keys(probabilities)
     .sort()
     .map(
-      (outcomeKey, _, { length }) =>
-        this.calculateBalanceByProbability(
-          +probabilities[outcomeKey],
-          liquidity,
-          length,
-        )
+      (outcomeKey) => BigInt(Math.round(+probabilities[outcomeKey] * 100))
     );
 
-  const pooledBalance = balances.reduce((sum, balance) => sum + balance, 0n);
-  const targetPool = BigInt(balances.length) * liquidity
+  const pooledHints = hints.reduce((sum, hint) => sum + hint, 0n);
+  const targetPool = 100n;
 
-  if (pooledBalance !== targetPool) {
+  if (pooledHints !== targetPool) {
 
     let lowestValueIndex = 0;
-    for (const balanceIndex in balances) {
-      if (balances[balanceIndex] < balances[lowestValueIndex]) {
-        lowestValueIndex = balanceIndex;
+    for (const hintIndex in hints) {
+      if (hints[hintIndex] < hints[lowestValueIndex]) {
+        lowestValueIndex = hintIndex;
       }
     }
 
-    const unclaimedBalance = targetPool - pooledBalance;
-    balances[lowestValueIndex] += unclaimedBalance;
+    const unclaimedDistribution = targetPool - pooledHints;
+    hints[lowestValueIndex] += unclaimedDistribution;
   }
 
-  return balances;
+  return hints;
 };
 
 /**

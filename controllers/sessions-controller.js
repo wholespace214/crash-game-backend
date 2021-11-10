@@ -81,17 +81,17 @@ module.exports = {
           console.debug('[REWARD BY INFLUENCER] ', ref);
           setTimeout(async () => {
             await userService
-            .createUserAwardEvent({
-              userId: createdUser.id.toString(),
-              awardData: {
-                type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
-                award: WFAIR_REWARDS.registeredByInfluencer,
-                ref,
-              },
-            })
-            .catch((err) => {
-              console.error('createUserAwardEvent', err);
-            });
+              .createUserAwardEvent({
+                userId: createdUser.id.toString(),
+                awardData: {
+                  type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
+                  award: WFAIR_REWARDS.registeredByInfluencer,
+                  ref,
+                },
+              })
+              .catch((err) => {
+                console.error('createUserAwardEvent', err);
+              });
           }, 3000);
 
           initialReward += WFAIR_REWARDS.registeredByInfluencer;
@@ -103,17 +103,17 @@ module.exports = {
           if (refList.length <= 10) {
             setTimeout(async () => {
               await userService
-              .createUserAwardEvent({
-                userId: ref,
-                awardData: {
-                  type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
-                  award: WFAIR_REWARDS.referral,
-                  ref,
-                },
-              })
-              .catch((err) => {
-                console.error('createUserAwardEvent', err);
-              });
+                .createUserAwardEvent({
+                  userId: ref,
+                  awardData: {
+                    type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
+                    award: WFAIR_REWARDS.referral,
+                    ref,
+                  },
+                })
+                .catch((err) => {
+                  console.error('createUserAwardEvent', err);
+                });
             }, 3000);
           }
         }
@@ -163,10 +163,11 @@ module.exports = {
         return next(new ErrorHandler(401, 'Invalid login'));
       }
 
-      const valid = user && (await bcrypt.compare(password, user.password));
       if (user.status === 'locked') {
         return next(new ErrorHandler(403, 'Your account is locked'));
       }
+
+      const valid = user && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
         return next(new ErrorHandler(401, 'Invalid login'));
