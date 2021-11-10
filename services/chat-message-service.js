@@ -82,6 +82,7 @@ async function replaceProfanity(text) {
       text,
       replacesymbol: profanityReplacement,
       format: 'json',
+      lang: 'en,de,ru' // check english, german and russian
     },
   }).then(x => x.data?.rsp.text);
 }
