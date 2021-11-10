@@ -25,7 +25,7 @@
     "@aws-sdk/s3-request-presigner": "^3.35.0",
     "@sendgrid/mail": "^7.4.7",
     "@wallfair.io/smart_contract_mock": "^0.8.0",
-    "@wallfair.io/wallfair-commons": "^1.8.0",
+    "@wallfair.io/wallfair-commons": "^1.7.21",
     "admin-bro": "^4.0.1",
     "amqplib": "^0.8.0",
     "auth0": "^2.36.2",
