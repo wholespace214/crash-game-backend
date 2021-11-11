@@ -5,7 +5,7 @@ metadata:
 spec:
   secretName: backend-cert-secret
   issuerRef:
-    name: letsencrypt-issuer
+    name: letsencrypt-issuer-kong
     kind: ClusterIssuer
   dnsNames:
   - api.alpacasino.io
