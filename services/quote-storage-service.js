@@ -13,7 +13,8 @@
  * );
  */
 const format = require('pg-format');
-const { BetContract, Erc20, pool } = require('@wallfair.io/smart_contract_mock');
+const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+const { getPostgresConnection }  = require('@wallfair.io/wallfair-commons').utils;
 const WFAIR = new Erc20('WFAIR');
 let one = parseInt(WFAIR.ONE);
 
@@ -34,7 +35,7 @@ const onBetPlaced = async (bet) => {
   );
 
   const values = await Promise.all(valuePromises);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
+  await getPostgresConnection().query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });
@@ -51,7 +52,7 @@ const onNewBet = async (bet) => {
     outcome.index,
     initialQuote,
   ]);
-  await pool.query(format(INSERT_PRICE_ACTION, values)).catch(() => {
+  await getPostgresConnection().query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
   });
