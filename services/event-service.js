@@ -207,7 +207,7 @@ exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liqui
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
   const betContract = new BetContract(createBet.id, createBet.outcomes.length);
   const liquidity = BigInt(liquidityAmount) * WFAIR.ONE;
-  const outcomeBalanceDistribution = outcomesUtil.getOutcomeBalancesByProbability(liquidity, probabilityDistribution);
+  const distributionHint = outcomesUtil.getOutcomeDistributionHints(probabilityDistribution);
 
   console.debug(LOG_TAG, 'Minting new Tokens');
   await WFAIR.mint(liquidityProviderWallet, liquidity);
@@ -215,7 +215,7 @@ exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liqui
   await betContract.addLiquidity(
     liquidityProviderWallet,
     liquidity,
-    outcomeBalanceDistribution,
+    distributionHint,
   );
 };
 
