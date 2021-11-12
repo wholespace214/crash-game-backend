@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const mongoose = require("mongoose");
 const { UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
 
 const betsCategory = [
@@ -23,24 +22,28 @@ const usersCategory = [
   'Notification/EVENT_USER_CHANGED_ABOUT_ME'
 ]
 
-const elonGameCategory = [
+const gameCategory = [
   'Casino/CASINO_PLACE_BET',
   'Casino/CASINO_CASHOUT',
   'Casino/EVENT_CASINO_LOST'
 ]
 
 const categories = {
-  'all': [...betsCategory, ...usersCategory, ...elonGameCategory],
+  'all': [...betsCategory, ...usersCategory, ...gameCategory],
   'bets': betsCategory,
   'users': usersCategory,
-  'elongame': elonGameCategory
+  'game': gameCategory
 }
 
-exports.listNotificationEvents = async (limit = 10, cat) => {
+exports.listNotificationEvents = async (limit = 10, cat, gameId) => {
   let selectedCat = _.get(categories, cat, []);
 
   if(!cat) {
     selectedCat = categories.all;
+  }
+
+  if(cat === 'game' && gameId) {
+    return UniversalEvent.find({'data.gameTypeId': gameId}).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
   }
 
   return UniversalEvent.find({}).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
@@ -50,7 +53,7 @@ exports.listNotificationEventsByBet = async (limit = 10, betId) => {
   let selectedCat = _.get(categories, "bets", []);
 
   return UniversalEvent.find({
-    'data.bet._id': mongoose.Types.ObjectId(betId)
+    'data.bet._id': betId
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
 }
 

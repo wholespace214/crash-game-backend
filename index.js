@@ -13,7 +13,6 @@ const mongoose = require('mongoose');
 // Import Models from Wallfair Commons
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
-const jwt = require('jsonwebtoken');
 
 let mongoURL = process.env.DB_CONNECTION;
 
@@ -22,7 +21,14 @@ let mongoURL = process.env.DB_CONNECTION;
  * @type import('cors').CorsOptions
  */
 const corsOptions = {
-  origin: '*',
+  origin: ["wallfair.io",
+    /\.wallfair\.io$/,
+    "alpacasino.io",
+    /\.alpacasino\.io$/,
+    /\.ngrok\.io$/,
+    /\.netlify\.app$/,
+    /localhost:?.*$/m,
+  ],
   credentials: true,
   allowedMethods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: [
@@ -58,6 +64,9 @@ async function connectMongoDB() {
 async function main() {
   const mongoDBConnection = await connectMongoDB();
 
+  const amqp = require('./services/amqp-service');
+  amqp.init();
+
   // Import Admin service
   const adminService = require('./services/admin-service');
   adminService.setMongoose(mongoDBConnection);
@@ -72,9 +81,6 @@ async function main() {
   const { initYoutubeCheckJob } = require('./jobs/youtube-live-check-job');
   initYoutubeCheckJob();
 
-  // Import Socket.io service
-  const websocketService = require('./services/websocket-service');
-
   // Import cors
   const cors = require('cors');
 
@@ -83,47 +89,8 @@ async function main() {
   const httpServer = http.createServer(server);
   server.use(cors(corsOptions));
 
-  // Create socket.io server
-  const { Server } = require('socket.io');
-  const io = new Server(httpServer, {
-    cors: corsOptions,
-  });
-
-  // Create Redis pub and sub clients
-  const { createClient } = require('redis');
-  const pubClient = createClient({
-    url: process.env.REDIS_CONNECTION,
-    no_ready_check: false,
-  });
-  const subClient = createClient({
-    url: process.env.REDIS_CONNECTION,
-    no_ready_check: false,
-  });
-
-  const { init } = require('./services/notification-service');
-  init(pubClient);
-
-  const { initQuoteJobs } = require('./jobs/quote-storage-job');
-  initQuoteJobs(subClient);
-
   const awsS3Service = require('./services/aws-s3-service');
   awsS3Service.init();
-
-  websocketService.setPubClient(pubClient);
-
-  // When message arrive from Redis, disseminate to proper channels
-  subClient.on('message', (_, message) => {
-    // console.log(`[REDIS] Incoming : ${message}`);
-    const messageObj = JSON.parse(message);
-
-    if (messageObj.to === '*') {
-      io.of('/').emit(messageObj.event, messageObj.data);
-    } else {
-      io.of('/').to(messageObj.to).emit(messageObj.event, messageObj.data);
-    }
-  });
-
-  subClient.subscribe('message');
 
   // Jwt verification
   const passport = require('passport');
@@ -187,31 +154,6 @@ async function main() {
   // eslint-disable-next-line no-unused-vars
   server.use((err, req, res, next) => {
     handleError(err, res);
-  });
-
-  io.use((socket, next) => {
-    let userId;
-
-    try {
-      const token = jwt.verify(socket.handshake.query.token, process.env.JWT_KEY);
-      userId = token.userId;
-    } catch (e) {
-      console.debug('[SOCKET] Non-logged in user connected');
-    }
-
-    socket.userId = userId;
-    next();
-  });
-
-  io.on('connection', (socket) => {
-    const userId = socket.userId;
-
-    socket.on('chatMessage', (data) => {
-      if (userId) websocketService.handleChatMessage(socket, data, userId);
-    });
-    socket.on('joinRoom', (data) => websocketService.handleJoinRoom(socket, data, userId));
-
-    socket.on('leaveRoom', (data) => websocketService.handleLeaveRoom(socket, data, userId));
   });
 
   // Let server run and listen

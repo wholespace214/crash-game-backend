@@ -1,8 +1,8 @@
 const notificationEventsService = require('../services/notification-events-service');
 
 exports.listNotificationEvents = async (req, res) => {
-  const {limit, cat} = req.query;
-  const eventList = await notificationEventsService.listNotificationEvents(limit, cat);
+  const {limit, cat, gameId} = req.query;
+  const eventList = await notificationEventsService.listNotificationEvents(limit, cat, gameId);
   res.status(200).json(eventList);
 };
 

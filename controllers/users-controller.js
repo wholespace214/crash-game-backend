@@ -197,6 +197,7 @@ const getUserInfo = async (req, res, next) => {
       rank,
       toNextRank,
       amountWon: user.amountWon,
+      tokensRequestedAt: user.tokensRequestedAt,
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
@@ -594,7 +595,17 @@ const requestTokens = async (req, res, next) => {
     if (balance >= toScaledBigInt(5000) || balance < 0) {
       return next(new ErrorHandler(403, 'Action not allowed'));
     }
+    if(
+      user.tokensRequestedAt
+      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
+    ){
+      return next(new ErrorHandler(
+        403,
+        'Action not allowed. You can request new tokens after 1 hour since last request'
+      ));
+    }
 
+    user.tokensRequestedAt = new Date().toISOString()
     user.amountWon = 0;
     await WFAIR.mint(userId, toScaledBigInt(5000) - balance);
     await user.save();
