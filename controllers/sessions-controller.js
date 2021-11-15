@@ -148,6 +148,84 @@ module.exports = {
     }
   },
 
+  async loginThroughProvider(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(new ErrorHandler(422, errors));
+    }
+
+    try {
+      const { provider } = req.params;
+
+      const userData = await authService.getUserDataForProvider(provider, req.body);
+      const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
+
+      if (existingUser) { // if exists, log user in
+        amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_IN,
+          producer: 'user',
+          producerId: existingUser._id,
+          data: {
+            userIdentifier: existingUser.email,
+            userId: existingUser._id,
+            username: existingUser.username,
+            updatedAt: Date.now(),
+          },
+          broadcast: true,
+        }));
+        res.status(200).json({
+          userId: existingUser.id,
+          session: await authService.generateJwt(existingUser),
+          newUser: false,
+        });
+      } else { // create user and log them it 
+        const eighteenYearsAgo = new Date();
+        eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
+        if (userData.birthdate > eighteenYearsAgo) {
+          throw new Error('Not old enough to use the platform.');
+        }
+
+        const createdUser = await userApi.createUser({
+          _id: new ObjectId().toHexString(),
+          ...userData,
+          ...!userData.emailConfirmed && { emailCode: generate(6) },
+          preferences: {
+            currency: 'WFAIR',
+          },
+        });
+
+        await userService.mintUser(createdUser.id.toString());
+
+        const initialReward = 5000;
+        amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_UP,
+          producer: 'user',
+          producerId: createdUser._id,
+          data: {
+            email: createdUser.email,
+            userId: createdUser._id,
+            username: createdUser.username,
+            initialReward,
+            updatedAt: Date.now(),
+            provider,
+          },
+          date: Date.now(),
+          broadcast: true
+        }));
+
+        return res.status(200).json({
+          userId: createdUser.id,
+          session: await authService.generateJwt(createdUser),
+          newUser: true,
+          initialReward,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      return res.status(400).json({ message: e.message });
+    }
+  },
+
   async login(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
