@@ -3,8 +3,7 @@
 resources:
 - ../../application
 - podDisruptionBudget.yaml
-- certificate.yaml
-- geoblockOverride.yaml
+#- certificate.yaml
 
 namespace: alpa-prod
 commonLabels:
@@ -23,3 +22,4 @@ patches:
 - replicasPatch.yaml
 - hpaPatch.yaml
 - priorityPatch.yaml
+- geoblockOverride.yaml

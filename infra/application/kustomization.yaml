@@ -1,6 +1,7 @@
 resources:
   - backend-prod-deploy.yaml
   - ingress-prod.yaml
+  - geoblockOverride.yaml
 
 configMapGenerator:
   - name: backend-config
