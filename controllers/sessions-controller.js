@@ -181,8 +181,8 @@ module.exports = {
       } else { // create user and log them it 
         const eighteenYearsAgo = new Date();
         eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
-        if (userData.birthdate > eighteenYearsAgo) {
-          throw new Error('Not old enough to use the platform.');
+        if (userData.birthdate && userData.birthdate > eighteenYearsAgo) {
+          throw new Error('USER_NOT_OF_LEGAL_AGE');
         }
 
         const createdUser = await userApi.createUser({
@@ -218,11 +218,13 @@ module.exports = {
           session: await authService.generateJwt(createdUser),
           newUser: true,
           initialReward,
+          user: createdUser,
         });
       }
     } catch (e) {
-      console.error(e);
-      return res.status(400).json({ message: e.message });
+      console.log(e);
+      const errorCode = e.message === e.message.toUpperCase() ? e.message : 'UNKNOWN'
+      return res.status(400).json({ errorCode });
     }
   },
 

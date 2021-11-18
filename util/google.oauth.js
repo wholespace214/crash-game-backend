@@ -31,16 +31,16 @@ exports.getGoogleUserData = async ({ code }) => {
 
   const primary = ({ metadata }) => metadata.primary;
 
-  const email = emailAddresses.find(primary)?.value;
-  const name = names.find(primary)?.displayName;
-  const profilePicture = photos.find(primary)?.url;
-  const { year, month, day } = birthdays.find(primary)?.date;
+  const email = emailAddresses?.find(primary)?.value;
+  const name = names?.find(primary)?.displayName;
+  const profilePicture = photos?.find(primary)?.url;
+  const birthday = birthdays?.find(primary)?.date;
+  let birthdate = null;
 
-  if (!birthdays.find(primary).date || !year) {
-    throw new Error(`User's birthday is missing.`);
+  if (birthday) {
+    const { year, month, day } = birthday;
+    birthdate = new Date(year, month - 1, day);
   }
-
-  const birthdate = new Date(year, month - 1, day);
 
   return {
     email,
