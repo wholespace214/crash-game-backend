@@ -1,0 +1,86 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress-geoblock
+  annotations:
+    kubernetes.io/ingress.class: "kong"
+    konghq.com/protocols: "https"
+    kubernetes.io/tls-acme: "true"
+    konghq.com/https-redirect-status-code: "301"
+    # reference production issuer
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer-kong"
+    konghq.com/override: geoblock-routing-backend
+spec:
+  tls:
+  - hosts:
+    - staging-api.alpacasino.io
+    secretName: backend-cert-secret
+  rules:
+  - host: staging-api.alpacasino.io
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: geoblock-static
+              port:
+                number: 80
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+    name: geoblock-routing-backend
+route:
+  headers:
+    Cf-Ipcountry: 
+    - US
+    - AS
+    - GU
+    - MP
+    - PR
+    - VI
+    - FR
+    - GF
+    - GP
+    - MQ
+    - MF
+    - BL
+    - PF
+    - NC
+    - WF
+    - TF
+    - YT
+    - RE
+    - PM
+    - NL
+    - AW
+    - CW
+    - SX
+    - BQ
+    - AU
+    - NT
+    - AQ
+    - CX
+    - QO
+    - CC
+    - HM
+    - NF
+    - GB
+    - ES
+    - CY
+    - TR
+    - CN
+    - AE
+    - KH
+    - QA
+    - LB
+    - PL
+    - SG
+    - JP
+    - SA
+    - JO
+    - YE
+    - KW
+    - OM
+ 

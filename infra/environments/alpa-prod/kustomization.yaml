@@ -3,6 +3,7 @@
 resources:
 - ../../application
 - podDisruptionBudget.yaml
+#- certificate.yaml
 - certificate.yaml
 # - geoblockOverride.yaml
 
@@ -23,3 +24,4 @@ patches:
 - replicasPatch.yaml
 - hpaPatch.yaml
 - priorityPatch.yaml
+- geoblockOverride.yaml
