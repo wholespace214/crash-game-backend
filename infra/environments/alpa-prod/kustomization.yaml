@@ -4,6 +4,8 @@ resources:
 - ../../application
 - podDisruptionBudget.yaml
 #- certificate.yaml
+- certificate.yaml
+# - geoblockOverride.yaml
 
 namespace: alpa-prod
 commonLabels:
