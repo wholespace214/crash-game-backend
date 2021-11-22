@@ -24,4 +24,4 @@ patches:
 - replicasPatch.yaml
 - hpaPatch.yaml
 - priorityPatch.yaml
-- geoblockOverride.yaml
+#- geoblockOverride.yaml
