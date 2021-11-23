@@ -21,7 +21,15 @@ let mongoURL = process.env.DB_CONNECTION;
  * @type import('cors').CorsOptions
  */
 const corsOptions = {
-  origin: '*',
+  origin: ["wallfair.io",
+    /\.wallfair\.io$/,
+    "alpacasino.io",
+    "https://alpacasino.io",
+    /\.alpacasino\.io$/,
+    /\.ngrok\.io$/,
+    /\.netlify\.app$/,
+    /localhost:?.*$/m,
+  ],
   credentials: true,
   allowedMethods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: [
