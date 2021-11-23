@@ -24,6 +24,7 @@ const corsOptions = {
   origin: ["wallfair.io",
     /\.wallfair\.io$/,
     "alpacasino.io",
+    "https://alpacasino.io",
     /\.alpacasino\.io$/,
     /\.ngrok\.io$/,
     /\.netlify\.app$/,
