@@ -20,7 +20,8 @@ const getGoogleUserMeta = async (token) => {
     { headers: { 'Authorization': `Bearer ${token}` }, }
   )
     .then(({ data }) => data)
-    .catch(() => {
+    .catch((e) => {
+      console.log(e.message);
       throw new Error(`Could not get user's data.`);
     });
 }
