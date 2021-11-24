@@ -358,11 +358,11 @@ const getHistory = async (req, res, next) => {
         const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
         const outcomeTokensBought = isWin
           ? fromScaledBigInt(
-              bigDecimal.multiply(
-                BigInt(casinoTrade.stakedamount),
-                parseFloat(casinoTrade.crashfactor)
-              )
+            bigDecimal.multiply(
+              BigInt(casinoTrade.stakedamount),
+              parseFloat(casinoTrade.crashfactor)
             )
+          )
           : 0;
         const direction = isWin ? 'PAYOUT' : 'BUY';
 
@@ -505,7 +505,7 @@ const updateUser = async (req, res, next) => {
   }
 
   //allow notificationSettings to save without additional params
-  if(req.body.username || req.body.email) {
+  if (req.body.username || req.body.email) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = errors.errors[0].nestedErrors[0];
@@ -595,10 +595,10 @@ const requestTokens = async (req, res, next) => {
     if (balance >= toScaledBigInt(5000) || balance < 0) {
       return next(new ErrorHandler(403, 'Action not allowed'));
     }
-    if(
+    if (
       user.tokensRequestedAt
       && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
-    ){
+    ) {
       return next(new ErrorHandler(
         403,
         'Action not allowed. You can request new tokens after 1 hour since last request'
