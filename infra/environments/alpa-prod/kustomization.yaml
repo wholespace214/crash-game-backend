@@ -3,9 +3,7 @@
 resources:
 - ../../application
 - podDisruptionBudget.yaml
-#- certificate.yaml
 - certificate.yaml
-# - geoblockOverride.yaml
 
 namespace: alpa-prod
 commonLabels:
@@ -18,10 +16,8 @@ configMapGenerator:
       - environment
       
 patches:
-- ingressPatch.yaml
 - prodConfigPatch.yaml
 - resourcesPatch.yaml
 - replicasPatch.yaml
 - hpaPatch.yaml
 - priorityPatch.yaml
-- geoblockOverride.yaml
