@@ -21,7 +21,7 @@ module.exports = {
     }
 
     try {
-      const { password, email, username, ref, recaptchaToken, country, birth } = req.body;
+      const { password, email, username, ref, recaptchaToken } = req.body;
       const { skip } = req.query;
       if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
         const recaptchaRes = await axios.post(
@@ -61,8 +61,6 @@ module.exports = {
         _id: wFairUserId,
         email,
         emailCode,
-        birthdate: new Date(birth),
-        country,
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
@@ -155,7 +153,7 @@ module.exports = {
     }
 
     try {
-      const { provider } = req.params;
+      const { provider, ref } = req.params;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
@@ -188,10 +186,12 @@ module.exports = {
         const createdUser = await userApi.createUser({
           _id: new ObjectId().toHexString(),
           ...userData,
+          birthdate: null,
           ...!userData.emailConfirmed && { emailCode: generate(6) },
           preferences: {
             currency: 'WFAIR',
           },
+          ref
         });
 
         await userService.mintUser(createdUser.id.toString());
