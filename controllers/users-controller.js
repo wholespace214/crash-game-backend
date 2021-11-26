@@ -201,7 +201,8 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
-      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id')
+      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
+      alpacaBuilderProps: user.alpacaBuilderProps
     });
   } catch (err) {
     console.error(err);
@@ -520,7 +521,7 @@ const updateUser = async (req, res, next) => {
       username: user.username,
       email: user.email,
       aboutMe: user.aboutMe,
-      profilePicture: user.profilePicture,
+      profilePicture: user.profilePicture
     });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
