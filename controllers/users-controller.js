@@ -3,11 +3,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet
+  initDb, Wallet
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
-  CASINO_TRADE_STATE
+  CASINO_TRADE_STATE,
+  initDatabase
 } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
@@ -21,9 +22,23 @@ const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
 
+let _wallet = null;
+const getWallet = async () => {
+  if (!_wallet) {
+    await initDb();
+    _wallet = new Wallet();
+  }
+  return _wallet;
+};
 const WFAIR_TOKEN = 'WFAIR';
-const WFAIR = new Wallet();
-const casinoContract = new CasinoTradeContract('CASINO');
+let _casinoContract = null;
+const getCasinoContract = async () => {
+  if (!_casinoContract) {
+    await initDatabase();
+    _casinoContract = new CasinoTradeContract('CASINO');
+  }
+  return _casinoContract;
+};
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -181,6 +196,7 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
+    const WFAIR = await getWallet();
     const balance = BigInt(await WFAIR.getBalance(userId));
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
@@ -331,6 +347,7 @@ const getHistory = async (req, res, next) => {
 
   try {
     if (user) {
+      const casinoContract = await getCasinoContract();
       const interactions = await casinoContract.getAMMInteractions(user.id);
       const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
         CASINO_TRADE_STATE.LOCKED,
@@ -393,6 +410,7 @@ const getTradeHistory = async (req, res, next) => {
   }
 
   try {
+    const casinoContract = await getCasinoContract();
     const interactions = await casinoContract.getAMMInteractions(user.id);
     const finalizedTrades = await tradeService.getTradesByUserIdAndStatuses(user.id, [
       'closed',
@@ -587,6 +605,7 @@ const updateStatus = async (req, res, next) => {
 
 const requestTokens = async (req, res, next) => {
   try {
+    const WFAIR = await getWallet();
     const userId = req.user.id;
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));

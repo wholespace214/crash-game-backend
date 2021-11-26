@@ -46,7 +46,7 @@ const corsOptions = {
 
 // Connection to Database
 async function connectMongoDB() {
-  const connection = await mongoose.connect(mongoURL, {
+  await mongoose.connect(mongoURL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -56,10 +56,10 @@ async function connectMongoDB() {
   });
   console.log('Connection to Mongo-DB successful');
 
-  wallfair.initModels(connection);
+  wallfair.initModels(mongoose);
   console.log('Mongoose models initialized');
 
-  return connection;
+  return mongoose;
 }
 
 async function main() {
