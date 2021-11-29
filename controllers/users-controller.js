@@ -7,8 +7,7 @@ const {
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
-  CASINO_TRADE_STATE,
-  initDatabase
+  CASINO_TRADE_STATE
 } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
@@ -24,14 +23,7 @@ const bigDecimal = require('js-big-decimal');
 
 const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
-let _casinoContract = null;
-const getCasinoContract = async () => {
-  if (!_casinoContract) {
-    await initDatabase();
-    _casinoContract = new CasinoTradeContract('CASINO');
-  }
-  return _casinoContract;
-};
+const casinoContract = new CasinoTradeContract();
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -339,7 +331,6 @@ const getHistory = async (req, res, next) => {
 
   try {
     if (user) {
-      const casinoContract = await getCasinoContract();
       const interactions = await casinoContract.getAMMInteractions(user.id);
       const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
         CASINO_TRADE_STATE.LOCKED,
@@ -402,7 +393,6 @@ const getTradeHistory = async (req, res, next) => {
   }
 
   try {
-    const casinoContract = await getCasinoContract();
     const interactions = await casinoContract.getAMMInteractions(user.id);
     const finalizedTrades = await tradeService.getTradesByUserIdAndStatuses(user.id, [
       'closed',
