@@ -3,7 +3,7 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { initDb, Wallet } = require('@wallfair.io/trading-engine');
+const { Wallet } = require('@wallfair.io/trading-engine');
 const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
@@ -13,14 +13,7 @@ const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
-let _wallet = null;
-const getWallet = async () => {
-  if (!_wallet) {
-    await initDb();
-    _wallet = new Wallet();
-  }
-  return _wallet;
-};
+const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
 const one = 10000n;
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
@@ -131,7 +124,6 @@ exports.payoutUser = async (userId, bet) => {
 };
 
 exports.getBalanceOf = async (userId) => {
-  const WFAIR = await getWallet();
   fromScaledBigInt(BigInt(await WFAIR.getBalance(userId)));
 }
 
@@ -139,7 +131,6 @@ const INITIAL_LIQUIDITY = 5000n;
 
 exports.mintUser = async (userId, amount) => {
   const beneficiary = {owner:userId, namespace: 'usr', symbol: WFAIR_TOKEN};
-  const WFAIR = await getWallet();
   await WFAIR.mint(beneficiary, amount ? BigInt(amount) * one : INITIAL_LIQUIDITY * one);
 };
 

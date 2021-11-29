@@ -14,6 +14,8 @@ const mongoose = require('mongoose');
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
+const { initDb } = require('@wallfair.io/trading-engine');
+
 let mongoURL = process.env.DB_CONNECTION;
 
 /**
@@ -64,6 +66,9 @@ async function connectMongoDB() {
 
 async function main() {
   const mongoDBConnection = await connectMongoDB();
+
+  // Initialize the postgres database
+  await initDb();
 
   const amqp = require('./services/amqp-service');
   amqp.init();

@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  initDb, Wallet
+  Wallet
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -22,14 +22,7 @@ const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
 
-let _wallet = null;
-const getWallet = async () => {
-  if (!_wallet) {
-    await initDb();
-    _wallet = new Wallet();
-  }
-  return _wallet;
-};
+const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
 let _casinoContract = null;
 const getCasinoContract = async () => {
@@ -196,7 +189,6 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const WFAIR = await getWallet();
     const balance = BigInt(await WFAIR.getBalance(userId));
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
@@ -605,7 +597,6 @@ const updateStatus = async (req, res, next) => {
 
 const requestTokens = async (req, res, next) => {
   try {
-    const WFAIR = await getWallet();
     const userId = req.user.id;
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));

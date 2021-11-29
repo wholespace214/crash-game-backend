@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require("../util/constants");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const { Account } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 
 module.exports = {
@@ -70,6 +71,8 @@ module.exports = {
         },
         ref,
       });
+
+      await new Account().createUser(wFairUserId);
 
       // TODO: When there's time, delete Auth0 user if WFAIR creation fails
 
@@ -178,7 +181,7 @@ module.exports = {
           session: await authService.generateJwt(existingUser),
           newUser: false,
         });
-      } else { // create user and log them it 
+      } else { // create user and log them it
         const eighteenYearsAgo = new Date();
         eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
         if (userData.birthdate && userData.birthdate > eighteenYearsAgo) {
