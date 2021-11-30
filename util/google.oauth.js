@@ -16,7 +16,7 @@ const getGoogleTokenForAuthCode = async (code) => {
 
 const getGoogleUserMeta = async (token) => {
   return await axios.get(
-    'https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,birthdays,photos',
+    'https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,birthdays',
     { headers: { 'Authorization': `Bearer ${token}` }, }
   )
     .then(({ data }) => data)
@@ -28,13 +28,12 @@ const getGoogleUserMeta = async (token) => {
 
 exports.getGoogleUserData = async ({ code }) => {
   const { access_token } = await getGoogleTokenForAuthCode(code);
-  const { names, photos, birthdays, emailAddresses } = await getGoogleUserMeta(access_token);
+  const { names, birthdays, emailAddresses } = await getGoogleUserMeta(access_token);
 
   const primary = ({ metadata }) => metadata.primary;
 
   const email = emailAddresses?.find(primary)?.value;
   const name = names?.find(primary)?.displayName;
-  const profilePicture = photos?.find(primary)?.url;
   const birthday = birthdays?.find(primary)?.date;
   let birthdate = null;
 
@@ -47,7 +46,6 @@ exports.getGoogleUserData = async ({ code }) => {
     email,
     username: email.split('@')[0],
     name,
-    profilePicture,
     birthdate,
     emailConfirmed: true,
   };

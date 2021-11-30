@@ -1,10 +1,9 @@
-const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+// const { BetContract } = require('@wallfair.io/smart_contract_mock');
 
 // Import User, Bet and Event models
 const { User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade } =
   require('@wallfair.io/wallfair-commons').models;
-
-const WFAIR = new Erc20('WFAIR');
+const one = 10000n;
 const flatten = require('flat');
 
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -138,8 +137,8 @@ exports.initialize = function () {
                 await session.withTransaction(async () => {
                   dbBet = await eventService.getBet(request.params.recordId, session);
 
-                  const betContract = new BetContract(dbBet.id);
-                  await betContract.refund();
+                  // const betContract = new BetContract(dbBet.id);
+                  // await betContract.refund();
 
                   dbBet.canceled = true;
                   dbBet.reasonOfCancellation = request.fields.reason;
@@ -229,12 +228,12 @@ exports.initialize = function () {
 
                     await betService.clearOpenBets(bet, session);
                     await bet.save({ session });
-                    const betContract = new BetContract(id);
-                    resolveResults = await betContract.resolveAndPayout(
-                      'Wallfair Admin User',
-                      indexOutcome
-                    );
-                    ammInteraction = await betContract.getUserAmmInteractions();
+                    // const betContract = new BetContract(id);
+                    // resolveResults = await betContract.resolveAndPayout(
+                    //   'Wallfair Admin User',
+                    //   indexOutcome
+                    // );
+                    // ammInteraction = await betContract.getUserAmmInteractions();
                   });
                 } catch (err) {
                   console.debug(err);
@@ -244,7 +243,7 @@ exports.initialize = function () {
                   // find out how much each individual user invested
                   const investedValues = {}; // userId -> value
                   for (const interaction of ammInteraction) {
-                    const amount = Number(interaction.amount) / Number(WFAIR.ONE);
+                    const amount = Number(interaction.amount) / Number(one);
                     if (interaction.direction === 'BUY') {
                       // when user bought, add this amount to value invested
                       investedValues[interaction.buyer] = investedValues[interaction.buyer]
@@ -261,7 +260,7 @@ exports.initialize = function () {
                     const userId = resolvedResult.owner;
                     const { balance } = resolvedResult;
 
-                    const winToken = Math.round(Number(balance) / Number(WFAIR.ONE));
+                    const winToken = Math.round(Number(balance) / Number(one));
 
                     if (userId.includes('_')) {
                       continue;

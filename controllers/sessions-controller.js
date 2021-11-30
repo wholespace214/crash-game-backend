@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require("../util/constants");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const { Account } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 
 module.exports = {
@@ -21,7 +22,7 @@ module.exports = {
     }
 
     try {
-      const { password, email, username, ref, recaptchaToken, country, birth } = req.body;
+      const { password, email, username, ref, recaptchaToken } = req.body;
       const { skip } = req.query;
       if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
         const recaptchaRes = await axios.post(
@@ -61,8 +62,6 @@ module.exports = {
         _id: wFairUserId,
         email,
         emailCode,
-        birthdate: new Date(birth),
-        country,
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
@@ -70,6 +69,8 @@ module.exports = {
         },
         ref,
       });
+
+      await new Account().createUser(wFairUserId);
 
       // TODO: When there's time, delete Auth0 user if WFAIR creation fails
 
@@ -155,7 +156,7 @@ module.exports = {
     }
 
     try {
-      const { provider } = req.params;
+      const { provider, ref } = req.params;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
@@ -178,7 +179,7 @@ module.exports = {
           session: await authService.generateJwt(existingUser),
           newUser: false,
         });
-      } else { // create user and log them it 
+      } else { // create user and log them it
         const eighteenYearsAgo = new Date();
         eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
         if (userData.birthdate && userData.birthdate > eighteenYearsAgo) {
@@ -188,10 +189,12 @@ module.exports = {
         const createdUser = await userApi.createUser({
           _id: new ObjectId().toHexString(),
           ...userData,
+          birthdate: null,
           ...!userData.emailConfirmed && { emailCode: generate(6) },
           preferences: {
             currency: 'WFAIR',
           },
+          ref
         });
 
         await userService.mintUser(createdUser.id.toString());

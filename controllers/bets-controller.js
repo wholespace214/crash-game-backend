@@ -10,7 +10,7 @@ const { validationResult } = require('express-validator');
 const { User, Bet } = require('@wallfair.io/wallfair-commons').models;
 
 // Import Auth Service
-const { BetContract } = require('@wallfair.io/smart_contract_mock');
+// const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const eventService = require('../services/event-service');
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
@@ -253,9 +253,9 @@ const pullOutBet = async (req, res, next) => {
     const { id } = req.params;
 
     let requiredMinReturnAmount = 0n;
-    if (minReturnAmount) {
-      requiredMinReturnAmount = toScaledBigInt(minReturnAmount);
-    }
+    // if (minReturnAmount) {
+    //   requiredMinReturnAmount = toScaledBigInt(minReturnAmount);
+    // }
 
     const userId = req.user.id;
 
@@ -269,7 +269,7 @@ const pullOutBet = async (req, res, next) => {
     }
 
     const user = await userService.getUserReducedDataById(userId);
-    let sellAmount;
+    // let sellAmount;
 
     const session = await User.startSession();
     let newBalances;
@@ -279,24 +279,24 @@ const pullOutBet = async (req, res, next) => {
       await session
         .withTransaction(async () => {
           console.debug(LOG_TAG, 'Interacting with the AMM');
-          const betContract = new BetContract(id, bet.outcomes.length);
-
-          sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
-          console.debug(
-            LOG_TAG,
-            `SELL ${userId} ${sellAmount} ${outcome} ${requiredMinReturnAmount}`
-          );
-
-          await tradeService.closeTrades(userId, bet, outcome, 'sold', session);
-          console.debug(LOG_TAG, 'Trades closed successfully');
-
-          newBalances = await betContract.sellAmount(
-            userId,
-            sellAmount,
-            outcome,
-            requiredMinReturnAmount
-          );
-          console.debug(LOG_TAG, 'Successfully sold Tokens');
+          // const betContract = new BetContract(id, bet.outcomes.length);
+          //
+          // sellAmount = await betContract.getOutcomeToken(outcome).balanceOf(userId);
+          // console.debug(
+          //   LOG_TAG,
+          //   `SELL ${userId} ${sellAmount} ${outcome} ${requiredMinReturnAmount}`
+          // );
+          //
+          // await tradeService.closeTrades(userId, bet, outcome, 'sold', session);
+          // console.debug(LOG_TAG, 'Trades closed successfully');
+          //
+          // newBalances = await betContract.sellAmount(
+          //   userId,
+          //   sellAmount,
+          //   outcome,
+          //   requiredMinReturnAmount
+          // );
+          // console.debug(LOG_TAG, 'Successfully sold Tokens');
         })
         .catch((err) => console.error(err));
 
@@ -339,17 +339,17 @@ const calculateBuyOutcome = async (req, res, next) => {
   }
 
   try {
-    const bet = await Bet.findById(id);
-    const betContract = new BetContract(id, bet.outcomes.length);
-
-    let buyAmount = toScaledBigInt(amount);
-
+    // const bet = await Bet.findById(id);
+    // const betContract = new BetContract(id, bet.outcomes.length);
+    //
+    // let buyAmount = toScaledBigInt(amount);
+    //
     const result = [];
-
-    for (const outcome of bet.outcomes) {
-      const outcomeSellAmount = await betContract.calcBuy(buyAmount, outcome.index);
-      result.push({ index: outcome.index, outcome: fromScaledBigInt(outcomeSellAmount) });
-    }
+    //
+    // for (const outcome of bet.outcomes) {
+    //   const outcomeSellAmount = await betContract.calcBuy(buyAmount, outcome.index);
+    //   result.push({ index: outcome.index, outcome: fromScaledBigInt(outcomeSellAmount) });
+    // }
 
     res.status(200).json(result);
   } catch (err) {
@@ -362,25 +362,25 @@ const calculateSellOutcome = async (req, res, next) => {
   const errors = validationResult(req);
 
   const { amount } = req.body;
-  const { id } = req.params;
+  // const { id } = req.params;
 
   if (!errors.isEmpty() || amount <= 0) {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));
   }
 
   try {
-    const bet = await Bet.findById(id);
-    const betContract = new BetContract(id, bet.outcomes.length);
-    const bigAmount = toScaledBigInt(amount);
+    // const bet = await Bet.findById(id);
+    // const betContract = new BetContract(id, bet.outcomes.length);
+    // const bigAmount = toScaledBigInt(amount);
     const result = [];
-
-    for (const outcome of bet.outcomes) {
-      const outcomeSellAmount = await betContract.calcSellFromAmount(
-        bigAmount,
-        outcome.index
-      );
-      result.push({ index: outcome.index, outcome: fromScaledBigInt(outcomeSellAmount) });
-    }
+    //
+    // for (const outcome of bet.outcomes) {
+    //   const outcomeSellAmount = await betContract.calcSellFromAmount(
+    //     bigAmount,
+    //     outcome.index
+    //   );
+    //   result.push({ index: outcome.index, outcome: fromScaledBigInt(outcomeSellAmount) });
+    // }
 
     res.status(200).json(result);
   } catch (err) {
@@ -416,8 +416,8 @@ const payoutBet = async (req, res, next) => {
         await userService.saveUser(user, session);
 
         console.debug(LOG_TAG, 'Requesting Bet Payout');
-        const betContract = new BetContract(id, bet.outcomes.length);
-        await betContract.getPayout(req.user.id);
+        // const betContract = new BetContract(id, bet.outcomes.length);
+        // await betContract.getPayout(req.user.id);
       });
     } finally {
       await session.endSession();

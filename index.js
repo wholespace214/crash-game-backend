@@ -14,6 +14,9 @@ const mongoose = require('mongoose');
 const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
+const { initDb } = require('@wallfair.io/trading-engine');
+const { initDatabase } = require('@wallfair.io/wallfair-casino');
+
 let mongoURL = process.env.DB_CONNECTION;
 
 /**
@@ -46,7 +49,7 @@ const corsOptions = {
 
 // Connection to Database
 async function connectMongoDB() {
-  const connection = await mongoose.connect(mongoURL, {
+  await mongoose.connect(mongoURL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -56,14 +59,19 @@ async function connectMongoDB() {
   });
   console.log('Connection to Mongo-DB successful');
 
-  wallfair.initModels(connection);
+  wallfair.initModels(mongoose);
   console.log('Mongoose models initialized');
 
-  return connection;
+  return mongoose;
 }
 
 async function main() {
   const mongoDBConnection = await connectMongoDB();
+
+  // Initialize the postgres database (trading-engine)
+  await initDb();
+  // Initialize the postgres database (casino-engine)
+  await initDatabase();
 
   const amqp = require('./services/amqp-service');
   amqp.init();

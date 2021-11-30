@@ -3,7 +3,7 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 
 // Import services
 
-const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+const { Wallet } = require('@wallfair.io/trading-engine');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onNewBet } = require('./quote-storage-service');
@@ -11,8 +11,9 @@ const mongoose = require('mongoose');
 const { DEFAULT } = require('../util/constants');
 const outcomesUtil = require('../util/outcomes');
 
-const WFAIR = new Erc20('WFAIR');
-
+const WFAIR = new Wallet();
+const WFAIR_TOKEN = 'WFAIR';
+const one = 10000n;
 const BET_STATUS = {
   upcoming: 'upcoming',
   active: 'active',
@@ -205,18 +206,19 @@ exports.betCreated = async (bet, user) => {
 exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liquidityAmount = DEFAULT.betLiquidity) => {
   const LOG_TAG = '[CREATE-BET]';
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
-  const betContract = new BetContract(createBet.id, createBet.outcomes.length);
-  const liquidity = BigInt(liquidityAmount) * WFAIR.ONE;
-  const distributionHint = outcomesUtil.getOutcomeDistributionHints(probabilityDistribution);
+  // const betContract = new BetContract(createBet.id, createBet.outcomes.length);
+  const liquidity = BigInt(liquidityAmount) * one;
+  // const distributionHint = outcomesUtil.getOutcomeDistributionHints(probabilityDistribution);
 
   console.debug(LOG_TAG, 'Minting new Tokens');
-  await WFAIR.mint(liquidityProviderWallet, liquidity);
+  const beneficiary = {owner:liquidityProviderWallet, namespace: 'usr', symbol: WFAIR_TOKEN};
+  await WFAIR.mint(beneficiary, liquidity);
   console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-  await betContract.addLiquidity(
-    liquidityProviderWallet,
-    liquidity,
-    distributionHint,
-  );
+  // await betContract.addLiquidity(
+  //   liquidityProviderWallet,
+  //   liquidity,
+  //   distributionHint,
+  // );
 };
 
 exports.saveEvent = async (event, session, existing = false) => {
