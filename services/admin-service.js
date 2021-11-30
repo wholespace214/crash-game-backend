@@ -3,7 +3,7 @@
 // Import User, Bet and Event models
 const { User, Bet, Event, CategoryBetTemplate, Lottery, LotteryTicket, Trade } =
   require('@wallfair.io/wallfair-commons').models;
-const one = 10000n;
+const { ONE } = require('@wallfair.io/trading-engine');
 const flatten = require('flat');
 
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -243,7 +243,7 @@ exports.initialize = function () {
                   // find out how much each individual user invested
                   const investedValues = {}; // userId -> value
                   for (const interaction of ammInteraction) {
-                    const amount = Number(interaction.amount) / Number(one);
+                    const amount = Number(interaction.amount) / Number(ONE);
                     if (interaction.direction === 'BUY') {
                       // when user bought, add this amount to value invested
                       investedValues[interaction.buyer] = investedValues[interaction.buyer]
@@ -260,7 +260,7 @@ exports.initialize = function () {
                     const userId = resolvedResult.owner;
                     const { balance } = resolvedResult;
 
-                    const winToken = Math.round(Number(balance) / Number(one));
+                    const winToken = Math.round(Number(balance) / Number(ONE));
 
                     if (userId.includes('_')) {
                       continue;

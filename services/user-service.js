@@ -3,7 +3,7 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet } = require('@wallfair.io/trading-engine');
+const { Wallet, ONE } = require('@wallfair.io/trading-engine');
 const { fromScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
@@ -15,7 +15,6 @@ const _ = require('lodash');
 
 const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
-const one = 10000n;
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
@@ -131,7 +130,7 @@ const INITIAL_LIQUIDITY = 5000n;
 
 exports.mintUser = async (userId, amount) => {
   const beneficiary = {owner:userId, namespace: 'usr', symbol: WFAIR_TOKEN};
-  await WFAIR.mint(beneficiary, amount ? BigInt(amount) * one : INITIAL_LIQUIDITY * one);
+  await WFAIR.mint(beneficiary, amount ? BigInt(amount) * ONE : INITIAL_LIQUIDITY * ONE);
 };
 
 exports.getTotalWin = (balance) => {

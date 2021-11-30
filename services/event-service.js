@@ -3,7 +3,7 @@ const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
 
 // Import services
 
-const { Wallet } = require('@wallfair.io/trading-engine');
+const { Wallet, ONE } = require('@wallfair.io/trading-engine');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onNewBet } = require('./quote-storage-service');
@@ -13,7 +13,6 @@ const outcomesUtil = require('../util/outcomes');
 
 const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
-const one = 10000n;
 const BET_STATUS = {
   upcoming: 'upcoming',
   active: 'active',
@@ -207,7 +206,7 @@ exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liqui
   const LOG_TAG = '[CREATE-BET]';
   const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
   // const betContract = new BetContract(createBet.id, createBet.outcomes.length);
-  const liquidity = BigInt(liquidityAmount) * one;
+  const liquidity = BigInt(liquidityAmount) * ONE;
   // const distributionHint = outcomesUtil.getOutcomeDistributionHints(probabilityDistribution);
 
   console.debug(LOG_TAG, 'Minting new Tokens');
