@@ -71,7 +71,8 @@ module.exports = {
       });
 
       const account = new TransactionManager().account;
-      await account.createUser(wFairUserId);
+      await account.createUser(wFairUserId)
+        .catch((error)=> next(new ErrorHandler(500, error)));
 
       // TODO: When there's time, delete Auth0 user if WFAIR creation fails
 
