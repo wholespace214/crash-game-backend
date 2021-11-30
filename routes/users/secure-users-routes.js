@@ -58,4 +58,6 @@ router.get('/:userId', userController.getUserInfo);
 
 router.post('/:userId/status', userController.updateStatus);
 
+router.get('/:userId/wallet/transactions', userController.getUserTransactions);
+
 module.exports = router;

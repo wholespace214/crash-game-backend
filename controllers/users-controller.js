@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet
+  Wallet, Transactions, ExternalTransactionOriginator
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -607,7 +607,7 @@ const requestTokens = async (req, res, next) => {
 
     user.tokensRequestedAt = new Date().toISOString()
     user.amountWon = 0;
-    const beneficiary = {owner:userId, namespace: 'usr', symbol: WFAIR_TOKEN};
+    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
     await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
     await user.save();
     res.status(200).send();
@@ -616,6 +616,37 @@ const requestTokens = async (req, res, next) => {
     next(new ErrorHandler(422, err.message));
   }
 };
+
+const getUserTransactions = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await userService.getUserById(userId);
+    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
+
+    const transactions = new Transactions();
+    const deposits = await transactions.searchExternalTransaction({
+      originator: ExternalTransactionOriginator.DEPOSIT,
+      internal_user_id: userId,
+    });
+    const withdrawals = await transactions.searchExternalTransaction({
+      originator: ExternalTransactionOriginator.WITHDRAW,
+      internal_user_id: userId,
+    });
+    const onramp = await transactions.searchExternalTransaction({
+      originator: ExternalTransactionOriginator.ONRAMP,
+      internal_user_id: userId,
+    });
+
+    res.status(200).json({
+      deposits,
+      withdrawals,
+      onramp,
+    });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -636,3 +667,4 @@ exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
 exports.requestTokens = requestTokens;
+exports.getUserTransactions = getUserTransactions;
