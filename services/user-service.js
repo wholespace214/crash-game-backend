@@ -235,6 +235,7 @@ exports.updateUser = async (userId, updatedUser) => {
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
     user.profilePicture = imageLocation.split('?')[0];
+    user.alpacaBuilderProps = updatedUser.alpacaBuilderProps;
 
     amqp.send('universal_events', 'event.user_uploaded_picture', JSON.stringify({
       event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
