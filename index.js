@@ -134,6 +134,7 @@ async function main() {
   const notificationEventsRoutes = require('./routes/users/notification-events-routes');
   const authRoutes = require('./routes/auth/auth-routes');
   const userMessagesRoutes = require('./routes/users/user-messages-routes');
+  const quoteRoutes = require('./routes/users/quote-routes');
 
   const auth0ShowcaseRoutes = require('./routes/auth0-showcase-routes');
   server.use(auth0ShowcaseRoutes);
@@ -158,6 +159,8 @@ async function main() {
     passport.authenticate('jwt', { session: false }),
     userMessagesRoutes
   );
+
+  server.use('/api/quote', passport.authenticate('jwt', { session: false }), quoteRoutes);
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars
