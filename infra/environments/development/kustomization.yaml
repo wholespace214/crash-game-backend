@@ -9,7 +9,6 @@ commonLabels:
 
 
 patches:
-- ingressPatch.yaml
 - configurationPatch.yaml
 
 configMapGenerator:

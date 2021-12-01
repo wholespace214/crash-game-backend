@@ -58,18 +58,3 @@ spec:
     kind: Deployment
     name: backend
   targetCPUUtilizationPercentage: 50
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: backend
-  namespace: staging
-spec:
-  selector:
-    app: backend
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
