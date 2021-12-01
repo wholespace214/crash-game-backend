@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, ExternalTransactionOriginator
+  Wallet, Transactions, Account
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -623,25 +623,15 @@ const getUserTransactions = async (req, res, next) => {
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
 
-    const transactions = new Transactions();
-    const deposits = await transactions.searchExternalTransaction({
-      originator: ExternalTransactionOriginator.DEPOSIT,
-      internal_user_id: userId,
-    });
-    const withdrawals = await transactions.searchExternalTransaction({
-      originator: ExternalTransactionOriginator.WITHDRAW,
-      internal_user_id: userId,
-    });
-    const onramp = await transactions.searchExternalTransaction({
-      originator: ExternalTransactionOriginator.ONRAMP,
-      internal_user_id: userId,
+    const account = new Account();
+    const accounts = await account.getUserAccounts(userId);
+
+    const transactionsAgent = new Transactions();
+    const transactions = await transactionsAgent.getExternalTransactionLogs({
+      where: accounts.map(({ owner_account }) => ({ sender: owner_account }))
     });
 
-    res.status(200).json({
-      deposits,
-      withdrawals,
-      onramp,
-    });
+    res.status(200).json(transactions);
   } catch (err) {
     console.error(err);
     next(new ErrorHandler(422, err.message));
