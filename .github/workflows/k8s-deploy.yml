@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - production
       - alpa-prod
       - development
 
@@ -57,16 +56,7 @@ jobs:
             cd infra/environments/development
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
-      - name: Edit deployment image (production)
-        if: github.ref == 'refs/heads/production'
-        uses: stefanprodan/kube-tools@v1
-        with:
-          kustomize: 4.2.0
-          command: |
-            cd infra/environments/production
-            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
-            kustomize build .
-      - name: Edit deployment image (production)
+      - name: Edit deployment image (alpa-prod)
         if: github.ref == 'refs/heads/alpa-prod'
         uses: stefanprodan/kube-tools@v1
         with:
@@ -87,12 +77,6 @@ jobs:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
           args: apply -k infra/environments/development
-      - uses: actions-hub/kubectl@master
-        if: github.ref == 'refs/heads/production'
-        env:
-          KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
-        with:
-          args: apply -k infra/environments/production
       - uses: actions-hub/kubectl@master
         if: github.ref == 'refs/heads/alpa-prod'
         env:
