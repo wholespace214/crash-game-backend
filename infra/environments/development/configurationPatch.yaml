@@ -16,8 +16,12 @@ spec:
           - configMapRef:
               name: app-secrets
           - configMapRef:
+              name: app-global-secrets
+          - configMapRef:
               name: postgres-conn
           - configMapRef:
               name: mongo-conn
           - configMapRef:
               name: redis-conn
+          - configMapRef:
+              name: rabbit-conn

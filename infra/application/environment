@@ -1,9 +1,7 @@
-JWT_KEY=MElWWFE3OEM1b2gzd0NNUA==_KEY
 TWILIO_ACC_SID=AC32af9a1c4494dbf72b9cc2a436bc9344
 TWILIO_SID=VA3f09171bb0a89d44fe96913dd2899b3e
 ENVIRONMENT=STAGING
 VERIFY_URL=https://main.alpacasino.io/
-GMAIL_USERNAME=noreply@wallfair.io
 BACKEND_URL=https://staging-api.alpacasino.io
 TWITCH_CLIENT_ID=vwlp5jpunmgorv4cuhlz79brm82u2f
 ADMIN_USERNAME=wallfair
