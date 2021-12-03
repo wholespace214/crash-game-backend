@@ -521,7 +521,8 @@ const updateUser = async (req, res, next) => {
       username: user.username,
       email: user.email,
       aboutMe: user.aboutMe,
-      profilePicture: user.profilePicture
+      profilePicture: user.profilePicture,
+      alpacaBuilderProps: user.alpacaBuilderProps
     });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
