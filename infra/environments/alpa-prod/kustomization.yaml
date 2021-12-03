@@ -3,7 +3,6 @@
 resources:
 - ../../application
 - podDisruptionBudget.yaml
-- certificate.yaml
 
 namespace: alpa-prod
 commonLabels:
