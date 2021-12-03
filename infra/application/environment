@@ -7,7 +7,7 @@ TWITCH_CLIENT_ID=vwlp5jpunmgorv4cuhlz79brm82u2f
 ADMIN_USERNAME=wallfair
 CLIENT_URL=https://main.alpacasino.io
 REACT_APP_SHOW_UPCOMING_FEATURES=true
-AUTH0_AUDIENCE: https://wallfair.eu.auth0.com/api/v2/
-AUTH0_CLIENT_ID: srDgqxyTDvBggzXhlserlACvO1BOq6pJ
-AUTH0_CONNECTION_ID: Username-Password-Authenticationle
-AUTH0_DOMAIN: wallfair.eu.auth0.com
+AUTH0_AUDIENCE=https://wallfair.eu.auth0.com/api/v2/
+AUTH0_CLIENT_ID=srDgqxyTDvBggzXhlserlACvO1BOq6pJ
+AUTH0_CONNECTION_ID=Username-Password-Authenticationle
+AUTH0_DOMAIN=wallfair.eu.auth0.com
