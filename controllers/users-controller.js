@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, Account
+  Wallet, Transactions, Account, ExternalTransactionOriginator
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -628,7 +628,13 @@ const getUserTransactions = async (req, res, next) => {
 
     const transactionsAgent = new Transactions();
     const transactions = await transactionsAgent.getExternalTransactionLogs({
-      where: accounts.map(({ owner_account }) => ({ sender: owner_account }))
+      where: [
+        ...accounts.map(({ owner_account }) => ({ sender: owner_account })),
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.ONRAMP,
+        }
+      ]
     });
 
     res.status(200).json(transactions);
