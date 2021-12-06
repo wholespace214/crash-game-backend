@@ -157,7 +157,8 @@ module.exports = {
     }
 
     try {
-      const { provider, ref } = req.params;
+      const { provider } = req.params;
+      const { ref = null } = req.body;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
