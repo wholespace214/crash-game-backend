@@ -202,35 +202,35 @@ exports.updateUser = async (userId, updatedUser) => {
     });
 
     //handle SET_USERNAME award
-    const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err) => {
-      console.error('checkAwardExist err', err);
-    });
+    // const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err) => {
+    //   console.error('checkAwardExist err', err);
+    // });
 
-    if (checkUsernameAward.length === 0) {
-      await this.createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.SET_USERNAME,
-          award: WFAIR_REWARDS.setUsername,
-        },
-      }).catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
-    }
+    // if (checkUsernameAward.length === 0) {
+    //   await this.createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.SET_USERNAME,
+    //       award: WFAIR_REWARDS.setUsername,
+    //     },
+    //   }).catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
+    // }
   }
 
   if (updatedUser.image) {
-    if (!user.profilePicture) {
-      await this.createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.AVATAR_UPLOADED,
-          award: WFAIR_REWARDS.setAvatar,
-        },
-      }).catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
-    }
+    // if (!user.profilePicture) {
+    //   await this.createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.AVATAR_UPLOADED,
+    //       award: WFAIR_REWARDS.setAvatar,
+    //     },
+    //   }).catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
+    // }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
     user.profilePicture = imageLocation.split('?')[0];

@@ -99,7 +99,7 @@ const saveAdditionalInformation = async (req, res, next) => {
 
       user.email = email.replace(' ', '');
 
-      await rewardRefUserIfNotConfirmed(user);
+      // await rewardRefUserIfNotConfirmed(user);
     }
 
     user = await userService.saveUser(user);
@@ -141,7 +141,7 @@ const saveAcceptConditions = async (req, res, next) => {
 
 const rewardRefUserIfNotConfirmed = async (user) => {
   if (!user.confirmed) {
-    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    // await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
     await userService.createUser(user);
     user.confirmed = true;
   }
@@ -457,17 +457,17 @@ const confirmEmail = async (req, res, next) => {
     user.confirmed = true;
     await user.save();
 
-    await userService
-      .createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.EMAIL_CONFIRMED,
-          award: WFAIR_REWARDS.confirmEmail,
-        },
-      })
-      .catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
+    // await userService
+    //   .createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.EMAIL_CONFIRMED,
+    //       award: WFAIR_REWARDS.confirmEmail,
+    //     },
+    //   })
+    //   .catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
 
     res.status(200).send({ status: 'OK' });
   } else {

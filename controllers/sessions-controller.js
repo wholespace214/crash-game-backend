@@ -78,48 +78,48 @@ module.exports = {
       await userService.mintUser(createdUser.id.toString());
 
       let initialReward = 5000;
-      if (ref) {
-        if (INFLUENCERS.indexOf(ref) > -1) {
-          console.debug('[REWARD BY INFLUENCER] ', ref);
-          setTimeout(async () => {
-            await userService
-              .createUserAwardEvent({
-                userId: createdUser.id.toString(),
-                awardData: {
-                  type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
-                  award: WFAIR_REWARDS.registeredByInfluencer,
-                  ref,
-                },
-              })
-              .catch((err) => {
-                console.error('createUserAwardEvent', err);
-              });
-          }, 3000);
-
-          initialReward += WFAIR_REWARDS.registeredByInfluencer;
-        } else {
-          console.debug('[REWARD BY USER] ', ref);
-
-          const refList = await userService.getRefByUserId(ref);
-          //max ref awards elements per user
-          if (refList.length <= 10) {
-            setTimeout(async () => {
-              await userService
-                .createUserAwardEvent({
-                  userId: ref,
-                  awardData: {
-                    type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
-                    award: WFAIR_REWARDS.referral,
-                    ref,
-                  },
-                })
-                .catch((err) => {
-                  console.error('createUserAwardEvent', err);
-                });
-            }, 3000);
-          }
-        }
-      }
+      // if (ref) {
+      //   if (INFLUENCERS.indexOf(ref) > -1) {
+      //     console.debug('[REWARD BY INFLUENCER] ', ref);
+      //     setTimeout(async () => {
+      //       await userService
+      //         .createUserAwardEvent({
+      //           userId: createdUser.id.toString(),
+      //           awardData: {
+      //             type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
+      //             award: WFAIR_REWARDS.registeredByInfluencer,
+      //             ref,
+      //           },
+      //         })
+      //         .catch((err) => {
+      //           console.error('createUserAwardEvent', err);
+      //         });
+      //     }, 3000);
+      //
+      //     initialReward += WFAIR_REWARDS.registeredByInfluencer;
+      //   } else {
+      //     console.debug('[REWARD BY USER] ', ref);
+      //
+      //     const refList = await userService.getRefByUserId(ref);
+      //     //max ref awards elements per user
+      //     if (refList.length <= 10) {
+      //       setTimeout(async () => {
+      //         await userService
+      //           .createUserAwardEvent({
+      //             userId: ref,
+      //             awardData: {
+      //               type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
+      //               award: WFAIR_REWARDS.referral,
+      //               ref,
+      //             },
+      //           })
+      //           .catch((err) => {
+      //             console.error('createUserAwardEvent', err);
+      //           });
+      //       }, 3000);
+      //     }
+      //   }
+      // }
 
       amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
         event: notificationEvents.EVENT_USER_SIGNED_UP,
