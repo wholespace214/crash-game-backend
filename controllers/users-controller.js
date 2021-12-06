@@ -3,11 +3,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Erc20,
-  Wallet,
+  Wallet, Transactions, Account, ExternalTransactionOriginator
+} = require('@wallfair.io/trading-engine');
+const {
   CasinoTradeContract,
-  BetContract,
-} = require('@wallfair.io/smart_contract_mock');
+  CASINO_TRADE_STATE
+} = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
@@ -18,11 +19,11 @@ const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 
 const _ = require('lodash');
-const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
 const bigDecimal = require('js-big-decimal');
 
-const WFAIR = new Erc20('WFAIR');
-const casinoContract = new CasinoTradeContract('CASINO');
+const WFAIR = new Wallet();
+const WFAIR_TOKEN = 'WFAIR';
+const casinoContract = new CasinoTradeContract();
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -98,7 +99,7 @@ const saveAdditionalInformation = async (req, res, next) => {
 
       user.email = email.replace(' ', '');
 
-      await rewardRefUserIfNotConfirmed(user);
+      // await rewardRefUserIfNotConfirmed(user);
     }
 
     user = await userService.saveUser(user);
@@ -140,7 +141,7 @@ const saveAcceptConditions = async (req, res, next) => {
 
 const rewardRefUserIfNotConfirmed = async (user) => {
   if (!user.confirmed) {
-    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    // await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
     await userService.createUser(user);
     user.confirmed = true;
   }
@@ -180,7 +181,7 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = await WFAIR.balanceOf(userId);
+    const balance = BigInt(await WFAIR.getBalance(userId));
     const formattedBalance = fromScaledBigInt(balance);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
@@ -286,21 +287,21 @@ const getOpenBetsList = async (request, response, next) => {
       for (const trade of trades) {
         const outcomeIndex = trade._id.outcomeIndex;
         const betId = trade._id.betId;
-        const outcomes = trade._id.bet.outcomes || [];
+        // const outcomes = trade._id.bet.outcomes || [];
         let outcomeBuy = 0;
         let outcomeSell = 0;
 
-        if (outcomes.length) {
-          const betContract = new BetContract(betId, outcomes.length);
-          outcomeBuy = await betContract.calcBuy(
-            toScaledBigInt(trade.totalInvestmentAmount),
-            outcomeIndex
-          );
-          outcomeSell = await betContract.calcSellFromAmount(
-            toScaledBigInt(trade.totalOutcomeTokens),
-            outcomeIndex
-          );
-        }
+        // if (outcomes.length) {
+        //   const betContract = new BetContract(betId, outcomes.length);
+        //   outcomeBuy = await betContract.calcBuy(
+        //     toScaledBigInt(trade.totalInvestmentAmount),
+        //     outcomeIndex
+        //   );
+        //   outcomeSell = await betContract.calcSellFromAmount(
+        //     toScaledBigInt(trade.totalOutcomeTokens),
+        //     outcomeIndex
+        //   );
+        // }
 
         openBets.push({
           betId,
@@ -331,8 +332,7 @@ const getHistory = async (req, res, next) => {
 
   try {
     if (user) {
-      const wallet = new Wallet(user.id);
-      const interactions = await wallet.getAMMInteractions();
+      const interactions = await casinoContract.getAMMInteractions(user.id);
       const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
         CASINO_TRADE_STATE.LOCKED,
         CASINO_TRADE_STATE.WIN,
@@ -394,8 +394,7 @@ const getTradeHistory = async (req, res, next) => {
   }
 
   try {
-    const wallet = new Wallet(user.id);
-    const interactions = await wallet.getAMMInteractions();
+    const interactions = await casinoContract.getAMMInteractions(user.id);
     const finalizedTrades = await tradeService.getTradesByUserIdAndStatuses(user.id, [
       'closed',
       'rewarded',
@@ -458,17 +457,17 @@ const confirmEmail = async (req, res, next) => {
     user.confirmed = true;
     await user.save();
 
-    await userService
-      .createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.EMAIL_CONFIRMED,
-          award: WFAIR_REWARDS.confirmEmail,
-        },
-      })
-      .catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
+    // await userService
+    //   .createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.EMAIL_CONFIRMED,
+    //       award: WFAIR_REWARDS.confirmEmail,
+    //     },
+    //   })
+    //   .catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
 
     res.status(200).send({ status: 'OK' });
   } else {
@@ -593,7 +592,7 @@ const requestTokens = async (req, res, next) => {
     const userId = req.user.id;
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
-    const balance = await WFAIR.balanceOf(userId);
+    const balance = BigInt(await WFAIR.getBalance(userId));
     if (balance >= toScaledBigInt(5000) || balance < 0) {
       return next(new ErrorHandler(403, 'Action not allowed'));
     }
@@ -609,7 +608,8 @@ const requestTokens = async (req, res, next) => {
 
     user.tokensRequestedAt = new Date().toISOString()
     user.amountWon = 0;
-    await WFAIR.mint(userId, toScaledBigInt(5000) - balance);
+    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
+    await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
     await user.save();
     res.status(200).send();
   } catch (err) {
@@ -617,6 +617,33 @@ const requestTokens = async (req, res, next) => {
     next(new ErrorHandler(422, err.message));
   }
 };
+
+const getUserTransactions = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await userService.getUserById(userId);
+    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
+
+    const account = new Account();
+    const accounts = await account.getUserAccounts(userId);
+
+    const transactionsAgent = new Transactions();
+    const transactions = await transactionsAgent.getExternalTransactionLogs({
+      where: [
+        ...accounts.map(({ owner_account }) => ({ sender: owner_account })),
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.ONRAMP,
+        }
+      ]
+    });
+
+    res.status(200).json(transactions);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -637,3 +664,4 @@ exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
 exports.requestTokens = requestTokens;
+exports.getUserTransactions = getUserTransactions;

@@ -1,15 +1,14 @@
 const _ = require("lodash");
 
-const { Erc20 } = require('@wallfair.io/smart_contract_mock');
-const WFAIR = new Erc20('WFAIR');
 const BigNumber = require('bignumber.js');
+const { ONE } = require('@wallfair.io/trading-engine');
 
 const toScaledBigInt = (input) => {
-  return BigInt(new BigNumber(input).times(WFAIR.ONE).decimalPlaces(0));
+  return BigInt(input) * ONE;
 };
 
 const fromScaledBigInt = (input) => {
-  return new BigNumber(input).dividedBy(WFAIR.ONE).toFixed(4);
+  return new BigNumber(input).dividedBy(ONE).toFixed(4);
 };
 
 const calculateGain = (investmentAmount, outcomeAmount, precision = 2) => {

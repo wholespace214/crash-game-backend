@@ -1,6 +1,6 @@
 resources:
   - backend-prod-deploy.yaml
-  
+
 configMapGenerator:
   - name: backend-config
     envs:

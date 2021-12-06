@@ -5,7 +5,6 @@ const { Bet, Trade, Event } = require('@wallfair.io/wallfair-commons').models;
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onBetPlaced } = require('./quote-storage-service');
-const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
 const _ = require('lodash');
@@ -104,23 +103,23 @@ exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
   const session = await Bet.startSession();
   try {
     await session.withTransaction(async () => {
-      const betContract = new BetContract(betId, bet.outcomes.length);
+      // const betContract = new BetContract(betId, bet.outcomes.length);
 
       console.debug(LOG_TAG, 'Interacting with the AMM');
 
-      const outcomeResult = await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy);
+      // const outcomeResult = await betContract.buy(userId, amount, outcome, minOutcomeTokensToBuy);
 
       console.debug(LOG_TAG, 'Successfully bought Tokens');
 
-      const trade = new Trade({
-        userId: userId,
-        betId: bet._id,
-        outcomeIndex: outcome,
-        investmentAmount: fromScaledBigInt(amount),
-        outcomeTokens: fromScaledBigInt(outcomeResult.boughtOutcomeTokens),
-      });
-
-      response.trade = await trade.save({ session });
+      // const trade = new Trade({
+      //   userId: userId,
+      //   betId: bet._id,
+      //   outcomeIndex: outcome,
+      //   investmentAmount: fromScaledBigInt(amount),
+      //   outcomeTokens: fromScaledBigInt(outcomeResult.boughtOutcomeTokens),
+      // });
+      //
+      // response.trade = await trade.save({ session });
 
       console.debug(LOG_TAG, 'Trade saved successfully');
     });
@@ -150,50 +149,50 @@ exports.getTrade = async (id) => {
 };
 
 exports.clearOpenBets = async (bet, session) => {
-  const betContract = new BetContract(bet.id, bet.outcomes.length);
-  for (const outcome of bet.outcomes) {
-    const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
-    const win = outcome.index === +bet.finalOutcome;
+  // const betContract = new BetContract(bet.id, bet.outcomes.length);
+  // for (const outcome of bet.outcomes) {
+    // const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
+    // const win = outcome.index === +bet.finalOutcome;
 
-    for (const wallet of wallets) {
-      const userId = wallet.owner;
-
-      if (userId.startsWith('BET')) {
-        continue;
-      }
-
-      await tradeService.closeTrades(
-        userId,
-        bet,
-        outcome.index,
-        win ? 'rewarded' : 'closed',
-        session
-      );
-    }
-  }
+    // for (const wallet of wallets) {
+    //   const userId = wallet.owner;
+    //
+    //   if (userId.startsWith('BET')) {
+    //     continue;
+    //   }
+    //
+    //   await tradeService.closeTrades(
+    //     userId,
+    //     bet,
+    //     outcome.index,
+    //     win ? 'rewarded' : 'closed',
+    //     session
+    //   );
+    // }
+  // }
 };
 
 exports.refundUserHistory = async (bet, session) => {
   const userIds = [];
-  const betContract = new BetContract(bet.id, bet.outcomes.length);
+  // const betContract = new BetContract(bet.id, bet.outcomes.length);
 
-  for (const outcome of bet.outcomes) {
-    const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
+  // for (const outcome of bet.outcomes) {
+    // const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
 
-    for (const wallet of wallets) {
-      const userId = wallet.owner;
-
-      if (userId.startsWith('BET')) {
-        continue;
-      }
-
-      if (!userIds.includes(userId)) {
-        userIds.push(userId);
-      }
-
-      await tradeService.closeTrades(userId, bet, outcome.index, 'closed', session);
-    }
-  }
+    // for (const wallet of wallets) {
+    //   const userId = wallet.owner;
+    //
+    //   if (userId.startsWith('BET')) {
+    //     continue;
+    //   }
+    //
+    //   if (!userIds.includes(userId)) {
+    //     userIds.push(userId);
+    //   }
+    //
+    //   await tradeService.closeTrades(userId, bet, outcome.index, 'closed', session);
+    // }
+  // }
 
   amqp.send('universal_events', 'event.bet_canceled', JSON.stringify({
     event: notificationEvents.EVENT_BET_CANCELED,
@@ -247,9 +246,9 @@ exports.resolve = async ({
 
       await this.clearOpenBets(bet, session);
       await bet.save({ session });
-      const betContract = new BetContract(betId);
-      resolveResults = await betContract.resolveAndPayout(reporter, outcomeIndex);
-      ammInteraction = await betContract.getUserAmmInteractions();
+      // const betContract = new BetContract(betId);
+      // resolveResults = await betContract.resolveAndPayout(reporter, outcomeIndex);
+      // ammInteraction = await betContract.getUserAmmInteractions();
     });
 
     amqp.send('universal_events', 'event.bet_resolved', JSON.stringify({
@@ -348,8 +347,8 @@ exports.cancel = async (bet, cancellationReason) => {
   await session.withTransaction(async () => {
     dbBet = await eventService.getBet(bet._id, session);
 
-    const betContract = new BetContract(dbBet.id);
-    await betContract.refund();
+    // const betContract = new BetContract(dbBet.id);
+    // await betContract.refund();
 
     dbBet.canceled = true;
     dbBet.reasonOfCancellation = cancellationReason;
