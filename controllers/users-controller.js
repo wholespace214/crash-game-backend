@@ -16,7 +16,6 @@ const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
