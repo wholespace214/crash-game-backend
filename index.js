@@ -64,14 +64,11 @@ async function connectMongoDB() {
 
   return mongoose;
 }
-
 async function main() {
   const mongoDBConnection = await connectMongoDB();
 
   // Initialize the postgres database (trading-engine)
   await initDb();
-  // Initialize the postgres database (casino-engine)
-  await initDatabase();
 
   const amqp = require('./services/amqp-service');
   amqp.init();
