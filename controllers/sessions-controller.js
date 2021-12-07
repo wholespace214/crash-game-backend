@@ -9,7 +9,6 @@ const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require("../util/constants");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
@@ -73,11 +72,7 @@ module.exports = {
       const account = new TransactionManager().account;
       await account.createUser(wFairUserId);
 
-      // TODO: When there's time, delete Auth0 user if WFAIR creation fails
-
-      await userService.mintUser(createdUser.id.toString());
-
-      let initialReward = 5000;
+      let initialReward = 0;
       // if (ref) {
       //   if (INFLUENCERS.indexOf(ref) > -1) {
       //     console.debug('[REWARD BY INFLUENCER] ', ref);
@@ -199,9 +194,7 @@ module.exports = {
           ref
         });
 
-        await userService.mintUser(createdUser.id.toString());
-
-        const initialReward = 5000;
+        const initialReward = 0;
         amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
           event: notificationEvents.EVENT_USER_SIGNED_UP,
           producer: 'user',
