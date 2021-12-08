@@ -129,8 +129,7 @@ exports.getBalanceOf = async (userId) => {
 const INITIAL_LIQUIDITY = 5000n;
 
 exports.mintUser = async (userId, amount) => {
-  const beneficiary = {owner:userId, namespace: 'usr', symbol: WFAIR_TOKEN};
-  await WFAIR.mint(beneficiary, amount ? BigInt(amount) * ONE : INITIAL_LIQUIDITY * ONE);
+  throw Error('Not supported');
 };
 
 exports.getTotalWin = (balance) => {

@@ -586,37 +586,6 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
-const requestTokens = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const user = await userService.getUserById(userId);
-    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
-    const balance = BigInt(await WFAIR.getBalance(userId));
-    if (balance >= toScaledBigInt(5000) || balance < 0) {
-      return next(new ErrorHandler(403, 'Action not allowed'));
-    }
-    if (
-      user.tokensRequestedAt
-      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
-    ) {
-      return next(new ErrorHandler(
-        403,
-        'Action not allowed. You can request new tokens after 1 hour since last request'
-      ));
-    }
-
-    user.tokensRequestedAt = new Date().toISOString()
-    user.amountWon = 0;
-    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
-    await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
-    await user.save();
-    res.status(200).send();
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -662,5 +631,4 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
-exports.requestTokens = requestTokens;
 exports.getUserTransactions = getUserTransactions;
