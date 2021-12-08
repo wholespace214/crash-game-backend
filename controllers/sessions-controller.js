@@ -9,8 +9,8 @@ const mailService = require('../services/mail-service');
 const { generate } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const { INFLUENCERS, WFAIR_REWARDS, AWARD_TYPES } = require("../util/constants");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
+const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 
 module.exports = {
@@ -69,53 +69,52 @@ module.exports = {
         ref,
       });
 
-      // TODO: When there's time, delete Auth0 user if WFAIR creation fails
+      const account = new TransactionManager().account;
+      await account.createUser(wFairUserId);
 
-      await userService.mintUser(createdUser.id.toString());
-
-      let initialReward = 5000;
-      if (ref) {
-        if (INFLUENCERS.indexOf(ref) > -1) {
-          console.debug('[REWARD BY INFLUENCER] ', ref);
-          setTimeout(async () => {
-            await userService
-              .createUserAwardEvent({
-                userId: createdUser.id.toString(),
-                awardData: {
-                  type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
-                  award: WFAIR_REWARDS.registeredByInfluencer,
-                  ref,
-                },
-              })
-              .catch((err) => {
-                console.error('createUserAwardEvent', err);
-              });
-          }, 3000);
-
-          initialReward += WFAIR_REWARDS.registeredByInfluencer;
-        } else {
-          console.debug('[REWARD BY USER] ', ref);
-
-          const refList = await userService.getRefByUserId(ref);
-          //max ref awards elements per user
-          if (refList.length <= 10) {
-            setTimeout(async () => {
-              await userService
-                .createUserAwardEvent({
-                  userId: ref,
-                  awardData: {
-                    type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
-                    award: WFAIR_REWARDS.referral,
-                    ref,
-                  },
-                })
-                .catch((err) => {
-                  console.error('createUserAwardEvent', err);
-                });
-            }, 3000);
-          }
-        }
-      }
+      let initialReward = 0;
+      // if (ref) {
+      //   if (INFLUENCERS.indexOf(ref) > -1) {
+      //     console.debug('[REWARD BY INFLUENCER] ', ref);
+      //     setTimeout(async () => {
+      //       await userService
+      //         .createUserAwardEvent({
+      //           userId: createdUser.id.toString(),
+      //           awardData: {
+      //             type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
+      //             award: WFAIR_REWARDS.registeredByInfluencer,
+      //             ref,
+      //           },
+      //         })
+      //         .catch((err) => {
+      //           console.error('createUserAwardEvent', err);
+      //         });
+      //     }, 3000);
+      //
+      //     initialReward += WFAIR_REWARDS.registeredByInfluencer;
+      //   } else {
+      //     console.debug('[REWARD BY USER] ', ref);
+      //
+      //     const refList = await userService.getRefByUserId(ref);
+      //     //max ref awards elements per user
+      //     if (refList.length <= 10) {
+      //       setTimeout(async () => {
+      //         await userService
+      //           .createUserAwardEvent({
+      //             userId: ref,
+      //             awardData: {
+      //               type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
+      //               award: WFAIR_REWARDS.referral,
+      //               ref,
+      //             },
+      //           })
+      //           .catch((err) => {
+      //             console.error('createUserAwardEvent', err);
+      //           });
+      //       }, 3000);
+      //     }
+      //   }
+      // }
 
       amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
         event: notificationEvents.EVENT_USER_SIGNED_UP,
@@ -153,7 +152,8 @@ module.exports = {
     }
 
     try {
-      const { provider, ref } = req.params;
+      const { provider } = req.params;
+      const { ref = null } = req.body;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
@@ -176,7 +176,7 @@ module.exports = {
           session: await authService.generateJwt(existingUser),
           newUser: false,
         });
-      } else { // create user and log them it 
+      } else { // create user and log them it
         const eighteenYearsAgo = new Date();
         eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
         if (userData.birthdate && userData.birthdate > eighteenYearsAgo) {
@@ -194,9 +194,7 @@ module.exports = {
           ref
         });
 
-        await userService.mintUser(createdUser.id.toString());
-
-        const initialReward = 5000;
+        const initialReward = 0;
         amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
           event: notificationEvents.EVENT_USER_SIGNED_UP,
           producer: 'user',

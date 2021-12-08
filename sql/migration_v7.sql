@@ -1,5 +1,16 @@
 BEGIN;
-CREATE TABLE IF NOT EXISTS casino_fairness (ID SERIAL PRIMARY KEY, userId varchar(255) NOT NULL, gameId varchar(255), serverSeed varchar(255), nextServerSeed varchar(255), clientSeed varchar(255), nonce INT, currentHashLine INT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
-ALTER TABLE casino_trades ADD COLUMN fairnessId int;
-ALTER TABLE casino_trades ADD COLUMN fairnessNonce int;
+
+ALTER TABLE amm_interactions ALTER COLUMN investmentAmount TYPE numeric;
+ALTER TABLE amm_interactions ALTER COLUMN feeAmount TYPE numeric;
+ALTER TABLE amm_interactions ALTER COLUMN outcomeTokensBought TYPE numeric;
+
+ALTER TABLE casino_matches ALTER COLUMN amountInvestedSum TYPE numeric;
+ALTER TABLE casino_matches ALTER COLUMN amountRewardedSum TYPE numeric;
+
+ALTER TABLE casino_trades ALTER COLUMN stakedAmount TYPE numeric;
+
+-- UPDATE casino_matches SET amountRewardedSum=amountRewardedSum*100000000000000;
+-- UPDATE casino_matches SET amountInvestedSum=amountInvestedSum*100000000000000;
+-- UPDATE casino_trades SET stakedAmount=stakedAmount*100000000000000;
+
 COMMIT;
