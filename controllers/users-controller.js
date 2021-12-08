@@ -618,7 +618,7 @@ const requestTokens = async (req, res, next) => {
   }
 };
 
-const startKycVerification = async (req, res, next) => {
+const startKycVerification = async (req, res) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
   if (!user) {

@@ -17,7 +17,7 @@ const tradeService = require('../services/trade-service');
 const betService = require('../services/bet-service');
 
 const { ErrorHandler } = require('../util/error-handler');
-const { toScaledBigInt, fromScaledBigInt, calculateGain} = require('../util/number-helper');
+const { /*toScaledBigInt,*/ fromScaledBigInt, calculateGain} = require('../util/number-helper');
 const { isAdmin } = require('../helper');
 const { calculateAllBetsStatus } = require('../services/event-service');
 const { DEFAULT } = require('../util/constants');
@@ -250,10 +250,10 @@ const pullOutBet = async (req, res, next) => {
 
   try {
     // Defining User Inputs
-    const { outcome, minReturnAmount } = req.body;
+    const { outcome /*, minReturnAmount*/ } = req.body;
     const { id } = req.params;
 
-    let requiredMinReturnAmount = 0n;
+    // let requiredMinReturnAmount = 0n;
     // if (minReturnAmount) {
     //   requiredMinReturnAmount = toScaledBigInt(minReturnAmount);
     // }
@@ -333,7 +333,7 @@ const calculateBuyOutcome = async (req, res, next) => {
   const errors = validationResult(req);
 
   const { amount } = req.body;
-  const { id } = req.params;
+  // const { id } = req.params;
 
   if (!errors.isEmpty() || amount <= 0) {
     return next(new ErrorHandler(422, 'Invalid input passed, please check it'));

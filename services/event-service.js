@@ -1,18 +1,17 @@
 // Import Bet and Event models
-const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
+const { Bet, Event, BetContract } = require('@wallfair.io/wallfair-commons').models;
 
 // Import services
 
-const { Wallet, ONE } = require('@wallfair.io/trading-engine');
+// const { Wallet, ONE } = require('@wallfair.io/trading-engine');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onNewBet } = require('./quote-storage-service');
 const mongoose = require('mongoose');
-const { DEFAULT } = require('../util/constants');
-const outcomesUtil = require('../util/outcomes');
-
-const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
+// const { DEFAULT } = require('../util/constants');
+// const outcomesUtil = require('../util/outcomes');
+// const WFAIR = new Wallet();
+// const WFAIR_TOKEN = 'WFAIR';
 const BET_STATUS = {
   upcoming: 'upcoming',
   active: 'active',
@@ -202,22 +201,8 @@ exports.betCreated = async (bet, user) => {
   }
 };
 
-exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liquidityAmount = DEFAULT.betLiquidity) => {
-  const LOG_TAG = '[CREATE-BET]';
-  const liquidityProviderWallet = `LIQUIDITY_${createBet.id}`;
-  // const betContract = new BetContract(createBet.id, createBet.outcomes.length);
-  const liquidity = BigInt(liquidityAmount) * ONE;
-  // const distributionHint = outcomesUtil.getOutcomeDistributionHints(probabilityDistribution);
-
-  console.debug(LOG_TAG, 'Minting new Tokens');
-  const beneficiary = {owner:liquidityProviderWallet, namespace: 'usr', symbol: WFAIR_TOKEN};
-  await WFAIR.mint(beneficiary, liquidity);
-  console.debug(LOG_TAG, 'Adding Liquidity to the Event');
-  // await betContract.addLiquidity(
-  //   liquidityProviderWallet,
-  //   liquidity,
-  //   distributionHint,
-  // );
+exports.provideLiquidityToBet = async (/*createBet, probabilityDistribution , liquidityAmount = DEFAULT.betLiquidity */) => {
+  throw Error('Not supported');
 };
 
 exports.saveEvent = async (event, session, existing = false) => {

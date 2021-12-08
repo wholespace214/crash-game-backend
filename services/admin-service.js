@@ -61,8 +61,8 @@ exports.initialize = function () {
               actionType: 'record',
               isVisible: false,
               handler: async (request, response, context) => {
-                const addBalance = request.fields.add;
-                await userService.mintUser(context.record.params._id, addBalance);
+                // const addBalance = request.fields.add;
+                // await userService.mintUser(context.record.params._id, addBalance);
                 return {
                   record: context.record.toJSON(context.currentAdmin),
                 };
