@@ -1,18 +1,17 @@
 // Import Bet and Event models
-const { Bet, Event } = require('@wallfair.io/wallfair-commons').models;
+const { Bet, Event, BetContract } = require('@wallfair.io/wallfair-commons').models;
 
 // Import services
 
-const { Wallet, ONE } = require('@wallfair.io/trading-engine');
+// const { Wallet, ONE } = require('@wallfair.io/trading-engine');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onNewBet } = require('./quote-storage-service');
 const mongoose = require('mongoose');
-const { DEFAULT } = require('../util/constants');
-const outcomesUtil = require('../util/outcomes');
-
-const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
+// const { DEFAULT } = require('../util/constants');
+// const outcomesUtil = require('../util/outcomes');
+// const WFAIR = new Wallet();
+// const WFAIR_TOKEN = 'WFAIR';
 const BET_STATUS = {
   upcoming: 'upcoming',
   active: 'active',
@@ -202,7 +201,7 @@ exports.betCreated = async (bet, user) => {
   }
 };
 
-exports.provideLiquidityToBet = async (createBet, probabilityDistribution, liquidityAmount = DEFAULT.betLiquidity) => {
+exports.provideLiquidityToBet = async (/*createBet, probabilityDistribution , liquidityAmount = DEFAULT.betLiquidity */) => {
   throw Error('Not supported');
 };
 

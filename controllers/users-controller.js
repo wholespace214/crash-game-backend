@@ -15,13 +15,13 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
+const { fromScaledBigInt /*, toScaledBigInt */ } = require('../util/number-helper');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
 
 const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
+// const WFAIR_TOKEN = 'WFAIR';
 const casinoContract = new CasinoTradeContract();
 
 const bindWalletAddress = async (req, res, next) => {

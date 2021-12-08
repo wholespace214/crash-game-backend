@@ -1,11 +1,11 @@
 const userService = require('./user-service');
-const tradeService = require('./trade-service');
+// const tradeService = require('./trade-service');
 const eventService = require('./event-service');
 const { Bet, Trade, Event } = require('@wallfair.io/wallfair-commons').models;
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { onBetPlaced } = require('./quote-storage-service');
-const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
+const { /*toScaledBigInt, */ fromScaledBigInt } = require('../util/number-helper');
 const { calculateAllBetsStatus, filterPublishedBets } = require('../services/event-service');
 const _ = require('lodash');
 
@@ -68,15 +68,15 @@ exports.editBet = async (betId, betData) => {
   return updatedEvent;
 };
 
-exports.placeBet = async (userId, betId, amount, outcome, minOutcomeTokens) => {
+exports.placeBet = async (userId, betId /*, amount, outcome, minOutcomeTokens */) => {
   const LOG_TAG = '[CREATE-BET]';
 
-  amount = toScaledBigInt(amount);
+  // amount = toScaledBigInt(amount);
 
-  let minOutcomeTokensToBuy = 1n;
-  if (minOutcomeTokens > 1) {
-    minOutcomeTokensToBuy = toScaledBigInt(minOutcomeTokens);
-  }
+  // let minOutcomeTokensToBuy = 1n;
+  // if (minOutcomeTokens > 1) {
+  //   minOutcomeTokensToBuy = toScaledBigInt(minOutcomeTokens);
+  // }
 
   const bet = await eventService.getBet(betId);
   const event = await Event.findById({ _id: bet.event });
@@ -148,7 +148,7 @@ exports.getTrade = async (id) => {
   return await Trade.findById(id).populate('userId').populate('betId');
 };
 
-exports.clearOpenBets = async (bet, session) => {
+exports.clearOpenBets = async (/*bet, session*/) => {
   // const betContract = new BetContract(bet.id, bet.outcomes.length);
   // for (const outcome of bet.outcomes) {
     // const wallets = await betContract.getInvestorsOfOutcome(outcome.index);
@@ -172,7 +172,7 @@ exports.clearOpenBets = async (bet, session) => {
   // }
 };
 
-exports.refundUserHistory = async (bet, session) => {
+exports.refundUserHistory = async (bet /*, session*/) => {
   const userIds = [];
   // const betContract = new BetContract(bet.id, bet.outcomes.length);
 

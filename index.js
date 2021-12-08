@@ -15,7 +15,7 @@ const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
 const { initDb } = require('@wallfair.io/trading-engine');
-const { initDatabase } = require('@wallfair.io/wallfair-casino');
+// const { initDatabase } = require('@wallfair.io/wallfair-casino');
 
 let mongoURL = process.env.DB_CONNECTION;
 

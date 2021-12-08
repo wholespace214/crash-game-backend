@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Trade, User } = require('@wallfair.io/wallfair-commons').models;
 const eventService = require('./event-service');
-const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
+const { /*toScaledBigInt,*/ fromScaledBigInt } = require('../util/number-helper');
 
 const getTradesAggregate = (betId, statuses = []) => {
   return Trade.aggregate([
@@ -55,7 +55,7 @@ const getTradesAggregate = (betId, statuses = []) => {
   ]);
 };
 
-const calcBuySell = async (betId, trade) => {
+const calcBuySell = async (/*betId, trade*/) => {
   let outcomeBuy = 0;
   let outcomeSell = 0;
 
