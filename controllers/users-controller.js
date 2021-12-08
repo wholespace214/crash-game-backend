@@ -15,13 +15,13 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { fromScaledBigInt /*, toScaledBigInt */ } = require('../util/number-helper');
+const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
 
 const WFAIR = new Wallet();
-// const WFAIR_TOKEN = 'WFAIR';
+const WFAIR_TOKEN = 'WFAIR';
 const casinoContract = new CasinoTradeContract();
 
 const bindWalletAddress = async (req, res, next) => {
@@ -202,7 +202,8 @@ const getUserInfo = async (req, res, next) => {
       aboutMe: user.aboutMe,
       status: user.status,
       notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
-      alpacaBuilderProps: user.alpacaBuilderProps
+      alpacaBuilderProps: user.alpacaBuilderProps,
+      kyc: user.kyc,
     });
   } catch (err) {
     console.error(err);
@@ -586,6 +587,57 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
+const requestTokens = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await userService.getUserById(userId);
+    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
+    const balance = BigInt(await WFAIR.getBalance(userId));
+    if (balance >= toScaledBigInt(5000) || balance < 0) {
+      return next(new ErrorHandler(403, 'Action not allowed'));
+    }
+    if (
+      user.tokensRequestedAt
+      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
+    ) {
+      return next(new ErrorHandler(
+        403,
+        'Action not allowed. You can request new tokens after 1 hour since last request'
+      ));
+    }
+
+    user.tokensRequestedAt = new Date().toISOString()
+    user.amountWon = 0;
+    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
+    await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
+    await user.save();
+    res.status(200).send();
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+};
+
+const startKycVerification = async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    res.writeHeader(200, {"Content-Type": "text/html"});
+    res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
+    res.end();
+  }
+
+  const fractalUiDomain = process.env.FRACTAL_FRONTEND_DOMAIN;
+  const redirectUri = encodeURIComponent(process.env.FRACTAL_AUTH_CALLBACK_URL);
+  const clientId = process.env.FRACTAL_CLIENT_ID;
+  const scope = encodeURIComponent(process.env.FRACTAL_SCOPE);
+  const state = userId;
+  const query = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+  let url = `https://${fractalUiDomain}/authorize?${query}`;
+  res.redirect(url);
+}
+
+
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -631,4 +683,6 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
+exports.requestTokens = requestTokens;
+exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;

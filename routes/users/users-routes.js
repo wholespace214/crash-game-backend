@@ -23,4 +23,6 @@ router.get('/:userId/stats', userController.getUserStats);
 
 router.get('/count', userController.getUserCount)
 
+router.get('/:userId/kyc-start', userController.startKycVerification);
+
 module.exports = router;
