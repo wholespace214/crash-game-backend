@@ -21,7 +21,7 @@ const { getPostgresConnection }  = require('@wallfair.io/wallfair-commons').util
 
 const INSERT_PRICE_ACTION = 'INSERT INTO amm_price_action (betid, trx_timestamp, outcomeindex, quote) values %L'
 
-const onBetPlaced = async (bet) => {
+const onBetPlaced = async (/*bet*/) => {
   // const { _id: betId, outcomes } = bet;
   // const betContract = new BetContract(betId, outcomes.length);
 

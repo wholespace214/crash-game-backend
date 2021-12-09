@@ -202,7 +202,8 @@ const getUserInfo = async (req, res, next) => {
       aboutMe: user.aboutMe,
       status: user.status,
       notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
-      alpacaBuilderProps: user.alpacaBuilderProps
+      alpacaBuilderProps: user.alpacaBuilderProps,
+      kyc: user.kyc,
     });
   } catch (err) {
     console.error(err);
@@ -617,6 +618,26 @@ const requestTokens = async (req, res, next) => {
   }
 };
 
+const startKycVerification = async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    res.writeHeader(200, {"Content-Type": "text/html"});
+    res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
+    res.end();
+  }
+
+  const fractalUiDomain = process.env.FRACTAL_FRONTEND_DOMAIN;
+  const redirectUri = encodeURIComponent(process.env.FRACTAL_AUTH_CALLBACK_URL);
+  const clientId = process.env.FRACTAL_CLIENT_ID;
+  const scope = encodeURIComponent(process.env.FRACTAL_SCOPE);
+  const state = userId;
+  const query = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+  let url = `https://${fractalUiDomain}/authorize?${query}`;
+  res.redirect(url);
+}
+
+
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -663,4 +684,5 @@ exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
 exports.requestTokens = requestTokens;
+exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;

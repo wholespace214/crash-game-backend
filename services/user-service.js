@@ -3,9 +3,9 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet, ONE } = require('@wallfair.io/trading-engine');
+const { Wallet/*, ONE*/ } = require('@wallfair.io/trading-engine');
 const { fromScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
+const { WFAIR_REWARDS/*, AWARD_TYPES*/ } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
@@ -14,7 +14,7 @@ const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
 const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
+// const WFAIR_TOKEN = 'WFAIR';
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
@@ -112,7 +112,7 @@ exports.createUser = async (user) => {
     });
 };
 
-exports.payoutUser = async (userId, bet) => {
+exports.payoutUser = async (/*userId, bet*/) => {
   // const betId = bet.id;
   const LOG_TAG = '[PAYOUT-BET]';
   // console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
@@ -128,9 +128,8 @@ exports.getBalanceOf = async (userId) => {
 
 const INITIAL_LIQUIDITY = 5000n;
 
-exports.mintUser = async (userId, amount) => {
-  const beneficiary = {owner:userId, namespace: 'usr', symbol: WFAIR_TOKEN};
-  await WFAIR.mint(beneficiary, amount ? BigInt(amount) * ONE : INITIAL_LIQUIDITY * ONE);
+exports.mintUser = async (/*userId, amount*/) => {
+  throw Error('Not supported');
 };
 
 exports.getTotalWin = (balance) => {

@@ -15,7 +15,7 @@ const wallfair = require('@wallfair.io/wallfair-commons');
 const { handleError } = require('./util/error-handler');
 
 const { initDb } = require('@wallfair.io/trading-engine');
-const { initDatabase } = require('@wallfair.io/wallfair-casino');
+// const { initDatabase } = require('@wallfair.io/wallfair-casino');
 
 let mongoURL = process.env.DB_CONNECTION;
 
@@ -131,6 +131,7 @@ async function main() {
   const notificationEventsRoutes = require('./routes/users/notification-events-routes');
   const authRoutes = require('./routes/auth/auth-routes');
   const userMessagesRoutes = require('./routes/users/user-messages-routes');
+  const fractalWebhooks = require('./routes/webhooks/fractal-webhooks');
   const quoteRoutes = require('./routes/users/quote-routes');
 
   const auth0ShowcaseRoutes = require('./routes/auth0-showcase-routes');
@@ -156,6 +157,7 @@ async function main() {
     passport.authenticate('jwt', { session: false }),
     userMessagesRoutes
   );
+  server.use('/webhooks/fractal/', fractalWebhooks);
 
   server.use('/api/quote', passport.authenticate('jwt', { session: false }), quoteRoutes);
 
