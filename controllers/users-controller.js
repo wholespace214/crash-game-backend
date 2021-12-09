@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, Account, ExternalTransactionOriginator
+  Wallet, Transactions, Account, ExternalTransactionOriginator, AccountNamespace
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -622,7 +622,7 @@ const startKycVerification = async (req, res) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
   if (!user) {
-    res.writeHeader(200, {"Content-Type": "text/html"});
+    res.writeHeader(200, { "Content-Type": "text/html" });
     res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
     res.end();
   }
@@ -650,11 +650,20 @@ const getUserTransactions = async (req, res, next) => {
     const transactionsAgent = new Transactions();
     const transactions = await transactionsAgent.getExternalTransactionLogs({
       where: [
-        ...accounts.map(({ owner_account }) => ({ sender: owner_account })),
+        // deposits
+        ...accounts
+          .filter(({ account_namespace }) => AccountNamespace.ETH === account_namespace)
+          .map(({ owner_account }) => ({ sender: owner_account })),
+        // onramp
         {
           internal_user_id: userId,
           originator: ExternalTransactionOriginator.ONRAMP,
-        }
+        },
+        // withdrawals
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.WITHDRAW,
+        },
       ]
     });
 
