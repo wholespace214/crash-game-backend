@@ -59,4 +59,6 @@ router.post('/:userId/status', userController.updateStatus);
 
 router.get('/wallet/transactions', userController.getUserTransactions);
 
+router.get('/:userId/kyc-data', userController.getUserKycData);
+
 module.exports = router;

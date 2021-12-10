@@ -23,6 +23,7 @@ const bigDecimal = require('js-big-decimal');
 const WFAIR = new Wallet();
 const WFAIR_TOKEN = 'WFAIR';
 const casinoContract = new CasinoTradeContract();
+const kycService = require('../services/kyc-service.js');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -637,6 +638,27 @@ const startKycVerification = async (req, res) => {
   res.redirect(url);
 }
 
+const getUserKycData = async (req, res, next) => {
+  if (req.user.admin === false && req.params.userId !== req.user.id) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new ErrorHandler(404));
+  }
+  if (!user.kyc?.refreshToken) {
+    return next(new ErrorHandler(422, `User hasn't completed yet kyc.`));
+  }
+
+  try {
+    const accessToken = await kycService.getNewAccessToken(user.kyc.refreshToken);
+    const result = await kycService.getUserInfoFromFractal(accessToken);
+    res.status(200).send(result);
+  } catch (err) {
+    next(new ErrorHandler(422, err.message));
+  }
+}
 
 const getUserTransactions = async (req, res, next) => {
   try {
@@ -695,3 +717,4 @@ exports.updateStatus = updateStatus;
 exports.requestTokens = requestTokens;
 exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;
+exports.getUserKycData = getUserKycData;
