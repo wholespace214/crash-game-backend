@@ -132,7 +132,13 @@ module.exports = {
         broadcast: true
       }));
 
-      await mailService.sendConfirmMail(createdUser);
+      mailService.sendConfirmMail(createdUser)
+        .then(() => {
+          console.log(`[SIGNUP] Confirmation email sent to ${createdUser.email}`);
+        })
+        .catch((e) => {
+          console.error(`[SIGNUP] Error sending email to ${createdUser.email}`, e);
+        })
 
       return res.status(201).json({
         userId: createdUser.id,
