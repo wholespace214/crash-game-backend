@@ -629,6 +629,20 @@ const getUserKycData = async (req, res, next) => {
   }
 }
 
+const getKycStatus = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(new ErrorHandler(404, 'User not found'));
+    }
+
+    res.status(200).json({ status: user.kyc?.status || 'unknown' });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -668,7 +682,6 @@ function randomUsername(req, res) {
   return res.send({ username })
 }
 
-
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -690,4 +703,5 @@ exports.updateStatus = updateStatus;
 exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;
 exports.getUserKycData = getUserKycData;
+exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
