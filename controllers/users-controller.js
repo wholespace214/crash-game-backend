@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, Account, ExternalTransactionOriginator, AccountNamespace
+  Wallet, Transactions, ExternalTransactionOriginator,
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -667,16 +667,14 @@ const getUserTransactions = async (req, res, next) => {
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
 
-    const account = new Account();
-    const accounts = await account.getUserAccounts(userId);
-
     const transactionsAgent = new Transactions();
     const transactions = await transactionsAgent.getExternalTransactionLogs({
       where: [
         // deposits
-        ...accounts
-          .filter(({ account_namespace }) => AccountNamespace.ETH === account_namespace)
-          .map(({ owner_account }) => ({ sender: owner_account })),
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.DEPOSIT,
+        },
         // onramp
         {
           internal_user_id: userId,
@@ -699,7 +697,7 @@ const getUserTransactions = async (req, res, next) => {
 
 function randomUsername(req, res) {
   const username = faker.internet.userName();
-  return res.send({username})
+  return res.send({ username })
 }
 
 
