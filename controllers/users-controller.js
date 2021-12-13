@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, ExternalTransactionOriginator,
+  Wallet, Transactions, ExternalTransactionOriginator, fromWei,
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -15,14 +15,13 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
+const { fromScaledBigInt } = require('../util/number-helper');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
 const faker = require('faker');
 
 const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 
@@ -182,8 +181,8 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = BigInt(await WFAIR.getBalance(userId));
-    const formattedBalance = fromScaledBigInt(balance);
+    const balance = await WFAIR.getBalance(userId);
+    const formattedBalance = fromWei(balance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -589,37 +588,6 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
-const requestTokens = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const user = await userService.getUserById(userId);
-    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
-    const balance = BigInt(await WFAIR.getBalance(userId));
-    if (balance >= toScaledBigInt(5000) || balance < 0) {
-      return next(new ErrorHandler(403, 'Action not allowed'));
-    }
-    if (
-      user.tokensRequestedAt
-      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
-    ) {
-      return next(new ErrorHandler(
-        403,
-        'Action not allowed. You can request new tokens after 1 hour since last request'
-      ));
-    }
-
-    user.tokensRequestedAt = new Date().toISOString()
-    user.amountWon = 0;
-    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
-    await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
-    await user.save();
-    res.status(200).send();
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
 const startKycVerification = async (req, res) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
@@ -719,7 +687,6 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
-exports.requestTokens = requestTokens;
 exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;
 exports.getUserKycData = getUserKycData;
