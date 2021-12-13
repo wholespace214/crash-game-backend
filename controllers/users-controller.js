@@ -192,7 +192,7 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      totalWin: userService.getTotalWin(balance).toString(),
+      totalWin: userService.getTotalWin(BigInt(balance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
