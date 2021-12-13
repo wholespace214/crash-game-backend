@@ -27,7 +27,7 @@ module.exports = {
         const recaptchaRes = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
         );
-
+        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data )
         if (
           !recaptchaRes.data.success ||
           recaptchaRes.data.score < 0.5 ||
