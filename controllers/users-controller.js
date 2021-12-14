@@ -723,7 +723,6 @@ const cryptoPayChannel = async (req, res, next) => {
       response = await cryptopayService.createChannel(req.user.id, req.body.currency);
     }
 
-    console.log(response.data);
     return res.status(200).send(response.data);
   } catch (e) {
     console.error(e.message);
