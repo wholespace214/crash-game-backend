@@ -1,4 +1,5 @@
 BEGIN;
+<<<<<<< HEAD
 
 CREATE TABLE IF NOT EXISTS casino_external_trades (
 	ID SERIAL PRIMARY KEY,
@@ -26,4 +27,7 @@ CREATE TABLE IF NOT EXISTS casino_evoplay_trades (
 	updated_at TIMESTAMP WITH TIME ZONE);
 
 CREATE TABLE IF NOT EXISTS casino_rewards (ID SERIAL PRIMARY KEY, userId varchar(255) NOT NULL, gameId varchar(255), type varchar(255), amount NUMERIC, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+=======
+CREATE TABLE IF NOT EXISTS casino_rewards (ID SERIAL PRIMARY KEY, userId varchar(255) NOT NULL, refId varchar(255), tradeId int, gameId varchar(255), type varchar(255), amount NUMERIC, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+>>>>>>> 5a8a89e (- extend casino_rewards table)
 COMMIT;
