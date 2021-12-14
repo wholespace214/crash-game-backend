@@ -15,4 +15,3 @@ configMapGenerator:
       
 patches:
 - prodConfigPatch.yaml
-- resourcesPatch.yaml
