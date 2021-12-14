@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { getDiscordUserData } = require('../util/discord.oauth');
 const { getFacebookUserData } = require('../util/facebook.oauth');
 const { getGoogleUserData } = require('../util/google.oauth');
 const { getTwitchUserData } = require('../util/twitch.oauth');
@@ -10,6 +11,7 @@ exports.getUserDataForProvider = async (provider, context) => {
     google: getGoogleUserData,
     facebook: getFacebookUserData,
     twitch: getTwitchUserData,
+    discord: getDiscordUserData,
   }[provider];
 
   if (!dataGetter) {
