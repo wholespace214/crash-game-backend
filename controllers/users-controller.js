@@ -682,6 +682,28 @@ function randomUsername(req, res) {
   return res.send({ username })
 }
 
+function buyWithCrypto(req, res, next) {
+  if(!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
+  const {currency, wallet, amount, estimate} = req.body;
+  const email = req.user.email;
+
+  mailService.sendBuyWithCryptoEmail({
+    currency,
+    wallet,
+    amount,
+    estimate,
+    email
+  })
+    .then(() => {
+      console.log('[BUY_WITH_CRYPTO]: Email sent')
+    })
+    .catch((e) => {
+      console.error('[BUY_WITH_CRYPTO]: Error sending email', e)
+    })
+
+  return res.status(200).send('OK')
+}
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -705,3 +727,4 @@ exports.getUserTransactions = getUserTransactions;
 exports.getUserKycData = getUserKycData;
 exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
+exports.buyWithCrypto = buyWithCrypto;
