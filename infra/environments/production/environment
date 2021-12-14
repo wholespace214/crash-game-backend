@@ -5,3 +5,7 @@ FACEBOOK_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/facebook
 GOOGLE_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/google
 ENVIRONMENT=PRODUCTION
 BACKEND_URL=https://rm-api.alpacasino.io
+AUTH0_AUDIENCE=https://wallfair.eu.auth0.com/api/v2/
+AUTH0_CLIENT_ID=srDgqxyTDvBggzXhlserlACvO1BOq6pJ
+AUTH0_CONNECTION_ID=Username-Password-Authenticationle
+AUTH0_DOMAIN=wallfair.eu.auth0.com
