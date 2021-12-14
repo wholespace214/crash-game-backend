@@ -6,6 +6,7 @@ const { generate } = require('../helper');
 
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
 const email_reset_password = fs.readFileSync('./emails/email-reset-password.html', 'utf8');
+const email_buy_with_crypto = fs.readFileSync('./emails/buy-with-crypto.html', 'utf8');
 
 exports.sendConfirmMail = async (user) => {
   const emailCode = generate(6);
@@ -26,6 +27,17 @@ exports.sendPasswordResetMail = async (email, resetUrl) => {
     .replace('{{resetPwUrl}}', resetUrl);
 
   await sendMail(email, 'Password reset', generatedTemplate);
+}
+
+exports.sendBuyWithCryptoEmail = async (data) => {
+  const generatedTemplate = email_buy_with_crypto
+    .replace('{{currency}}', data.currency)
+    .replace('{{wallet}}', data.wallet)
+    .replace('{{amount}}', data.amount)
+    .replace('{{estimate}}', data.estimate)
+    .replace('{{email}}', data.email)
+
+  await sendMail('support@alpacasino.io', 'Buy With Crypto Form', generatedTemplate);
 }
 
 /***
