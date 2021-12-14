@@ -27,7 +27,7 @@ module.exports = {
         const recaptchaRes = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
         );
-        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data )
+        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data)
         if (
           !recaptchaRes.data.success ||
           recaptchaRes.data.score < 0.5 ||
@@ -183,12 +183,6 @@ module.exports = {
           newUser: false,
         });
       } else { // create user and log them it
-        const eighteenYearsAgo = new Date();
-        eighteenYearsAgo.setFullYear(new Date().getFullYear() - 18);
-        if (userData.birthdate && userData.birthdate > eighteenYearsAgo) {
-          throw new Error('USER_NOT_OF_LEGAL_AGE');
-        }
-
         const createdUser = await userApi.createUser({
           _id: new ObjectId().toHexString(),
           ...userData,
