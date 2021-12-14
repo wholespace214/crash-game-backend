@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, Account, ExternalTransactionOriginator
+  Wallet, Transactions, ExternalTransactionOriginator, fromWei,
 } = require('@wallfair.io/trading-engine');
 const {
   CasinoTradeContract,
@@ -15,14 +15,15 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
+const { fromScaledBigInt } = require('../util/number-helper');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
+const faker = require('faker');
 
 const WFAIR = new Wallet();
-const WFAIR_TOKEN = 'WFAIR';
 const casinoContract = new CasinoTradeContract();
+const kycService = require('../services/kyc-service.js');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -180,8 +181,8 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = BigInt(await WFAIR.getBalance(userId));
-    const formattedBalance = fromScaledBigInt(balance);
+    const balance = await WFAIR.getBalance(userId);
+    const formattedBalance = fromWei(balance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -191,7 +192,7 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      totalWin: userService.getTotalWin(balance).toString(),
+      totalWin: userService.getTotalWin(BigInt(balance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
@@ -587,42 +588,11 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
-const requestTokens = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const user = await userService.getUserById(userId);
-    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
-    const balance = BigInt(await WFAIR.getBalance(userId));
-    if (balance >= toScaledBigInt(5000) || balance < 0) {
-      return next(new ErrorHandler(403, 'Action not allowed'));
-    }
-    if (
-      user.tokensRequestedAt
-      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
-    ) {
-      return next(new ErrorHandler(
-        403,
-        'Action not allowed. You can request new tokens after 1 hour since last request'
-      ));
-    }
-
-    user.tokensRequestedAt = new Date().toISOString()
-    user.amountWon = 0;
-    const beneficiary = { owner: userId, namespace: 'usr', symbol: WFAIR_TOKEN };
-    await WFAIR.mint(beneficiary, toScaledBigInt(5000) - balance);
-    await user.save();
-    res.status(200).send();
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
 const startKycVerification = async (req, res) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
   if (!user) {
-    res.writeHeader(200, {"Content-Type": "text/html"});
+    res.writeHeader(200, { "Content-Type": "text/html" });
     res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
     res.end();
   }
@@ -637,6 +607,41 @@ const startKycVerification = async (req, res) => {
   res.redirect(url);
 }
 
+const getUserKycData = async (req, res, next) => {
+  if (req.user.admin === false && req.params.userId !== req.user.id) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new ErrorHandler(404));
+  }
+  if (!user.kyc?.refreshToken) {
+    return next(new ErrorHandler(422, `User hasn't completed yet kyc.`));
+  }
+
+  try {
+    const accessToken = await kycService.getNewAccessToken(user.kyc.refreshToken);
+    const result = await kycService.getUserInfoFromFractal(accessToken);
+    res.status(200).send(result);
+  } catch (err) {
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
+const getKycStatus = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(new ErrorHandler(404, 'User not found'));
+    }
+
+    res.status(200).json({ status: user.kyc?.status || 'unknown' });
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
 
 const getUserTransactions = async (req, res, next) => {
   try {
@@ -644,17 +649,24 @@ const getUserTransactions = async (req, res, next) => {
     const user = await userService.getUserById(userId);
     if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
 
-    const account = new Account();
-    const accounts = await account.getUserAccounts(userId);
-
     const transactionsAgent = new Transactions();
     const transactions = await transactionsAgent.getExternalTransactionLogs({
       where: [
-        ...accounts.map(({ owner_account }) => ({ sender: owner_account })),
+        // deposits
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.DEPOSIT,
+        },
+        // onramp
         {
           internal_user_id: userId,
           originator: ExternalTransactionOriginator.ONRAMP,
-        }
+        },
+        // withdrawals
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.WITHDRAW,
+        },
       ]
     });
 
@@ -663,6 +675,11 @@ const getUserTransactions = async (req, res, next) => {
     console.error(err);
     next(new ErrorHandler(422, err.message));
   }
+}
+
+function randomUsername(req, res) {
+  const username = faker.internet.userName();
+  return res.send({ username })
 }
 
 exports.bindWalletAddress = bindWalletAddress;
@@ -683,6 +700,8 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
-exports.requestTokens = requestTokens;
 exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;
+exports.getUserKycData = getUserKycData;
+exports.getKycStatus = getKycStatus;
+exports.randomUsername = randomUsername;

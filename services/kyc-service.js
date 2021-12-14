@@ -2,8 +2,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const axios = require('axios');
-const { FRACTAL_AUTH_DOMAIN, FRACTAL_CLIENT_ID, FRACTAL_CLIENT_SECRET, FRACTAL_AUTH_CALLBACK_URL } = process.env;
-
+const { FRACTAL_RESOURCE_DOMAIN, FRACTAL_AUTH_DOMAIN, FRACTAL_CLIENT_ID, FRACTAL_CLIENT_SECRET, FRACTAL_AUTH_CALLBACK_URL } = process.env;
 const AccessTokenUrlBaseUrl = `https://${FRACTAL_AUTH_DOMAIN}/oauth/token?client_id=${FRACTAL_CLIENT_ID}&client_secret=${FRACTAL_CLIENT_SECRET}`;
 
 const updateUserKycStatusAndNotify = async (userId, {uid, status, refreshToken}, extraData) => {
@@ -46,9 +45,7 @@ const updateUserKycStatusAndNotify = async (userId, {uid, status, refreshToken},
 }
 
 const getUserInfoFromFractal = async (token) => {
-  const resourceDomain = process.env.FRACTAL_RESOURCE_DOMAIN;
-
-  let getUserKycStatusUrl = `https://${resourceDomain}/users/me`;
+  let getUserKycStatusUrl = `https://${FRACTAL_RESOURCE_DOMAIN}/users/me`;
   const userKycStatus = await axios.get(getUserKycStatusUrl, {
     headers: {
       ContentType: 'application/json',
@@ -59,7 +56,7 @@ const getUserInfoFromFractal = async (token) => {
   //console.log('userKycStatus', userKycStatus.data);
   const cases = userKycStatus.data?.verification_cases;
   const fractalUid = userKycStatus.data?.uid;
-
+  const phones = userKycStatus.data?.phones;
   let status = 'error';
   if(cases) {
     if(cases.every(v => v.credential === 'approved')){
@@ -88,6 +85,7 @@ const getUserInfoFromFractal = async (token) => {
     status,
     uid: fractalUid,
     userInfo: {
+      phones,
       date_of_birth,
       full_name,
       identification_document_country,
@@ -108,17 +106,22 @@ const userFractalAuthorizationError = async (userId, error, error_description) =
   return await updateUserKycStatusAndNotify(userId, {status: 'error'}, {error, error_description});
 };
 
-/**
- * Requests user info from Fractal and updates the KYC status on mongo
- */
-const refreshUserKyc = async (userId, refreshToken) => {
+const getNewAccessToken = async(refreshToken)=>{
   const grantType = 'refresh_token';
   let getAccessTokenUrl = `${AccessTokenUrlBaseUrl}&refresh_token=${refreshToken}&grant_type=${grantType}`;
   const fractalAccessToken = await axios.post(getAccessTokenUrl);
   if (!fractalAccessToken?.data) {
      throw new Error('failed to get a fractal access token using the refreshToken');
   }
-  const {status, uid } = await getUserInfoFromFractal(fractalAccessToken.data.access_token);
+  return fractalAccessToken.data.access_token;
+}
+
+/**
+ * Requests user info from Fractal and updates the KYC status on mongo
+ */
+const refreshUserKyc = async (userId, refreshToken) => {
+  const accessToken = await getNewAccessToken(refreshToken);
+  const { status, uid } = await getUserInfoFromFractal(accessToken);
   return await updateUserKycStatusAndNotify(userId, {uid, status, refreshToken});
 }
 
@@ -144,4 +147,6 @@ module.exports = {
   userFractalAuthorizationError,
   userFractalAuthorized,
   refreshUserKyc,
+  getUserInfoFromFractal,
+  getNewAccessToken,
 };

@@ -27,7 +27,7 @@ module.exports = {
         const recaptchaRes = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
         );
-
+        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data )
         if (
           !recaptchaRes.data.success ||
           recaptchaRes.data.score < 0.5 ||
@@ -132,7 +132,13 @@ module.exports = {
         broadcast: true
       }));
 
-      await mailService.sendConfirmMail(createdUser);
+      mailService.sendConfirmMail(createdUser)
+        .then(() => {
+          console.log(`[SIGNUP] Confirmation email sent to ${createdUser.email}`);
+        })
+        .catch((e) => {
+          console.error(`[SIGNUP] Error sending email to ${createdUser.email}`, e);
+        })
 
       return res.status(201).json({
         userId: createdUser.id,

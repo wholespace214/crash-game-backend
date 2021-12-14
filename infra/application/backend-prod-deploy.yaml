@@ -44,6 +44,8 @@ spec:
           - configMapRef:
               name: app-global-secrets
           - configMapRef:
+              name: fractal-secrets
+          - configMapRef:
               name: postgres-conn
           - configMapRef:
               name: mongo-conn
