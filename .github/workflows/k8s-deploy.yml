@@ -7,6 +7,7 @@ on:
       - main
       - alpa-prod
       - development
+      - production
 
 jobs:
   build_and_push:
