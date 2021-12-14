@@ -3,26 +3,27 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Erc20,
-  Wallet,
+  Wallet, Transactions, ExternalTransactionOriginator, fromWei,
+} = require('@wallfair.io/trading-engine');
+const {
   CasinoTradeContract,
-  BetContract,
-} = require('@wallfair.io/smart_contract_mock');
+  CASINO_TRADE_STATE
+} = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const { ErrorHandler } = require('../util/error-handler');
-const { fromScaledBigInt, toScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
+const { fromScaledBigInt } = require('../util/number-helper');
 
 const _ = require('lodash');
-const { CASINO_TRADE_STATE } = require('@wallfair.io/smart_contract_mock/utils/db_helper');
 const bigDecimal = require('js-big-decimal');
+const faker = require('faker');
 
-const WFAIR = new Erc20('WFAIR');
-const casinoContract = new CasinoTradeContract('CASINO');
+const WFAIR = new Wallet();
+const casinoContract = new CasinoTradeContract();
+const kycService = require('../services/kyc-service.js');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -98,7 +99,7 @@ const saveAdditionalInformation = async (req, res, next) => {
 
       user.email = email.replace(' ', '');
 
-      await rewardRefUserIfNotConfirmed(user);
+      // await rewardRefUserIfNotConfirmed(user);
     }
 
     user = await userService.saveUser(user);
@@ -140,7 +141,7 @@ const saveAcceptConditions = async (req, res, next) => {
 
 const rewardRefUserIfNotConfirmed = async (user) => {
   if (!user.confirmed) {
-    await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
+    // await userService.rewardUserAction(user.ref, WFAIR_REWARDS.referral);
     await userService.createUser(user);
     user.confirmed = true;
   }
@@ -180,8 +181,8 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = await WFAIR.balanceOf(userId);
-    const formattedBalance = fromScaledBigInt(balance);
+    const balance = await WFAIR.getBalance(userId);
+    const formattedBalance = fromWei(balance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -191,7 +192,7 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      totalWin: userService.getTotalWin(balance).toString(),
+      totalWin: userService.getTotalWin(BigInt(balance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
@@ -201,7 +202,9 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
-      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id')
+      notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
+      alpacaBuilderProps: user.alpacaBuilderProps,
+      kyc: user.kyc,
     });
   } catch (err) {
     console.error(err);
@@ -285,21 +288,21 @@ const getOpenBetsList = async (request, response, next) => {
       for (const trade of trades) {
         const outcomeIndex = trade._id.outcomeIndex;
         const betId = trade._id.betId;
-        const outcomes = trade._id.bet.outcomes || [];
+        // const outcomes = trade._id.bet.outcomes || [];
         let outcomeBuy = 0;
         let outcomeSell = 0;
 
-        if (outcomes.length) {
-          const betContract = new BetContract(betId, outcomes.length);
-          outcomeBuy = await betContract.calcBuy(
-            toScaledBigInt(trade.totalInvestmentAmount),
-            outcomeIndex
-          );
-          outcomeSell = await betContract.calcSellFromAmount(
-            toScaledBigInt(trade.totalOutcomeTokens),
-            outcomeIndex
-          );
-        }
+        // if (outcomes.length) {
+        //   const betContract = new BetContract(betId, outcomes.length);
+        //   outcomeBuy = await betContract.calcBuy(
+        //     toScaledBigInt(trade.totalInvestmentAmount),
+        //     outcomeIndex
+        //   );
+        //   outcomeSell = await betContract.calcSellFromAmount(
+        //     toScaledBigInt(trade.totalOutcomeTokens),
+        //     outcomeIndex
+        //   );
+        // }
 
         openBets.push({
           betId,
@@ -330,8 +333,7 @@ const getHistory = async (req, res, next) => {
 
   try {
     if (user) {
-      const wallet = new Wallet(user.id);
-      const interactions = await wallet.getAMMInteractions();
+      const interactions = await casinoContract.getAMMInteractions(user.id);
       const casinoTrades = await casinoContract.getCasinoTradesByUserIdAndStates(user.id, [
         CASINO_TRADE_STATE.LOCKED,
         CASINO_TRADE_STATE.WIN,
@@ -358,11 +360,11 @@ const getHistory = async (req, res, next) => {
         const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
         const outcomeTokensBought = isWin
           ? fromScaledBigInt(
-              bigDecimal.multiply(
-                BigInt(casinoTrade.stakedamount),
-                parseFloat(casinoTrade.crashfactor)
-              )
+            bigDecimal.multiply(
+              BigInt(casinoTrade.stakedamount),
+              parseFloat(casinoTrade.crashfactor)
             )
+          )
           : 0;
         const direction = isWin ? 'PAYOUT' : 'BUY';
 
@@ -393,8 +395,7 @@ const getTradeHistory = async (req, res, next) => {
   }
 
   try {
-    const wallet = new Wallet(user.id);
-    const interactions = await wallet.getAMMInteractions();
+    const interactions = await casinoContract.getAMMInteractions(user.id);
     const finalizedTrades = await tradeService.getTradesByUserIdAndStatuses(user.id, [
       'closed',
       'rewarded',
@@ -457,17 +458,17 @@ const confirmEmail = async (req, res, next) => {
     user.confirmed = true;
     await user.save();
 
-    await userService
-      .createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.EMAIL_CONFIRMED,
-          award: WFAIR_REWARDS.confirmEmail,
-        },
-      })
-      .catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
+    // await userService
+    //   .createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.EMAIL_CONFIRMED,
+    //       award: WFAIR_REWARDS.confirmEmail,
+    //     },
+    //   })
+    //   .catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
 
     res.status(200).send({ status: 'OK' });
   } else {
@@ -505,7 +506,7 @@ const updateUser = async (req, res, next) => {
   }
 
   //allow notificationSettings to save without additional params
-  if(req.body.username || req.body.email) {
+  if (req.body.username || req.body.email) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = errors.errors[0].nestedErrors[0];
@@ -521,6 +522,7 @@ const updateUser = async (req, res, next) => {
       email: user.email,
       aboutMe: user.aboutMe,
       profilePicture: user.profilePicture,
+      alpacaBuilderProps: user.alpacaBuilderProps
     });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -586,35 +588,99 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
-const requestTokens = async (req, res, next) => {
+const startKycVerification = async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    res.writeHeader(200, { "Content-Type": "text/html" });
+    res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
+    res.end();
+  }
+
+  const fractalUiDomain = process.env.FRACTAL_FRONTEND_DOMAIN;
+  const redirectUri = encodeURIComponent(process.env.FRACTAL_AUTH_CALLBACK_URL);
+  const clientId = process.env.FRACTAL_CLIENT_ID;
+  const scope = encodeURIComponent(process.env.FRACTAL_SCOPE);
+  const state = userId;
+  const query = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+  let url = `https://${fractalUiDomain}/authorize?${query}`;
+  res.redirect(url);
+}
+
+const getUserKycData = async (req, res, next) => {
+  if (req.user.admin === false && req.params.userId !== req.user.id) {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new ErrorHandler(404));
+  }
+  if (!user.kyc?.refreshToken) {
+    return next(new ErrorHandler(422, `User hasn't completed yet kyc.`));
+  }
+
   try {
-    const userId = req.user.id;
-    const user = await userService.getUserById(userId);
-    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
-    const balance = await WFAIR.balanceOf(userId);
-    if (balance >= toScaledBigInt(5000) || balance < 0) {
-      return next(new ErrorHandler(403, 'Action not allowed'));
-    }
-    if(
-      user.tokensRequestedAt
-      && (new Date().getTime() - new Date(user.tokensRequestedAt).getTime()) < 3600000 // 1 hour
-    ){
-      return next(new ErrorHandler(
-        403,
-        'Action not allowed. You can request new tokens after 1 hour since last request'
-      ));
+    const accessToken = await kycService.getNewAccessToken(user.kyc.refreshToken);
+    const result = await kycService.getUserInfoFromFractal(accessToken);
+    res.status(200).send(result);
+  } catch (err) {
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
+const getKycStatus = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(new ErrorHandler(404, 'User not found'));
     }
 
-    user.tokensRequestedAt = new Date().toISOString()
-    user.amountWon = 0;
-    await WFAIR.mint(userId, toScaledBigInt(5000) - balance);
-    await user.save();
-    res.status(200).send();
+    res.status(200).json({ status: user.kyc?.status || 'unknown' });
   } catch (err) {
     console.error(err);
     next(new ErrorHandler(422, err.message));
   }
-};
+}
+
+const getUserTransactions = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await userService.getUserById(userId);
+    if (!user) return next(new ErrorHandler(403, 'Action not allowed'));
+
+    const transactionsAgent = new Transactions();
+    const transactions = await transactionsAgent.getExternalTransactionLogs({
+      where: [
+        // deposits
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.DEPOSIT,
+        },
+        // onramp
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.ONRAMP,
+        },
+        // withdrawals
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.WITHDRAW,
+        },
+      ]
+    });
+
+    res.status(200).json(transactions);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
+function randomUsername(req, res) {
+  const username = faker.internet.userName();
+  return res.send({ username })
+}
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -634,4 +700,8 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
-exports.requestTokens = requestTokens;
+exports.startKycVerification = startKycVerification;
+exports.getUserTransactions = getUserTransactions;
+exports.getUserKycData = getUserKycData;
+exports.getKycStatus = getKycStatus;
+exports.randomUsername = randomUsername;

@@ -40,7 +40,6 @@ router.get('/open-bets', userController.getOpenBetsList);
 router.get('/history', userController.getHistory);
 
 router.get('/trade-history', userController.getTradeHistory);
-router.post('/requestTokens', userController.requestTokens);
 
 router.patch(
   '/:userId',
@@ -57,5 +56,11 @@ router.patch(
 router.get('/:userId', userController.getUserInfo);
 
 router.post('/:userId/status', userController.updateStatus);
+
+router.get('/wallet/transactions', userController.getUserTransactions);
+
+router.get('/:userId/kyc-data', userController.getUserKycData);
+
+router.get('/kyc/status', userController.getKycStatus);
 
 module.exports = router;

@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const { Trade, User } = require('@wallfair.io/wallfair-commons').models;
 const eventService = require('./event-service');
-const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { toScaledBigInt, fromScaledBigInt } = require('../util/number-helper');
+const { /*toScaledBigInt,*/ fromScaledBigInt } = require('../util/number-helper');
 
 const getTradesAggregate = (betId, statuses = []) => {
   return Trade.aggregate([
@@ -56,19 +55,19 @@ const getTradesAggregate = (betId, statuses = []) => {
   ]);
 };
 
-const calcBuySell = async (betId, trade) => {
+const calcBuySell = async (/*betId, trade*/) => {
   let outcomeBuy = 0;
   let outcomeSell = 0;
 
-  const betContract = new BetContract(betId);
-  outcomeBuy = await betContract.calcBuy(
-    toScaledBigInt(trade.totalInvestmentAmount),
-    trade.outcomeIndex
-  );
-  outcomeSell = await betContract.calcSellFromAmount(
-    toScaledBigInt(trade.totalOutcomeTokens),
-    trade.outcomeIndex
-  );
+  // const betContract = new BetContract(betId);
+  // outcomeBuy = await betContract.calcBuy(
+  //   toScaledBigInt(trade.totalInvestmentAmount),
+  //   trade.outcomeIndex
+  // );
+  // outcomeSell = await betContract.calcSellFromAmount(
+  //   toScaledBigInt(trade.totalOutcomeTokens),
+  //   trade.outcomeIndex
+  // );
 
   return [fromScaledBigInt(outcomeBuy), fromScaledBigInt(outcomeSell)];
 }

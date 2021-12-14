@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app: backend 
+        app: backend
     spec:
       containers:
         - image: registry.digitalocean.com/wallfair/backend_k8s
@@ -41,6 +41,18 @@ spec:
               name: backend-config
           - configMapRef:
               name: app-secrets
+          - configMapRef:
+              name: app-global-secrets
+          - configMapRef:
+              name: fractal-secrets
+          - configMapRef:
+              name: postgres-conn
+          - configMapRef:
+              name: mongo-conn
+          - configMapRef:
+              name: redis-conn
+          - configMapRef:
+              name: rabbit-conn
           ports:
             - containerPort: 8000
 

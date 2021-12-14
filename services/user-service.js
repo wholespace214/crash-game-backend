@@ -2,9 +2,10 @@ const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
-const { fromScaledBigInt } = require('../util/number-helper');
-const { WFAIR_REWARDS, AWARD_TYPES } = require('../util/constants');
+// const { BetContract } = require('@wallfair.io/smart_contract_mock');
+const { Wallet,/*, ONE*/
+  fromWei } = require('@wallfair.io/trading-engine');
+const { WFAIR_REWARDS/*, AWARD_TYPES*/ } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
@@ -12,7 +13,8 @@ const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 
-const WFAIR = new Erc20('WFAIR');
+const WFAIR = new Wallet();
+// const WFAIR_TOKEN = 'WFAIR';
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
@@ -110,22 +112,24 @@ exports.createUser = async (user) => {
     });
 };
 
-exports.payoutUser = async (userId, bet) => {
-  const betId = bet.id;
+exports.payoutUser = async (/*userId, bet*/) => {
+  // const betId = bet.id;
   const LOG_TAG = '[PAYOUT-BET]';
-  console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
+  // console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
 
   console.debug(LOG_TAG, 'Requesting Bet Payout');
-  const betContract = new BetContract(betId, bet.outcomes.length);
-  await betContract.getPayout(userId);
+  // const betContract = new BetContract(betId, bet.outcomes.length);
+  // await betContract.getPayout(userId);
 };
 
-exports.getBalanceOf = async (userId) => fromScaledBigInt(await WFAIR.balanceOf(userId));
+exports.getBalanceOf = async (userId) => {
+  return fromWei(await WFAIR.getBalance(userId)).toFixed(4);
+}
 
 const INITIAL_LIQUIDITY = 5000n;
 
-exports.mintUser = async (userId, amount) => {
-  await WFAIR.mint(userId, amount ? BigInt(amount) * WFAIR.ONE : INITIAL_LIQUIDITY * WFAIR.ONE);
+exports.mintUser = async (/*userId, amount*/) => {
+  throw Error('Not supported');
 };
 
 exports.getTotalWin = (balance) => {
@@ -197,38 +201,39 @@ exports.updateUser = async (userId, updatedUser) => {
     });
 
     //handle SET_USERNAME award
-    const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err) => {
-      console.error('checkAwardExist err', err);
-    });
+    // const checkUsernameAward = await this.checkAwardExist(userId, 'SET_USERNAME').catch((err) => {
+    //   console.error('checkAwardExist err', err);
+    // });
 
-    if (checkUsernameAward.length === 0) {
-      await this.createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.SET_USERNAME,
-          award: WFAIR_REWARDS.setUsername,
-        },
-      }).catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
-    }
+    // if (checkUsernameAward.length === 0) {
+    //   await this.createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.SET_USERNAME,
+    //       award: WFAIR_REWARDS.setUsername,
+    //     },
+    //   }).catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
+    // }
   }
 
   if (updatedUser.image) {
-    if (!user.profilePicture) {
-      await this.createUserAwardEvent({
-        userId,
-        awardData: {
-          type: AWARD_TYPES.AVATAR_UPLOADED,
-          award: WFAIR_REWARDS.setAvatar,
-        },
-      }).catch((err) => {
-        console.error('createUserAwardEvent', err);
-      });
-    }
+    // if (!user.profilePicture) {
+    //   await this.createUserAwardEvent({
+    //     userId,
+    //     awardData: {
+    //       type: AWARD_TYPES.AVATAR_UPLOADED,
+    //       award: WFAIR_REWARDS.setAvatar,
+    //     },
+    //   }).catch((err) => {
+    //     console.error('createUserAwardEvent', err);
+    //   });
+    // }
 
     const imageLocation = await awsS3Service.upload(userId, updatedUser.image);
     user.profilePicture = imageLocation.split('?')[0];
+    user.alpacaBuilderProps = updatedUser.alpacaBuilderProps;
 
     amqp.send('universal_events', 'event.user_uploaded_picture', JSON.stringify({
       event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,

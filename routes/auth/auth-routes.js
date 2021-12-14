@@ -28,6 +28,15 @@ router.post(
   sessionsController.createUser
 );
 
+router.post(
+  '/login/:provider',
+  [
+    check('provider').notEmpty().isIn(['google', 'facebook']),
+    check('code').notEmpty(),
+  ],
+  sessionsController.loginThroughProvider
+);
+
 router.post('/verify-email', [check('email').notEmpty().isEmail()], sessionsController.verifyEmail);
 
 /** Triggers the "I've forgot my passwort" process */

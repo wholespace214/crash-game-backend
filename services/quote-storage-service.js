@@ -13,32 +13,33 @@
  * );
  */
 const format = require('pg-format');
-const { BetContract, Erc20 } = require('@wallfair.io/smart_contract_mock');
+// const { Wallet } = require('@wallfair.io/trading-engine');
 const { getPostgresConnection }  = require('@wallfair.io/wallfair-commons').utils;
-const WFAIR = new Erc20('WFAIR');
-let one = parseInt(WFAIR.ONE);
+// const WFAIR_TOKEN = 'WFAIR';
+// const WFAIR = new Wallet();
+// let one = parseInt(WFAIR.ONE);
 
 const INSERT_PRICE_ACTION = 'INSERT INTO amm_price_action (betid, trx_timestamp, outcomeindex, quote) values %L'
 
-const onBetPlaced = async (bet) => {
-  const { _id: betId, outcomes } = bet;
-  const betContract = new BetContract(betId, outcomes.length);
+const onBetPlaced = async (/*bet*/) => {
+  // const { _id: betId, outcomes } = bet;
+  // const betContract = new BetContract(betId, outcomes.length);
 
-  const timestamp = new Date().toISOString();
-  const valuePromises = outcomes.map(
-    outcome => betContract.calcBuy(WFAIR.ONE, outcome.index).then(p => [
-      betId.toString(),
-      timestamp,
-      outcome.index,
-      Math.min(1 / (parseInt(p) / one), 1),
-    ])
-  );
+  // const timestamp = new Date().toISOString();
+  // const valuePromises = outcomes.map(
+  //   outcome => betContract.calcBuy(WFAIR.ONE, outcome.index).then(p => [
+  //     betId.toString(),
+  //     timestamp,
+  //     outcome.index,
+  //     Math.min(1 / (parseInt(p) / one), 1),
+  //   ])
+  // );
 
-  const values = await Promise.all(valuePromises);
-  await getPostgresConnection().query(format(INSERT_PRICE_ACTION, values)).catch(() => {
+  // const values = await Promise.all(valuePromises);
+  // await getPostgresConnection().query(format(INSERT_PRICE_ACTION, values)).catch(() => {
     //ignore this error for now
     // console.error('onBetPlaced => INSERT_PRICE_ACTION', err);
-  });
+  // });
 }
 
 const onNewBet = async (bet) => {
