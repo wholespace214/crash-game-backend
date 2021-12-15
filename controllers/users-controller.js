@@ -14,6 +14,8 @@ const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
+const cryptopayService = require('../services/cryptopay-service');
+
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
 
@@ -704,6 +706,30 @@ function buyWithCrypto(req, res, next) {
   return res.status(200).send('OK')
 }
 
+const cryptoPayChannel = async (req, res, next) => {
+  if (!req.user) {
+    return next(new ErrorHandler(403, 'Missing user data'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  try {
+    let response = await cryptopayService.getChannel(req.user.id, req.body.currency);
+
+    if (!response) {
+      response = await cryptopayService.createChannel(req.user.id, req.body.currency);
+    }
+
+    return res.status(200).send(response.data);
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to create cryptopay channel'));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -728,3 +754,4 @@ exports.getUserKycData = getUserKycData;
 exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
+exports.cryptoPayChannel = cryptoPayChannel;
