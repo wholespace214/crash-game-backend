@@ -531,6 +531,20 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+const updateUserConsent = async (req, res, next) => {
+  const userId = req.user.id;
+  try {
+    const updatedUser = await userService.updateUserConsent(userId);
+    return res.status(200).json(updatedUser);
+  } catch (err) {
+    if (err.message === 'NOT_FOUND') {
+      next(new ErrorHandler(404, 'User not found'));
+    } else {
+      next(new ErrorHandler(422, err.message))
+    }
+  }
+}
+
 const updateUserPreferences = async (req, res, next) => {
   if (req.user.admin === false && req.params.userId !== req.user.id) {
     return next(new ErrorHandler(403, 'Action not allowed'));
@@ -685,8 +699,8 @@ function randomUsername(req, res) {
 }
 
 function buyWithCrypto(req, res, next) {
-  if(!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
-  const {currency, wallet, amount, estimate} = req.body;
+  if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
+  const { currency, wallet, amount, estimate } = req.body;
   const email = req.user.email;
 
   mailService.sendBuyWithCryptoEmail({
@@ -755,3 +769,4 @@ exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
 exports.cryptoPayChannel = cryptoPayChannel;
+exports.updateUserConsent = updateUserConsent;

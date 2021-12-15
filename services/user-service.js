@@ -287,6 +287,18 @@ exports.updateUser = async (userId, updatedUser) => {
   return await user.save();
 };
 
+exports.updateUserConsent = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('NOT_FOUND');
+  }
+
+  user.tosConsentedAt = new Date().toUTCString();
+
+  return await user.save();
+};
+
 exports.updateUserPreferences = async (userId, preferences) => {
   let user = await User.findById(userId);
 

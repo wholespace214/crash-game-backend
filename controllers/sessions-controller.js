@@ -6,12 +6,13 @@ const authService = require('../services/auth-service');
 const { validationResult } = require('express-validator');
 // const userService = require('../services/user-service');
 const mailService = require('../services/mail-service');
-const { generate } = require('../helper');
+const { generate, hasAcceptedLatestConsent } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
+
 
 module.exports = {
   async createUser(req, res, next) {
@@ -181,6 +182,7 @@ module.exports = {
           userId: existingUser.id,
           session: await authService.generateJwt(existingUser),
           newUser: false,
+          shouldAcceptToS: hasAcceptedLatestConsent(existingUser),
         });
       } else { // create user and log them it
         const createdUser = await userApi.createUser({
@@ -263,9 +265,11 @@ module.exports = {
         },
         broadcast: true,
       }));
+
       res.status(200).json({
         userId: user.id,
         session: await authService.generateJwt(user),
+        shouldAcceptToS: hasAcceptedLatestConsent(user),
       });
     } catch (err) {
       logger.error(err);
