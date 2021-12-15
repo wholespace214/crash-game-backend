@@ -30,7 +30,7 @@ const getTwitchUserMeta = async (token) => {
       },
     }
   )
-    .then(({ data }) => data)
+    .then(({ data }) => data.data[0])
     .catch((err) => {
       console.log(err.response.data);
       throw new Error(`Could not get user's data.`);
