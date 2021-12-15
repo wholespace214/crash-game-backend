@@ -668,7 +668,7 @@ const getUserTransactions = async (req, res, next) => {
     const transactionsAgent = new Transactions();
     const transactions = await transactionsAgent.getExternalTransactionLogs({
       where: [
-        // deposits
+        // wfair deposits
         {
           internal_user_id: userId,
           originator: ExternalTransactionOriginator.DEPOSIT,
@@ -682,6 +682,11 @@ const getUserTransactions = async (req, res, next) => {
         {
           internal_user_id: userId,
           originator: ExternalTransactionOriginator.WITHDRAW,
+        },
+        // crypto deposits
+        {
+          internal_user_id: userId,
+          originator: ExternalTransactionOriginator.CRYPTO
         },
       ]
     });
