@@ -64,9 +64,7 @@ async function connectMongoDB() {
 
   return mongoose;
 }
-const jwt = require('jsonwebtoken');
 async function main() {
-  console.log(jwt.sign({ userId: '615bf607f04fbb15aa5dd367' }, process.env.JWT_KEY, { expiresIn: '48h' }));
   const mongoDBConnection = await connectMongoDB();
 
   // Initialize the postgres database (trading-engine)
