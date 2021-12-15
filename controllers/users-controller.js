@@ -14,6 +14,8 @@ const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
+const cryptopayService = require('../services/cryptopay-service');
+
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
 
@@ -529,6 +531,20 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+const updateUserConsent = async (req, res, next) => {
+  const userId = req.user.id;
+  try {
+    const updatedUser = await userService.updateUserConsent(userId);
+    return res.status(200).json(updatedUser);
+  } catch (err) {
+    if (err.message === 'NOT_FOUND') {
+      next(new ErrorHandler(404, 'User not found'));
+    } else {
+      next(new ErrorHandler(422, err.message))
+    }
+  }
+}
+
 const updateUserPreferences = async (req, res, next) => {
   if (req.user.admin === false && req.params.userId !== req.user.id) {
     return next(new ErrorHandler(403, 'Action not allowed'));
@@ -682,6 +698,52 @@ function randomUsername(req, res) {
   return res.send({ username })
 }
 
+function buyWithCrypto(req, res, next) {
+  if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
+  const { currency, wallet, amount, estimate } = req.body;
+  const email = req.user.email;
+
+  mailService.sendBuyWithCryptoEmail({
+    currency,
+    wallet,
+    amount,
+    estimate,
+    email
+  })
+    .then(() => {
+      console.log('[BUY_WITH_CRYPTO]: Email sent')
+    })
+    .catch((e) => {
+      console.error('[BUY_WITH_CRYPTO]: Error sending email', e)
+    })
+
+  return res.status(200).send('OK')
+}
+
+const cryptoPayChannel = async (req, res, next) => {
+  if (!req.user) {
+    return next(new ErrorHandler(403, 'Missing user data'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  try {
+    let response = await cryptopayService.getChannel(req.user.id, req.body.currency);
+
+    if (!response) {
+      response = await cryptopayService.createChannel(req.user.id, req.body.currency);
+    }
+
+    return res.status(200).send(response.data);
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to create cryptopay channel'));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -705,3 +767,6 @@ exports.getUserTransactions = getUserTransactions;
 exports.getUserKycData = getUserKycData;
 exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
+exports.buyWithCrypto = buyWithCrypto;
+exports.cryptoPayChannel = cryptoPayChannel;
+exports.updateUserConsent = updateUserConsent;

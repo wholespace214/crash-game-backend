@@ -31,7 +31,7 @@ router.post(
 router.post(
   '/login/:provider',
   [
-    check('provider').notEmpty().isIn(['google', 'facebook']),
+    check('provider').notEmpty().isIn(['google', 'facebook', 'twitch', 'discord']),
     check('code').notEmpty(),
   ],
   sessionsController.loginThroughProvider
