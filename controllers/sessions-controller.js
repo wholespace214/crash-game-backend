@@ -234,7 +234,7 @@ module.exports = {
       return next(new ErrorHandler(422, errors));
     }
 
-    const isAdminOnly = req.path.includes('/admin/');
+    const isAdminOnly = req.query.admin === 'true';
 
     try {
       const { userIdentifier, password } = req.body;
