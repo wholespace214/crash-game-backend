@@ -7,6 +7,11 @@ router.post(
   [check('userIdentifier').notEmpty(), check('password').notEmpty().isLength({ min: 8, max: 255 })],
   sessionsController.login
 );
+router.post(
+  '/admin/login',
+  [check('userIdentifier').notEmpty(), check('password').notEmpty().isLength({ min: 8, max: 255 })],
+  sessionsController.login
+);
 
 router.post(
   '/sign-up',

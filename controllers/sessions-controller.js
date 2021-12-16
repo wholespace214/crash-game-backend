@@ -234,11 +234,13 @@ module.exports = {
       return next(new ErrorHandler(422, errors));
     }
 
+    const isAdminOnly = req.path.includes('/admin/');
+
     try {
       const { userIdentifier, password } = req.body;
       const user = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
 
-      if (!user) {
+      if (!user || (isAdminOnly && !user.isAdmin)) {
         console.log('ERROR ', 'User not found upon login!', req.body);
         return next(new ErrorHandler(401, 'Invalid login'));
       }
