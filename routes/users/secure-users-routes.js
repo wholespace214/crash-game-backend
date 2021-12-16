@@ -63,5 +63,14 @@ router.get('/:userId/kyc-data', userController.getUserKycData);
 
 router.get('/kyc/status', userController.getKycStatus);
 router.post('/buy-with-crypto', userController.buyWithCrypto);
+router.post('/consent', userController.updateUserConsent);
+
+router.post(
+  '/cryptopay/channel',
+  [
+    check('currency').isIn(['BTC', 'ETH', 'LTC'])
+  ],
+  userController.cryptoPayChannel
+);
 
 module.exports = router;

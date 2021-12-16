@@ -20,3 +20,18 @@ exports.generate = (n) => {
 
   return `${number}`.substring(add);
 };
+
+
+
+exports.hasAcceptedLatestConsent = ({ tosConsentedAt }) => {
+  const consentThreshold = process.env.CONSENT_THRESHOLD_DATE;
+  if (!consentThreshold || isNaN(Date.parse(consentThreshold))) {
+    console.warn('Missing CONSENT_THRESHOLD_DATE env var, no consents required');
+    return false;
+  }
+
+  if (!tosConsentedAt) {
+    return true;
+  }
+  return new Date(tosConsentedAt) < new Date(consentThreshold);
+};

@@ -14,3 +14,6 @@ AUTH0_DOMAIN=wallfair.eu.auth0.com
 TWITCH_OAUTH_REDIRECT_URI=https://main.alpacasino.io/oauth/twitch
 DISCORD_CLIENT_ID=920342099684126730
 DISCORD_OAUTH_REDIRECT_URI=https://main.alpacasino.io/oauth/discord
+CRYPTOPAY_URL=https://business-sandbox.cryptopay.me
+CRYPTOPAY_API_KEY=zlayiPlvC8luX5pgCZUKEw
+CRYPTOPAY_RECEIVER_CURRENCY=USDT
