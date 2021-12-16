@@ -240,7 +240,7 @@ module.exports = {
       const { userIdentifier, password } = req.body;
       const user = await userApi.getUserByIdEmailPhoneOrUsername(userIdentifier);
 
-      if (!user || (isAdminOnly && !user.isAdmin)) {
+      if (!user || (isAdminOnly && !user.admin)) {
         console.log('ERROR ', 'User not found upon login!', req.body);
         return next(new ErrorHandler(401, 'Invalid login'));
       }
