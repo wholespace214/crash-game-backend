@@ -41,13 +41,13 @@ const getTwitchUserMeta = async (token) => {
 exports.getTwitchUserData = async ({ code }) => {
   const { access_token } = await getTwitchTokenForAuthCode(code);
   const userMeta = await getTwitchUserMeta(access_token);
-  const { email, profile_image_url, display_name } = userMeta;
+  const { email, profile_image_url, display_name, login } = userMeta;
 
   return {
     email,
-    username: display_name,
+    username: display_name || login,
     name: '',
     profilePicture: profile_image_url,
-    emailConfirmed: true,
+    emailConfirmed: !!email,
   };
 }
