@@ -39,15 +39,20 @@ const updateUser = async (userData) => await User.findOneAndUpdate({
 const getOne = (userId) => User.findOne({ _id: userId }).exec();
 
 /** @param {String} IdEmailPhoneOrUsername */
-const getUserByIdEmailPhoneOrUsername = (IdEmailPhoneOrUsername) => User
-  .findOne({
-    $or: [
-      { username: IdEmailPhoneOrUsername },
-      { phone: IdEmailPhoneOrUsername },
-      { email: IdEmailPhoneOrUsername },
-    ],
-  })
-  .exec();
+const getUserByIdEmailPhoneOrUsername = (IdEmailPhoneOrUsername) => {
+  if (!IdEmailPhoneOrUsername) {
+    throw new Error('no IdEmailPhoneOrUsername identifier provided');
+  }
+  return User
+    .findOne({
+      $or: [
+        { username: IdEmailPhoneOrUsername },
+        { phone: IdEmailPhoneOrUsername },
+        { email: IdEmailPhoneOrUsername },
+      ],
+    })
+    .exec();
+}
 
 const verifyEmail = async (email) => {
   return await User.findOneAndUpdate(

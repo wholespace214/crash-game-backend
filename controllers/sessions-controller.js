@@ -164,6 +164,11 @@ module.exports = {
       const { ref = null } = req.body;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
+
+      if (!userData.email) {
+        throw new Error('No email found. ' + JSON.stringify(userData));
+      }
+
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
 
       if (existingUser) { // if exists, log user in
