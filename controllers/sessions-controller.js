@@ -68,6 +68,7 @@ module.exports = {
           currency: 'WFAIR',
         },
         ref,
+        tosConsentedAt: new Date(),
       });
 
       const account = new TransactionManager().account;
@@ -193,7 +194,7 @@ module.exports = {
           preferences: {
             currency: 'WFAIR',
           },
-          ref
+          ref,
         });
 
         const initialReward = 0;
