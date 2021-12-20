@@ -363,11 +363,11 @@ const getHistory = async (req, res, next) => {
         const investmentAmount = fromScaledBigInt(casinoTrade.stakedamount);
         const outcomeTokensBought = isWin
           ? fromScaledBigInt(
-              bigDecimal.multiply(
-                BigInt(casinoTrade.stakedamount),
-                parseFloat(casinoTrade.crashfactor)
-              )
+            bigDecimal.multiply(
+              BigInt(casinoTrade.stakedamount),
+              parseFloat(casinoTrade.crashfactor)
             )
+          )
           : 0;
         const direction = isWin ? 'PAYOUT' : 'BUY';
 
@@ -763,6 +763,10 @@ const banUser = async (req, res, next) => {
 
   const bannedUserId = req.params.userId;
   const { duration, description } = req.body;
+
+  if (req.user.id === bannedUserId) {
+    return next(new ErrorHandler(400, 'You cannot ban yourself'));
+  }
 
   try {
     const bannedUser = await userService.updateBanDeadline(bannedUserId, +duration, description);
