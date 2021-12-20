@@ -165,7 +165,11 @@ module.exports = {
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
 
-      const existingUser = !!userData.email && await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
+      if (!userData.email) {
+        throw new Error('NO_SOCIAL_ACCOUNT_EMAIL');
+      }
+
+      const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
 
       if (existingUser) { // if exists, log user in
         amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
