@@ -26,6 +26,7 @@ const faker = require('faker');
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
+const { getBanData } = require('../util/user');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -759,12 +760,12 @@ const banUser = async (req, res, next) => {
     return next(new ErrorHandler(400, errors));
   }
 
-  const bannedUserId = req.params.id;
+  const bannedUserId = req.params.userId;
   const { duration, description } = req.body;
 
   try {
     const bannedUser = await userService.updateBanDeadline(bannedUserId, +duration, description);
-    return res.status(200).send(bannedUser);
+    return res.status(200).send(getBanData(bannedUser));
   } catch (e) {
     console.error(e.message);
     return next(new ErrorHandler(500, 'Failed to ban user'));

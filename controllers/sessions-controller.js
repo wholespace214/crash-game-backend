@@ -1,7 +1,7 @@
 const { ObjectId } = require('mongodb');
 const logger = require('../util/logger');
 const userApi = require('../services/user-api');
-const { ErrorHandler } = require('../util/error-handler');
+const { ErrorHandler, BannedError } = require('../util/error-handler');
 const authService = require('../services/auth-service');
 const { validationResult } = require('express-validator');
 // const userService = require('../services/user-service');
@@ -12,6 +12,7 @@ const axios = require('axios');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
+const { isUserBanned } = require('../util/user');
 
 
 module.exports = {
@@ -172,6 +173,9 @@ module.exports = {
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
 
       if (existingUser) { // if exists, log user in
+        if (isUserBanned(existingUser)) {
+          return next(new BannedError(existingUser));
+        }
         amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
           event: notificationEvents.EVENT_USER_SIGNED_IN,
           producer: 'user',
@@ -257,6 +261,10 @@ module.exports = {
 
       if (!user.accountSource || user.accountSource !== 'email' || !user.password) {
         return next(new ErrorHandler(401, 'Invalid login'));
+      }
+
+      if (isUserBanned(user)) {
+        return next(new BannedError(user));
       }
 
       const valid = user && (await bcrypt.compare(password, user.password));
