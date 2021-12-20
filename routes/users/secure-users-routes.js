@@ -67,18 +67,13 @@ router.post('/consent', userController.updateUserConsent);
 
 router.post(
   '/cryptopay/channel',
-  [
-    check('currency').isIn(['BTC', 'ETH', 'LTC'])
-  ],
+  [check('currency').isIn(['BTC', 'ETH', 'LTC'])],
   userController.cryptoPayChannel
 );
 
 router.post(
   '/:userId/ban',
-  [
-    check('duration').isNumeric(),
-    check('description').isString(),
-  ],
+  [check('duration').isNumeric(), check('description').isString()],
   userController.banUser
 );
 

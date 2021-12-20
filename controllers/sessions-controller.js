@@ -14,7 +14,6 @@ const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
 
-
 module.exports = {
   async createUser(req, res, next) {
     const errors = validationResult(req);
@@ -29,7 +28,7 @@ module.exports = {
         const recaptchaRes = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
         );
-        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data)
+        console.log('[RECAPTCHA DATA - SIGN UP]:', recaptchaRes.data);
         if (
           !recaptchaRes.data.success ||
           recaptchaRes.data.score < 0.5 ||
@@ -119,29 +118,34 @@ module.exports = {
       //   }
       // }
 
-      amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
-        event: notificationEvents.EVENT_USER_SIGNED_UP,
-        producer: 'user',
-        producerId: createdUser._id,
-        data: {
-          email: createdUser.email,
-          userId: createdUser._id,
-          username: createdUser.username,
-          ref,
-          initialReward,
-          updatedAt: Date.now(),
-        },
-        date: Date.now(),
-        broadcast: true
-      }));
+      amqp.send(
+        'universal_events',
+        'event.user_signed_up',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_UP,
+          producer: 'user',
+          producerId: createdUser._id,
+          data: {
+            email: createdUser.email,
+            userId: createdUser._id,
+            username: createdUser.username,
+            ref,
+            initialReward,
+            updatedAt: Date.now(),
+          },
+          date: Date.now(),
+          broadcast: true,
+        })
+      );
 
-      mailService.sendConfirmMail(createdUser)
+      mailService
+        .sendConfirmMail(createdUser)
         .then(() => {
           console.log(`[SIGNUP] Confirmation email sent to ${createdUser.email}`);
         })
         .catch((e) => {
           console.error(`[SIGNUP] Error sending email to ${createdUser.email}`, e);
-        })
+        });
 
       return res.status(201).json({
         userId: createdUser.id,
@@ -172,34 +176,40 @@ module.exports = {
 
       const existingUser = await userApi.getUserByIdEmailPhoneOrUsername(userData.email);
 
-      if (existingUser) { // if exists, log user in
+      if (existingUser) {
+        // if exists, log user in
         if (isUserBanned(existingUser)) {
           return next(new BannedError(existingUser));
         }
-        amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
-          event: notificationEvents.EVENT_USER_SIGNED_IN,
-          producer: 'user',
-          producerId: existingUser._id,
-          data: {
-            userIdentifier: existingUser.email,
-            userId: existingUser._id,
-            username: existingUser.username,
-            updatedAt: Date.now(),
-          },
-          broadcast: true,
-        }));
+        amqp.send(
+          'universal_events',
+          'event.user_signed_in',
+          JSON.stringify({
+            event: notificationEvents.EVENT_USER_SIGNED_IN,
+            producer: 'user',
+            producerId: existingUser._id,
+            data: {
+              userIdentifier: existingUser.email,
+              userId: existingUser._id,
+              username: existingUser.username,
+              updatedAt: Date.now(),
+            },
+            broadcast: true,
+          })
+        );
         res.status(200).json({
           userId: existingUser.id,
           session: await authService.generateJwt(existingUser),
           newUser: false,
           shouldAcceptToS: hasAcceptedLatestConsent(existingUser),
         });
-      } else { // create user and log them it
+      } else {
+        // create user and log them it
         const createdUser = await userApi.createUser({
           _id: new ObjectId().toHexString(),
           ...userData,
           birthdate: null,
-          ...!userData.emailConfirmed && { emailCode: generate(6) },
+          ...(!userData.emailConfirmed && { emailCode: generate(6) }),
           preferences: {
             currency: 'WFAIR',
           },
@@ -207,21 +217,25 @@ module.exports = {
         });
 
         const initialReward = 0;
-        amqp.send('universal_events', 'event.user_signed_up', JSON.stringify({
-          event: notificationEvents.EVENT_USER_SIGNED_UP,
-          producer: 'user',
-          producerId: createdUser._id,
-          data: {
-            email: createdUser.email,
-            userId: createdUser._id,
-            username: createdUser.username,
-            initialReward,
-            updatedAt: Date.now(),
-            provider,
-          },
-          date: Date.now(),
-          broadcast: true
-        }));
+        amqp.send(
+          'universal_events',
+          'event.user_signed_up',
+          JSON.stringify({
+            event: notificationEvents.EVENT_USER_SIGNED_UP,
+            producer: 'user',
+            producerId: createdUser._id,
+            data: {
+              email: createdUser.email,
+              userId: createdUser._id,
+              username: createdUser.username,
+              initialReward,
+              updatedAt: Date.now(),
+              provider,
+            },
+            date: Date.now(),
+            broadcast: true,
+          })
+        );
 
         return res.status(200).json({
           userId: createdUser.id,
@@ -233,7 +247,7 @@ module.exports = {
       }
     } catch (e) {
       console.log(e);
-      const errorCode = e.message === e.message.toUpperCase() ? e.message : 'UNKNOWN'
+      const errorCode = e.message === e.message.toUpperCase() ? e.message : 'UNKNOWN';
       return res.status(400).json({ errorCode });
     }
   },
@@ -273,18 +287,22 @@ module.exports = {
         return next(new ErrorHandler(401, 'Invalid login'));
       }
 
-      amqp.send('universal_events', 'event.user_signed_in', JSON.stringify({
-        event: notificationEvents.EVENT_USER_SIGNED_IN,
-        producer: 'user',
-        producerId: user._id,
-        data: {
-          userIdentifier,
-          userId: user._id,
-          username: user.username,
-          updatedAt: Date.now(),
-        },
-        broadcast: true,
-      }));
+      amqp.send(
+        'universal_events',
+        'event.user_signed_in',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_IN,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            userIdentifier,
+            userId: user._id,
+            username: user.username,
+            updatedAt: Date.now(),
+          },
+          broadcast: true,
+        })
+      );
 
       res.status(200).json({
         userId: user.id,
@@ -334,15 +352,19 @@ module.exports = {
       user.passwordResetToken = undefined;
       await user.save();
 
-      amqp.send('universal_events', 'event.user_changed_password', JSON.stringify({
-        event: notificationEvents.EVENT_USER_CHANGED_PASSWORD,
-        producer: 'user',
-        producerId: user._id,
-        data: {
-          email: user.email,
-          passwordResetToken: req.body.passwordResetToken
-        }
-      }))
+      amqp.send(
+        'universal_events',
+        'event.user_changed_password',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_CHANGED_PASSWORD,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            email: user.email,
+            passwordResetToken: req.body.passwordResetToken,
+          },
+        })
+      );
 
       return res.status(200).send();
     } catch (err) {
@@ -367,16 +389,19 @@ module.exports = {
       await user.save();
       await mailService.sendPasswordResetMail(user.email, resetPwUrl);
 
-      amqp.send('universal_events', 'event.user_forgot_password', JSON.stringify({
-        event: notificationEvents.EVENT_USER_FORGOT_PASSWORD,
-        producer: 'user',
-        producerId: user._id,
-        data: {
-          email: user.email,
-          passwordResetToken: user.passwordResetToken,
-        }
-      }))
-
+      amqp.send(
+        'universal_events',
+        'event.user_forgot_password',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_FORGOT_PASSWORD,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            email: user.email,
+            passwordResetToken: user.passwordResetToken,
+          },
+        })
+      );
 
       return res.status(200).send();
     } catch (err) {

@@ -52,5 +52,5 @@ module.exports = {
   ForbiddenError,
   NotFoundError,
   ValidationError,
-  BannedError
+  BannedError,
 };

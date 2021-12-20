@@ -18,14 +18,11 @@ exports.isUserBanned = (user) => {
   user.save();
 
   return false;
-
-}
+};
 
 exports.getBanData = (user) => {
-  return [
-    'reactivateOn',
-    'statusDescription',
-    'status',
-    'username',
-  ].reduce((acc, key) => ({ ...acc, [key]: user[key] }), {});
-}
+  return ['reactivateOn', 'statusDescription', 'status', 'username'].reduce(
+    (acc, key) => ({ ...acc, [key]: user[key] }),
+    {}
+  );
+};
