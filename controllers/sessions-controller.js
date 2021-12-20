@@ -255,6 +255,10 @@ module.exports = {
         return next(new ErrorHandler(403, 'Your account is locked'));
       }
 
+      if (!user.accountSource || user.accountSource !== 'email' || !user.password) {
+        return next(new ErrorHandler(401, 'Invalid login'));
+      }
+
       const valid = user && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
