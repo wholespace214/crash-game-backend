@@ -749,6 +749,28 @@ const cryptoPayChannel = async (req, res, next) => {
   }
 };
 
+const banUser = async (req, res, next) => {
+  if (!req.user || !req.user.admin) {
+    return next(new ErrorHandler(403, 'Action forbidden'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const bannedUserId = req.params.id;
+  const { duration, description } = req.body;
+
+  try {
+    const bannedUser = await userService.updateBanDeadline(bannedUserId, +duration, description);
+    return res.status(200).send(bannedUser);
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to ban user'));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -775,3 +797,4 @@ exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
+exports.banUser = banUser;

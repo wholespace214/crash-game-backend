@@ -73,4 +73,13 @@ router.post(
   userController.cryptoPayChannel
 );
 
+router.post(
+  '/:userId/ban',
+  [
+    check('duration').isNumeric(),
+    check('description').isString(),
+  ],
+  userController.banUser
+);
+
 module.exports = router;

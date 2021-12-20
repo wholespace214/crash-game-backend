@@ -415,3 +415,24 @@ exports.checkAwardExist = async (userId, type) => {
     'data.type': type,
   });
 };
+
+/***
+ * Set user's ban deadline, provide zero to nullify ban date
+ * @param {string} userId
+ * @param {number} duration
+ * @returns {Promise<User>}
+ */
+exports.updateBanDeadline = async (userId, duration = 0, description = null) => {
+  if (!userId) {
+    throw new Error(`Invalid ban data supllied: userId - ${userId}, duration - ${duration}`);
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error(`No user found with ID '${userId}'`);
+  }
+  const now = Date.now();
+  user.status = 'banned';
+  user.reactivateOn = duration === 0 ? null : new Date(now + duration);
+  user.statusDescription = description;
+  return user.save();
+};
