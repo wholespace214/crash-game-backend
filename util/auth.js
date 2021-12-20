@@ -3,6 +3,8 @@ const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 // Import User Service
 const userService = require('../services/user-service');
+const { isUserBanned } = require('../util/user');
+const { BannedError } = require('../util/error-handler');
 
 exports.setPassportStrategies = () => {
   passport.use(
@@ -15,6 +17,9 @@ exports.setPassportStrategies = () => {
       async (token, done) => {
         try {
           const user = await userService.getUserById(token.userId);
+          if (isUserBanned(user)) {
+            throw new BannedError(user);
+          }
           return done(null, user);
         } catch (error) {
           done(error);

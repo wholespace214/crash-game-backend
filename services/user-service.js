@@ -3,9 +3,8 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet,/*, ONE*/
-  fromWei } = require('@wallfair.io/trading-engine');
-const { WFAIR_REWARDS/*, AWARD_TYPES*/ } = require('../util/constants');
+const { Wallet /*, ONE*/, fromWei } = require('@wallfair.io/trading-engine');
+const { WFAIR_REWARDS /*, AWARD_TYPES*/ } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
@@ -124,7 +123,7 @@ exports.payoutUser = async (/*userId, bet*/) => {
 
 exports.getBalanceOf = async (userId) => {
   return fromWei(await WFAIR.getBalance(userId)).toFixed(4);
-}
+};
 
 const INITIAL_LIQUIDITY = 5000n;
 
@@ -144,47 +143,58 @@ exports.updateUser = async (userId, updatedUser) => {
     const oldName = _.clone(user.name);
     user.name = updatedUser.name;
 
-    amqp.send('universal_events', 'event.user_changed_name', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_NAME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        name: updatedUser.name,
-        oldName: oldName,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_changed_name',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_NAME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          name: updatedUser.name,
+          oldName: oldName,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
-    await updateUserData({
-      userId,
-      'data.user.name': { $exists: true }
-    }, {
-      'data.user.name': updatedUser.name
-    }).catch((err) => {
-      console.error('updateUserData failed', err)
-    })
+    await updateUserData(
+      {
+        userId,
+        'data.user.name': { $exists: true },
+      },
+      {
+        'data.user.name': updatedUser.name,
+      }
+    ).catch((err) => {
+      console.error('updateUserData failed', err);
+    });
   }
 
   if (updatedUser.username && updatedUser.username !== user.username) {
     const oldUsername = _.clone(user.username);
     user.username = updatedUser.username;
 
-    amqp.send('universal_events', 'event.user_changed_username', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_USERNAME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: updatedUser.username,
-        oldUsername,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_changed_username',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_USERNAME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: updatedUser.username,
+          oldUsername,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
     //update username across the events for this user, only when data.user exists at all, we need to have these unified across the events,
     // so for user specific things, we need to use proper user property
@@ -235,20 +245,24 @@ exports.updateUser = async (userId, updatedUser) => {
     user.profilePicture = imageLocation.split('?')[0];
     user.alpacaBuilderProps = updatedUser.alpacaBuilderProps;
 
-    amqp.send('universal_events', 'event.user_uploaded_picture', JSON.stringify({
-      event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: _.get(updatedUser, 'username'),
-        image: updatedUser.image,
-        updatedAt: Date.now(),
-      },
+    amqp.send(
+      'universal_events',
+      'event.user_uploaded_picture',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: _.get(updatedUser, 'username'),
+          image: updatedUser.image,
+          updatedAt: Date.now(),
+        },
 
-      date: Date.now(),
-      broadcast: true
-    }));
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
   }
 
   if (
@@ -257,29 +271,36 @@ exports.updateUser = async (userId, updatedUser) => {
   ) {
     user.notificationSettings = updatedUser.notificationSettings;
 
-    amqp.send('universal_events', 'event.user_updated_email_preferences', JSON.stringify({
-      event: notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES,
-      producer: 'user',
-      producerId: userId,
-      data: { notificationSettings: user.notificationSettings }
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_updated_email_preferences',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES,
+        producer: 'user',
+        producerId: userId,
+        data: { notificationSettings: user.notificationSettings },
+      })
+    );
   }
 
   if (updatedUser.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
-    amqp.send('universal_events', 'event.user_changed_about_me', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_ABOUT_ME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: updatedUser.username,
-        notificationSettings: user.notificationSettings,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
-
+    amqp.send(
+      'universal_events',
+      'event.user_changed_about_me',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_ABOUT_ME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: updatedUser.username,
+          notificationSettings: user.notificationSettings,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
     user.aboutMe = updatedUser.aboutMe;
   }
@@ -310,12 +331,16 @@ exports.updateUserPreferences = async (userId, preferences) => {
     user.preferences.currency = preferences.currency;
   }
 
-  amqp.send('universal_events', 'event.user_set_currency', JSON.stringify({
-    event: notificationEvents.EVENT_USER_SET_CURRENCY,
-    producer: 'user',
-    producerId: userId,
-    data: { currency: user.preferences.currency },
-  }));
+  amqp.send(
+    'universal_events',
+    'event.user_set_currency',
+    JSON.stringify({
+      event: notificationEvents.EVENT_USER_SET_CURRENCY,
+      producer: 'user',
+      producerId: userId,
+      data: { currency: user.preferences.currency },
+    })
+  );
 
   return await user.save();
 };
@@ -359,21 +384,25 @@ exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) 
   //add token amount for award during event creation
   if (awardData?.award) {
     await this.mintUser(userId, awardData.award).catch((err) => {
-      console.error('award mintUser', err)
-    })
+      console.error('award mintUser', err);
+    });
   }
 
-  amqp.send('universal_events', 'event.user_award', JSON.stringify({
-    event: notificationEvents.EVENT_USER_AWARD,
-    producer: 'user',
-    producerId: userId,
-    data: {
-      userId,
-      awardData
-    },
-    broadcast
-  }));
-}
+  amqp.send(
+    'universal_events',
+    'event.user_award',
+    JSON.stringify({
+      event: notificationEvents.EVENT_USER_AWARD,
+      producer: 'user',
+      producerId: userId,
+      data: {
+        userId,
+        awardData,
+      },
+      broadcast,
+    })
+  );
+};
 
 /***
  * check total bets for user and save USER_AWARD event, after reaching each levels
@@ -414,4 +443,25 @@ exports.checkAwardExist = async (userId, type) => {
     userId,
     'data.type': type,
   });
+};
+
+/***
+ * Set user's ban deadline, provide zero to nullify ban date
+ * @param {string} userId
+ * @param {number} duration
+ * @returns {Promise<User>}
+ */
+exports.updateBanDeadline = async (userId, duration = 0, description = null) => {
+  if (!userId) {
+    throw new Error(`Invalid ban data supllied: userId - ${userId}, duration - ${duration}`);
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error(`No user found with ID '${userId}'`);
+  }
+  const now = Date.now();
+  user.status = 'banned';
+  user.reactivateOn = duration === 0 ? null : new Date(now + duration);
+  user.statusDescription = description;
+  return user.save();
 };
