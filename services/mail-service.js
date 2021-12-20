@@ -37,7 +37,7 @@ exports.sendBuyWithCryptoEmail = async (data) => {
     .replace('{{estimate}}', data.estimate)
     .replace('{{email}}', data.email)
 
-  await sendMail('support@alpacasino.io', 'Buy With Crypto Form', generatedTemplate);
+  await sendMail('deposits@alpacasino.io', 'Buy With Crypto Form', generatedTemplate);
 }
 
 /***
