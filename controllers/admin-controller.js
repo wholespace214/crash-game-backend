@@ -3,12 +3,11 @@ const { ErrorHandler } = require("../util/error-handler");
 const {
   AccountNamespace,
   WFAIR_SYMBOL,
-  BN,
-  ONE,
   TransactionManager,
   ExternalTransactionOriginator,
   ExternalTransactionStatus,
-  Transactions
+  Transactions,
+  toWei
 } = require("@wallfair.io/trading-engine");
 const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
@@ -48,9 +47,7 @@ exports.transferToUser = async (req, res, next) => {
       return next(new ErrorHandler(409, 'Transaction already processed'));
     }
 
-    const amountToTransfer = new BN(amount)
-      .multipliedBy(ONE.toString())
-      .toString();
+    const amountToTransfer = toWei(amount).toString();
 
     await transactionManager.startTransaction();
 
@@ -61,7 +58,7 @@ exports.transferToUser = async (req, res, next) => {
         symbol: WFAIR_SYMBOL
       },
       {
-        owner: user._id,
+        owner: user._id.toString(),
         namespace: AccountNamespace.USR,
         symbol: WFAIR_SYMBOL
       },
@@ -75,7 +72,7 @@ exports.transferToUser = async (req, res, next) => {
       external_transaction_id: transactionHash,
       transaction_hash: transactionHash,
       network_code: WALLETS[inputCurrency].network,
-      internal_user_id: user._id,
+      internal_user_id: user._id.toString(),
     };
 
     await transactionManager.transactions.insertExternalTransaction(externalData);
@@ -91,6 +88,8 @@ exports.transferToUser = async (req, res, next) => {
     });
 
     await transactionManager.commitTransaction();
+
+    console.log(`Transferred ${amount} WFAIR to user ${user._id} successfully`);
 
     return res.status(204).send();
   } catch (e) {
