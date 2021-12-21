@@ -36,6 +36,11 @@ const exampleDepositData = {
 const processDepositEvent = async (event, data) => {
   const eventName = data?.event;
 
+  if(!process.env.DEPOSIT_NOTIFICATION_EMAIL) {
+    console.log('DEPOSIT_NOTIFICATION_EMAIL is empty, skipping email notification for deposits...');
+    return;
+  }
+
   if(eventName === notificationEvents.EVENT_DEPOSIT_CREATED) {
     const dd = data?.data;
     const formattedAmount = fromWei(dd.amount).decimalPlaces(0);
@@ -44,7 +49,7 @@ const processDepositEvent = async (event, data) => {
     for (const entry in dd) {
       emailHtml = emailHtml.replace(`{{${entry}}}`, dd[entry]);
     }
-    await sendMail('deposit-info@wallfair.io', `${notificationEvents.EVENT_DEPOSIT_CREATED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
+    await sendMail(process.env.DEPOSIT_NOTIFICATION_EMAIL, `${notificationEvents.EVENT_DEPOSIT_CREATED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
   }
 }
 
