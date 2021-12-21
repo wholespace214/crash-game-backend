@@ -460,7 +460,7 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
     throw new Error(`No user found with ID '${userId}'`);
   }
   const now = Date.now();
-  user.status = 'banned';
+  user.status = duration === 0 ? 'active' : 'banned';
   user.reactivateOn = duration === 0 ? null : new Date(now + duration);
   user.statusDescription = description;
   return user.save();
