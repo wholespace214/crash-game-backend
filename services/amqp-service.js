@@ -1,6 +1,6 @@
 const amqplib = require("amqplib");
 
-const {processUniversalEvents} = require("../services/subscribers-service");
+const {processDepositEvent} = require("../services/subscribers-service");
 const retry = require('../util/retryHandler');
 
 const rabbitUrl = process.env.RABBITMQ_CONNECTION;
@@ -52,13 +52,11 @@ const subscribeDepositsChannel = async () => {
     channel.consume(
       q.queue,
       async (msg) => {
-        const params = [msg.fields.routingKey, JSON.parse(msg.content.toString())];
-        await processUniversalEvents(
-          params
+        await processDepositEvent(
+          msg.fields.routingKey, JSON.parse(msg.content.toString())
         ).catch((consumeErr) => {
-          console.error('processUniversalEvents failed with error:', consumeErr);
-          const params = [msg.fields.routingKey, JSON.parse(msg.content.toString())];
-          retry(processUniversalEvents, params);
+          console.error('processDepositEvent failed with error:', consumeErr);
+          retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
         })
       },
       {
@@ -66,7 +64,7 @@ const subscribeDepositsChannel = async () => {
       }
     );
 
-    console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange subscribed. Waiting for messages...`);
+    console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange on "${cfg.routingKey}" routing key subscribed. Waiting for messages...`);
   } catch (e) {
     console.error("subscribeDepositsChannel error", e);
   }
