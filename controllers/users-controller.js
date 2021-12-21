@@ -3,12 +3,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { validationResult } = require('express-validator');
 const {
-  Wallet, Transactions, ExternalTransactionOriginator, fromWei,
+  Wallet,
+  Transactions,
+  ExternalTransactionOriginator,
+  fromWei,
 } = require('@wallfair.io/trading-engine');
-const {
-  CasinoTradeContract,
-  CASINO_TRADE_STATE
-} = require('@wallfair.io/wallfair-casino');
+const { CasinoTradeContract, CASINO_TRADE_STATE } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
 const tradeService = require('../services/trade-service');
@@ -26,6 +26,7 @@ const faker = require('faker');
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
+const { getBanData } = require('../util/user');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -524,7 +525,7 @@ const updateUser = async (req, res, next) => {
       email: user.email,
       aboutMe: user.aboutMe,
       profilePicture: user.profilePicture,
-      alpacaBuilderProps: user.alpacaBuilderProps
+      alpacaBuilderProps: user.alpacaBuilderProps,
     });
   } catch (err) {
     next(new ErrorHandler(422, err.message));
@@ -540,10 +541,10 @@ const updateUserConsent = async (req, res, next) => {
     if (err.message === 'NOT_FOUND') {
       next(new ErrorHandler(404, 'User not found'));
     } else {
-      next(new ErrorHandler(422, err.message))
+      next(new ErrorHandler(422, err.message));
     }
   }
-}
+};
 
 const updateUserPreferences = async (req, res, next) => {
   if (req.user.admin === false && req.params.userId !== req.user.id) {
@@ -608,7 +609,7 @@ const startKycVerification = async (req, res) => {
   const { userId } = req.params;
   const user = await User.findById(userId);
   if (!user) {
-    res.writeHeader(200, { "Content-Type": "text/html" });
+    res.writeHeader(200, { 'Content-Type': 'text/html' });
     res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
     res.end();
   }
@@ -621,7 +622,7 @@ const startKycVerification = async (req, res) => {
   const query = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
   let url = `https://${fractalUiDomain}/authorize?${query}`;
   res.redirect(url);
-}
+};
 
 const getUserKycData = async (req, res, next) => {
   if (req.user.admin === false && req.params.userId !== req.user.id) {
@@ -643,7 +644,7 @@ const getUserKycData = async (req, res, next) => {
   } catch (err) {
     next(new ErrorHandler(422, err.message));
   }
-}
+};
 
 const getKycStatus = async (req, res, next) => {
   try {
@@ -657,7 +658,7 @@ const getKycStatus = async (req, res, next) => {
     console.error(err);
     next(new ErrorHandler(422, err.message));
   }
-}
+};
 
 const getUserTransactions = async (req, res, next) => {
   try {
@@ -686,9 +687,9 @@ const getUserTransactions = async (req, res, next) => {
         // crypto deposits
         {
           internal_user_id: userId,
-          originator: ExternalTransactionOriginator.CRYPTO
+          originator: ExternalTransactionOriginator.CRYPTO,
         },
-      ]
+      ],
     });
 
     res.status(200).json(transactions);
@@ -696,11 +697,11 @@ const getUserTransactions = async (req, res, next) => {
     console.error(err);
     next(new ErrorHandler(422, err.message));
   }
-}
+};
 
 function randomUsername(req, res) {
   const username = faker.internet.userName();
-  return res.send({ username })
+  return res.send({ username });
 }
 
 function buyWithCrypto(req, res, next) {
@@ -708,21 +709,22 @@ function buyWithCrypto(req, res, next) {
   const { currency, wallet, amount, estimate } = req.body;
   const email = req.user.email;
 
-  mailService.sendBuyWithCryptoEmail({
-    currency,
-    wallet,
-    amount,
-    estimate,
-    email
-  })
+  mailService
+    .sendBuyWithCryptoEmail({
+      currency,
+      wallet,
+      amount,
+      estimate,
+      email,
+    })
     .then(() => {
-      console.log('[BUY_WITH_CRYPTO]: Email sent')
+      console.log('[BUY_WITH_CRYPTO]: Email sent');
     })
     .catch((e) => {
-      console.error('[BUY_WITH_CRYPTO]: Error sending email', e)
-    })
+      console.error('[BUY_WITH_CRYPTO]: Error sending email', e);
+    });
 
-  return res.status(200).send('OK')
+  return res.status(200).send('OK');
 }
 
 const cryptoPayChannel = async (req, res, next) => {
@@ -746,6 +748,32 @@ const cryptoPayChannel = async (req, res, next) => {
   } catch (e) {
     console.error(e.message);
     return next(new ErrorHandler(500, 'Failed to create cryptopay channel'));
+  }
+};
+
+const banUser = async (req, res, next) => {
+  if (!req.user || !req.user.admin) {
+    return next(new ErrorHandler(403, 'Action forbidden'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const bannedUserId = req.params.userId;
+  const { duration, description } = req.body;
+
+  if (req.user.id === bannedUserId) {
+    return next(new ErrorHandler(400, 'You cannot ban yourself'));
+  }
+
+  try {
+    const bannedUser = await userService.updateBanDeadline(bannedUserId, +duration, description);
+    return res.status(200).send(getBanData(bannedUser));
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to ban user'));
   }
 };
 
@@ -775,3 +803,4 @@ exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
+exports.banUser = banUser;

@@ -1,4 +1,5 @@
 const logger = require('../util/logger');
+const { getBanData } = require('./user');
 
 class ErrorHandler extends Error {
   constructor(statusCode, message, errors) {
@@ -27,6 +28,12 @@ class ForbiddenError extends ErrorHandler {
   }
 }
 
+class BannedError extends ErrorHandler {
+  constructor(userData) {
+    super(403, 'Your account is banned', { banData: getBanData(userData) });
+  }
+}
+
 class NotFoundError extends ErrorHandler {
   constructor() {
     super(404, "The requested resource wasn't found");
@@ -45,4 +52,5 @@ module.exports = {
   ForbiddenError,
   NotFoundError,
   ValidationError,
+  BannedError,
 };
