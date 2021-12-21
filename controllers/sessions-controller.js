@@ -166,7 +166,7 @@ module.exports = {
 
     try {
       const { provider } = req.params;
-      const { ref = null } = req.body;
+      const { ref = null, sid = null, cid = null } = req.body;
 
       const userData = await authService.getUserDataForProvider(provider, req.body);
 
@@ -213,7 +213,7 @@ module.exports = {
           preferences: {
             currency: 'WFAIR',
           },
-          ref,
+          ref, cid, sid
         });
 
         const initialReward = 0;
