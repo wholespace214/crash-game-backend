@@ -40,6 +40,8 @@ spec:
           - configMapRef:
               name: backend-config
           - configMapRef:
+              name: real-money-config
+          - configMapRef:
               name: app-secrets
           - configMapRef:
               name: app-global-secrets
