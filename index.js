@@ -71,7 +71,8 @@ async function main() {
   await initDb();
 
   const amqp = require('./services/amqp-service');
-  amqp.init();
+  await amqp.init();
+  await amqp.subscribeDepositsChannel();
 
   // Import Admin service
   const adminService = require('./services/admin-service');
