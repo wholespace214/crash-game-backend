@@ -709,12 +709,14 @@ function randomUsername(req, res) {
 
 async function addBonus(req, res, next) {
   try {
-    const { token, userId } = req.body;
+    const { userId } = req.body;
+    const isAdmin = req.user.admin;
+
     const output = {
       success: false
     }
 
-    if(token === process.env.JWT_KEY && userId) {
+    if(isAdmin && userId) {
       await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
       output.success = true;
     }
