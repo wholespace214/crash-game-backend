@@ -77,4 +77,6 @@ router.post(
   userController.banUser
 );
 
+router.post('/add-bonus', userController.addBonus)
+
 module.exports = router;
