@@ -27,6 +27,8 @@ const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
+const walletUtil = require("../util/wallet");
+const {BONUS_TYPES} = require("../util/constants");
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -704,6 +706,26 @@ function randomUsername(req, res) {
   return res.send({ username });
 }
 
+
+async function addBonus(req, res, next) {
+  try {
+    const { token, userId } = req.body;
+    const output = {
+      success: false
+    }
+
+    if(token === process.env.JWT_KEY && userId) {
+      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
+      output.success = true;
+    }
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 function buyWithCrypto(req, res, next) {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, wallet, amount, estimate } = req.body;
@@ -804,3 +826,4 @@ exports.buyWithCrypto = buyWithCrypto;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
+exports.addBonus = addBonus;
