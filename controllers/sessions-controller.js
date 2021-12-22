@@ -10,7 +10,7 @@ const { generate, hasAcceptedLatestConsent } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
-const { TransactionManager } = require('@wallfair.io/trading-engine');
+const { Account } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
 const userService = require("../services/user-service");
@@ -70,7 +70,7 @@ module.exports = {
         tosConsentedAt: new Date(),
       });
 
-      const account = new TransactionManager().account;
+      const account = new Account();
       await account.createUser(wFairUserId);
 
       await userService.checkUserRegistrationBonus(wFairUserId.toString());
