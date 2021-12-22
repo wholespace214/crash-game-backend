@@ -7,3 +7,4 @@ ENVIRONMENT=PRODUCTION
 BACKEND_URL=https://rm-api.alpacasino.io
 DISCORD_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/discord
 TWITCH_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/twitch
+DEPOSIT_NOTIFICATION_EMAIL=deposit-info@wallfair.io
