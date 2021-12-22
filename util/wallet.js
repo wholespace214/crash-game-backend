@@ -9,18 +9,6 @@ exports.transferBonus = async (amount, userId) => {
   await transactionManager.startTransaction();
 
   try {
-    await User.updateOne({
-      _id: mongoose.Types.ObjectId(userId)
-    }, {
-      $push: {
-        bonus: {
-          name: BONUS_TYPES.LAUNCH_1k_500.type,
-          state: BONUS_STATES.Used,
-          amount: BONUS_TYPES.LAUNCH_1k_500.amount
-        }
-      }
-    });
-
     await transactionManager.wallet.transfer(
       {
         owner: process.env.REWARD_WALLET,
@@ -34,6 +22,18 @@ exports.transferBonus = async (amount, userId) => {
       },
       amountToTransfer
     );
+
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $push: {
+        bonus: {
+          name: BONUS_TYPES.LAUNCH_1k_500.type,
+          state: BONUS_STATES.Used,
+          amount: BONUS_TYPES.LAUNCH_1k_500.amount
+        }
+      }
+    });
 
     await transactionManager.commitTransaction();
   } catch (e) {
