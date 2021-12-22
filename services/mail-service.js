@@ -70,3 +70,5 @@ const sendMail = async (email, subject, template, attachments = []) => {
     console.log('email sent failed to: %s', email);
   }
 };
+
+exports.sendMail = sendMail;
