@@ -11,6 +11,9 @@ const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
+const {BONUS_STATES, BONUS_TYPES} = require('../util/constants');
+const mongoose = require("mongoose");
+const walletUtil = require("../util/wallet");
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
@@ -464,4 +467,42 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
   user.reactivateOn = duration === 0 ? null : new Date(now + duration);
   user.statusDescription = description;
   return user.save();
+};
+
+/***
+ * create user bonus for first 1000 users
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkUserRegistrationBonus = async (userId) => {
+  //add token amount for award during event creation
+  const totalUsers = 1000;
+
+  const alreadyRegistered = await User.find({
+    date: {
+      $gte: new Date(BONUS_TYPES.LAUNCH_1k_500.startDate).toISOString(),
+    },
+    'bonus.name': BONUS_TYPES.LAUNCH_1k_500.type
+  }, {_id: 1}, {
+    sort: {
+      date: -1
+    },
+    limit: totalUsers
+  });
+
+  if (alreadyRegistered.length <= totalUsers) {
+    await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
+
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $push: {
+        bonus: {
+          name: BONUS_TYPES.LAUNCH_1k_500.type,
+          state: BONUS_STATES.Used,
+          amount: BONUS_TYPES.LAUNCH_1k_500.amount
+        }
+      }
+    });
+  }
 };
