@@ -27,9 +27,25 @@ const DEFAULT = {
   betLiquidity: 50_0000n,
 };
 
+const BONUS_STATES = {
+  Active: 0,
+  Used: 1,
+  Expired: 2
+}
+
+const BONUS_TYPES = {
+  LAUNCH_1k_500: {
+    type: 'LAUNCH_1k_500',
+    amount: 500,
+    endDate: '12/31/2021 23:59:59'
+  }
+}
+
 module.exports = {
   AWARD_TYPES,
   WFAIR_REWARDS,
   INFLUENCERS,
   DEFAULT,
+  BONUS_TYPES,
+  BONUS_STATES
 };

@@ -13,6 +13,7 @@ const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/
 const { TransactionManager } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
+const userService = require("../services/user-service");
 
 module.exports = {
   async createUser(req, res, next) {
@@ -71,6 +72,8 @@ module.exports = {
 
       const account = new TransactionManager().account;
       await account.createUser(wFairUserId);
+
+      await userService.checkUserRegistrationBonus(wFairUserId.toString());
 
       let initialReward = 0;
       // if (ref) {
@@ -202,9 +205,10 @@ module.exports = {
           shouldAcceptToS: hasAcceptedLatestConsent(existingUser),
         });
       } else {
+        const newUserId = new ObjectId().toHexString();
         // create user and log them it
         const createdUser = await userApi.createUser({
-          _id: new ObjectId().toHexString(),
+          _id: newUserId,
           ...userData,
           birthdate: null,
           ...(!userData.emailConfirmed && { emailCode: generate(6) }),
@@ -213,6 +217,8 @@ module.exports = {
           },
           ref, cid, sid
         });
+
+        await userService.checkUserRegistrationBonus(newUserId.toString());
 
         const initialReward = 0;
         amqp.send(
