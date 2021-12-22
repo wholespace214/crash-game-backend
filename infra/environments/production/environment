@@ -8,3 +8,4 @@ BACKEND_URL=https://rm-api.alpacasino.io
 DISCORD_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/discord
 TWITCH_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/twitch
 DEPOSIT_NOTIFICATION_EMAIL=deposit-info@wallfair.io
+REWARD_WALLET=0x15469F0c1854a072a20e593474F93eeE7d7aA3F3
