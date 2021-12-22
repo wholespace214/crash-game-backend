@@ -475,34 +475,26 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
  * @returns {Promise<void>} undefined
  */
 exports.checkUserRegistrationBonus = async (userId) => {
-  //add token amount for award during event creation
+  const bonusValidUntil = BONUS_TYPES.LAUNCH_1k_500.endDate;
+  const now = new Date();
+  const validUntil = new Date(bonusValidUntil);
+
+  //skip check when bonus period is over
+  if(validUntil < now) {
+    return;
+  }
+
   const totalUsers = 1000;
 
   const alreadyRegistered = await User.find({
-    date: {
-      $gte: new Date(BONUS_TYPES.LAUNCH_1k_500.startDate).toISOString(),
-    },
     'bonus.name': BONUS_TYPES.LAUNCH_1k_500.type
   }, {_id: 1}, {
     sort: {
       date: -1
-    },
-    limit: totalUsers
+    }
   });
 
   if (alreadyRegistered.length <= totalUsers) {
     await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
-
-    await User.updateOne({
-      _id: mongoose.Types.ObjectId(userId)
-    }, {
-      $push: {
-        bonus: {
-          name: BONUS_TYPES.LAUNCH_1k_500.type,
-          state: BONUS_STATES.Used,
-          amount: BONUS_TYPES.LAUNCH_1k_500.amount
-        }
-      }
-    });
   }
 };
