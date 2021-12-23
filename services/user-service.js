@@ -11,8 +11,7 @@ const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
-const {BONUS_STATES, BONUS_TYPES} = require('../util/constants');
-const mongoose = require("mongoose");
+const {BONUS_TYPES} = require('../util/constants');
 const walletUtil = require("../util/wallet");
 
 const WFAIR = new Wallet();
