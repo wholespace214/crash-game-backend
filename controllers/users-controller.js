@@ -740,7 +740,7 @@ async function checkBonus(req, res, next) {
     const bonusCfg = BONUS_TYPES?.[type];
 
     if(!bonusCfg) {
-      output.bonusType = 'Bonus type not found.'
+      throw new Error('Bonus type not found.');
     }
 
     output.totalUsers = await userService.getUsersCountByBonus(bonusCfg.type);
