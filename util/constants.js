@@ -38,6 +38,10 @@ const BONUS_TYPES = {
     type: 'LAUNCH_1k_500',
     amount: 500,
     endDate: '12/31/2021 23:59:59'
+  },
+  LAUNCH_2k_400: {
+    type: 'LAUNCH_2k_400',
+    amount: 400
   }
 }
 
