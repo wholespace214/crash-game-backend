@@ -728,6 +728,30 @@ async function addBonus(req, res, next) {
   }
 }
 
+async function checkBonus(req, res, next) {
+  try {
+    const { type } = req.params;
+
+    const output = {
+      totalUsers: 0,
+      bonusType: type
+    }
+
+    const bonusCfg = BONUS_TYPES?.[type];
+
+    if(!bonusCfg) {
+      output.bonusType = 'Bonus type not found.'
+    }
+
+    output.totalUsers = await userService.getUsersCountByBonus(bonusCfg.type);
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 function buyWithCrypto(req, res, next) {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, wallet, amount, estimate } = req.body;
@@ -829,3 +853,4 @@ exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
 exports.addBonus = addBonus;
+exports.checkBonus = checkBonus;

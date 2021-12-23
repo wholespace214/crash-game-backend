@@ -1,11 +1,11 @@
 const { NetworkCode, toWei, AccountNamespace, WFAIR_SYMBOL, TransactionManager} = require("@wallfair.io/trading-engine");
 const mongoose = require("mongoose");
-const {BONUS_TYPES, BONUS_STATES} = require("../util/constants");
+const {BONUS_STATES} = require("../util/constants");
 const { User } = require('@wallfair.io/wallfair-commons').models;
 
-exports.transferBonus = async (amount, userId) => {
+exports.transferBonus = async (bonusCfg, userId) => {
   const transactionManager = new TransactionManager();
-  const amountToTransfer = toWei(amount).toString();
+  const amountToTransfer = toWei(bonusCfg.amount).toString();
   await transactionManager.startTransaction();
 
   try {
@@ -28,9 +28,9 @@ exports.transferBonus = async (amount, userId) => {
     }, {
       $push: {
         bonus: {
-          name: BONUS_TYPES.LAUNCH_1k_500.type,
+          name: bonusCfg.type,
           state: BONUS_STATES.Used,
-          amount: BONUS_TYPES.LAUNCH_1k_500.amount
+          amount: bonusCfg.amount
         }
       }
     });

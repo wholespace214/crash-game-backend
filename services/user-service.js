@@ -486,15 +486,32 @@ exports.checkUserRegistrationBonus = async (userId) => {
 
   const totalUsers = 1000;
 
+  const alreadyRegistered1k500 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_1k_500.type);
+
+  if (alreadyRegistered1k500 <= totalUsers) {
+    await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
+  }
+
+  // second bonus check BONUS_TYPES.LAUNCH_2k_400
+  // check only when 1 reach 1000
+  if(alreadyRegistered1k500 >= 1000) {
+    const alreadyRegistered2k400 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_2k_400.type);
+
+    if(alreadyRegistered2k400 <= 1000) {
+      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_2k_400, userId);
+    }
+  }
+
+};
+
+exports.getUsersCountByBonus = async (bonusName)=> {
   const alreadyRegistered = await User.find({
-    'bonus.name': BONUS_TYPES.LAUNCH_1k_500.type
+    'bonus.name': bonusName
   }, {_id: 1}, {
     sort: {
       date: -1
     }
   });
 
-  if (alreadyRegistered.length <= totalUsers) {
-    await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
-  }
-};
+  return alreadyRegistered.length;
+}
