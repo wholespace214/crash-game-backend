@@ -493,13 +493,13 @@ exports.checkUserRegistrationBonus = async (userId) => {
 
   // second bonus check BONUS_TYPES.LAUNCH_2k_400
   // check only when 1 reach 1000
-  if(alreadyRegistered1k500 >= 1000) {
-    const alreadyRegistered2k400 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_2k_400.type);
-
-    if(alreadyRegistered2k400 <= 1000) {
-      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_2k_400, userId);
-    }
-  }
+  // if(alreadyRegistered1k500 >= 1000) {
+  //   const alreadyRegistered2k400 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_2k_400.type);
+  //
+  //   if(alreadyRegistered2k400 <= 1000) {
+  //     await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_2k_400, userId);
+  //   }
+  // }
 
 };
 
