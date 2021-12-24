@@ -449,35 +449,41 @@ const confirmEmail = async (req, res, next) => {
     return next(res.status(400).send(errors));
   }
 
-  // Defining User Inputs
-  const { code, userId } = req.query;
+  try {
+    // Defining User Inputs
+    const { code, userId } = req.query;
 
-  const user = await userService.getUserById(userId);
+    const user = await userService.getUserById(userId);
 
-  if (user.emailConfirmed && user.confirmed) {
-    return res.status(200).send({ status: 'The email has been already confirmed' });
-  }
+    if (user.emailConfirmed && user.confirmed) {
+      return res.status(200).send({ status: 'The email has been already confirmed' });
+    }
 
-  if (user.emailCode === code) {
-    user.emailConfirmed = true;
-    user.confirmed = true;
-    await user.save();
+    if (user.emailCode === code) {
+      user.emailConfirmed = true;
+      user.confirmed = true;
+      await user.save();
 
-    // await userService
-    //   .createUserAwardEvent({
-    //     userId,
-    //     awardData: {
-    //       type: AWARD_TYPES.EMAIL_CONFIRMED,
-    //       award: WFAIR_REWARDS.confirmEmail,
-    //     },
-    //   })
-    //   .catch((err) => {
-    //     console.error('createUserAwardEvent', err);
-    //   });
+      // await userService
+      //   .createUserAwardEvent({
+      //     userId,
+      //     awardData: {
+      //       type: AWARD_TYPES.EMAIL_CONFIRMED,
+      //       award: WFAIR_REWARDS.confirmEmail,
+      //     },
+      //   })
+      //   .catch((err) => {
+      //     console.error('createUserAwardEvent', err);
+      //   });
 
-    res.status(200).send({ status: 'OK' });
-  } else {
-    next(new ErrorHandler(422, 'The email code is invalid'));
+      await userService.checkConfirmEmailBonus(userId);
+
+      res.status(200).send({ status: 'OK' });
+    } else {
+      next(new ErrorHandler(422, 'The email code is invalid'));
+    }
+  } catch (err) {
+    next(new ErrorHandler(422, err.message));
   }
 };
 
