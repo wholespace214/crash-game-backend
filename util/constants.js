@@ -41,7 +41,7 @@ const BONUS_TYPES = {
   },
   LAUNCH_2k_400: {
     type: 'LAUNCH_2k_400',
-    amount: 400
+    amount: 100
   }
 }
 
