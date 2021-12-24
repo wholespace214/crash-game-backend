@@ -47,9 +47,9 @@ const BONUS_TYPES = {
     type: 'EMAIL_CONFIRM_50',
     amount: 50
   },
-  FIRST_DEPOSIT_350: {
-    type: 'FIRST_DEPOSIT_350',
-    amount: 350
+  FIRST_DEPOSIT_450: {
+    type: 'FIRST_DEPOSIT_450',
+    amount: 450
   }
 }
 

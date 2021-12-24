@@ -529,16 +529,16 @@ exports.checkUserGotBonus = async (bonusName, userId)=> {
 }
 
 /***
- * check if user is eligible to get FIRST_DEPOSIT_350 bonus
+ * check if user is eligible to get FIRST_DEPOSIT_450 bonus
  * @param userId
  * @returns {Promise<void>} undefined
  */
 exports.checkFirstDepositBonus = async (userId) => {
   if(userId) {
-    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.FIRST_DEPOSIT_350.type, userId);
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.FIRST_DEPOSIT_450.type, userId);
 
     if (!alreadyHasBonus) {
-      await walletUtil.transferBonus(BONUS_TYPES.FIRST_DEPOSIT_350, userId);
+      await walletUtil.transferBonus(BONUS_TYPES.FIRST_DEPOSIT_450, userId);
     }
   }
 };
