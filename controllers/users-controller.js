@@ -825,6 +825,27 @@ const banUser = async (req, res, next) => {
   }
 };
 
+async function refreshKycRoute(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    const userData = await userService.getUserById(userId);
+
+    const refreshToken = userData?.kyc?.refreshToken;
+
+    let output = {};
+
+    if(refreshToken) {
+      output = await kycService.refreshUserKyc(userId, refreshToken);
+    }
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -854,3 +875,4 @@ exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
 exports.addBonus = addBonus;
 exports.checkBonus = checkBonus;
+exports.refreshKycRoute = refreshKycRoute;

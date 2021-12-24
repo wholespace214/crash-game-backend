@@ -77,6 +77,8 @@ router.post(
   userController.banUser
 );
 
-router.post('/add-bonus', userController.addBonus)
+router.post('/add-bonus', userController.addBonus);
+
+router.get('/kyc/refresh', userController.refreshKycRoute);
 
 module.exports = router;
