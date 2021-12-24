@@ -42,6 +42,14 @@ const BONUS_TYPES = {
   LAUNCH_2k_400: {
     type: 'LAUNCH_2k_400',
     amount: 100
+  },
+  EMAIL_CONFIRM_50: {
+    type: 'EMAIL_CONFIRM_50',
+    amount: 50
+  },
+  FIRST_DEPOSIT_350: {
+    type: 'FIRST_DEPOSIT_350',
+    amount: 350
   }
 }
 

@@ -488,7 +488,11 @@ exports.checkUserRegistrationBonus = async (userId) => {
   const alreadyRegistered1k500 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_1k_500.type);
 
   if (alreadyRegistered1k500 <= totalUsers) {
-    await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_1k_500.type, userId);
+    //just to make sure, bonus type entry not exist yet for the user
+    if(!alreadyHasBonus) {
+      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
+    }
   }
 
   // second bonus check BONUS_TYPES.LAUNCH_2k_400
@@ -514,3 +518,42 @@ exports.getUsersCountByBonus = async (bonusName)=> {
 
   return alreadyRegistered.length;
 }
+
+exports.checkUserGotBonus = async (bonusName, userId)=> {
+  const userData = await User.findOne({
+    'bonus.name': bonusName,
+    '_id': userId
+  }, {_id: 1});
+
+  return userData ? true : false;
+}
+
+/***
+ * check if user is eligible to get FIRST_DEPOSIT_350 bonus
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkFirstDepositBonus = async (userId) => {
+  if(userId) {
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.FIRST_DEPOSIT_350.type, userId);
+
+    if (!alreadyHasBonus) {
+      await walletUtil.transferBonus(BONUS_TYPES.FIRST_DEPOSIT_350, userId);
+    }
+  }
+};
+
+/***
+ * check if user is eligible to get EMAIL_CONFIRM_50 bonus
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkConfirmEmailBonus = async (userId) => {
+  if(userId) {
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.EMAIL_CONFIRM_50.type, userId);
+
+    if (!alreadyHasBonus) {
+      await walletUtil.transferBonus(BONUS_TYPES.EMAIL_CONFIRM_50, userId);
+    }
+  }
+};

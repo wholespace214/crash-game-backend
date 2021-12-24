@@ -221,6 +221,8 @@ module.exports = {
         });
 
         await userService.checkUserRegistrationBonus(newUserId.toString());
+        //treat as confirm email, when new account and logged-in through provider
+        await userService.checkConfirmEmailBonus(newUserId.toString());
 
         const initialReward = 0;
         amqp.send(
