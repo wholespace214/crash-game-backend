@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { Wallet /*, ONE*/, fromWei } = require('@wallfair.io/trading-engine');
-const { WFAIR_REWARDS /*, AWARD_TYPES*/ } = require('../util/constants');
+const { WFAIR_REWARDS, BONUS_STATES /*, AWARD_TYPES*/ } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
@@ -13,6 +13,7 @@ const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 const {BONUS_TYPES} = require('../util/constants');
 const walletUtil = require("../util/wallet");
+const mongoose = require("mongoose");
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
@@ -536,8 +537,9 @@ exports.checkUserGotBonus = async (bonusName, userId)=> {
 exports.checkFirstDepositBonus = async (userId) => {
   if(userId) {
     const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.FIRST_DEPOSIT_450.type, userId);
+    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
 
-    if (!alreadyHasBonus) {
+    if (!alreadyHasBonus && hasSpecialPromoFlag) {
       await walletUtil.transferBonus(BONUS_TYPES.FIRST_DEPOSIT_450, userId);
     }
   }
@@ -551,9 +553,30 @@ exports.checkFirstDepositBonus = async (userId) => {
 exports.checkConfirmEmailBonus = async (userId) => {
   if(userId) {
     const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.EMAIL_CONFIRM_50.type, userId);
+    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
 
-    if (!alreadyHasBonus) {
+    if (!alreadyHasBonus && hasSpecialPromoFlag) {
       await walletUtil.transferBonus(BONUS_TYPES.EMAIL_CONFIRM_50, userId);
     }
+  }
+};
+
+/***
+ * add special bonus flag only, without transfer
+ * @param userId
+ * @param bonusCfg
+ * @returns {Promise<void>} undefined
+ */
+exports.addBonusFlagOnly = async (userId, bonusCfg) => {
+  if(userId && bonusCfg) {
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $push: {
+        bonus: {
+          name: bonusCfg.type
+        }
+      }
+    });
   }
 };
