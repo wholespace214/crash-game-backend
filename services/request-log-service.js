@@ -6,7 +6,7 @@ const DATA_SENSITIVE_ROUTES = [
 ];
 
 const getRealIp = (req) => {
-  return req.headers['x-forwarded-for'] || req.headers['cf-ipcountry'] || req.socket.remoteAddress || req.connection.remoteAddress;
+  return req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.connection.remoteAddress;
 }
 
 const getUsefullHeaders = (req) => {
@@ -15,7 +15,8 @@ const getUsefullHeaders = (req) => {
   const list = [
     'content-type',
     'user-agent',
-    'referer'
+    'referer',
+    'cf-ipcountry'
   ];
 
   for (const header in headers) {
