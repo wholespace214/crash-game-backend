@@ -48,31 +48,33 @@ const getBody = (req) => {
   return output;
 }
 
-const requestLoggerHandler = async (req, res, next) => {
-  try {
-    const entry = {
-      api_type: API_TYPE,
-      userId: req._userId,
-      ip: getRealIp(req),
-      method: req.method,
-      path: req.path,
-      query: req.query,
-      headers: getUsefullHeaders(req),
-      body: getBody(req),
-      statusCode: res.statusCode
+const requestLogHandler = async (req, res, next) => {
+  res.on('finish', async () => {
+    try {
+      const entry = {
+        api_type: API_TYPE,
+        userId: req._userId,
+        ip: getRealIp(req),
+        method: req.method,
+        path: req.path,
+        query: req.query,
+        headers: getUsefullHeaders(req),
+        body: getBody(req),
+        statusCode: res.statusCode
+      }
+
+      await models.ApiLogs.create(entry);
+      console.log('entry', entry);
+
+    } catch (error) {
+      console.error(`${new Date()} [requestLogHandler] error`, error);
     }
+  });
 
-    await models.ApiLogs.create(entry);
-    console.log('entry', entry);
-
-  } catch (error) {
-    console.error(`${new Date()} [requestLoggerHandler] error`, error);
-  } finally {
-    next();
-  }
+  next();
 };
 
 
 module.exports = {
-  requestLoggerHandler
+  requestLogHandler
 }

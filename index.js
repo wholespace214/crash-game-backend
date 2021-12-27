@@ -17,7 +17,7 @@ const { handleError } = require('./util/error-handler');
 const { initDb } = require('@wallfair.io/trading-engine');
 // const { initDatabase } = require('@wallfair.io/wallfair-casino');
 
-const { requestLoggerHandler } = require('./services/requestLogger');
+const { requestLogHandler } = require('./services/request-log-service');
 
 let mongoURL = process.env.DB_CONNECTION;
 
@@ -116,7 +116,7 @@ async function main() {
   server.use(express.urlencoded({ limit: '5mb', extended: true }));
 
   // request logger handler
-  server.use(requestLoggerHandler)
+  server.use(requestLogHandler)
 
   // Home Route
   server.get('/', (req, res) => {
