@@ -115,8 +115,8 @@ async function main() {
   server.use(express.json({ limit: '5mb' }));
   server.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-  // request logger handler
-  server.use(requestLogHandler)
+  // request log handler
+  server.use(requestLogHandler);
 
   // Home Route
   server.get('/', (req, res) => {

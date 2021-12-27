@@ -39,10 +39,14 @@ const getBody = (req) => {
 
   let output = {};
 
-  for (const index in list) {
-    if (path.indexOf(list[index]) === -1) {
-      output = req.body;
+  if (list.length) {
+    for (const index in list) {
+      if (path.indexOf(list[index]) === -1) {
+        output = req.body;
+      }
     }
+  } else {
+    output = req.body;
   }
 
   return output;
@@ -64,7 +68,6 @@ const requestLogHandler = async (req, res, next) => {
       }
 
       await models.ApiLogs.create(entry);
-      console.log('entry', entry);
 
     } catch (error) {
       console.error(`${new Date()} [requestLogHandler] error`, error);
