@@ -592,7 +592,7 @@ exports.getUserDataForAdmin = async (userId) => {
   const queryRunner = new Query();
   const one = 1000000000000000000
   const u = await User.findOne({ _id: userId })
-  if(!u) throw NotFoundError()
+  if(!u) throw new NotFoundError()
   let KYCCount = 0
     if(u.kyc.uid){
       KYCCount = await User.count({"kyc.uid": u.kyc.uid})
@@ -607,7 +607,7 @@ exports.getUserDataForAdmin = async (userId) => {
 
     const transactions = await queryRunner
       .query(
-        `select created_at, cast(amount / ${one} as integer), internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+        `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
 
     return {
       ...u.toObject(),
