@@ -9,18 +9,19 @@ const getRealIp = (req) => {
   return req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.connection.remoteAddress;
 }
 
+const getPath = (req) => {
+  return req.baseUrl + req.path;
+}
+
 const getUsefullHeaders = (req) => {
   const output = {};
   const headers = req.headers;
-  const list = [
-    'content-type',
-    'user-agent',
-    'referer',
-    'cf-ipcountry'
+  const exlusionList = [
+    'authorization'
   ];
 
   for (const header in headers) {
-    if (list.indexOf(header) > -1) {
+    if (exlusionList.indexOf(header) === -1) {
       output[header] = headers[header];
     }
   }
@@ -35,18 +36,21 @@ const getUsefullHeaders = (req) => {
  * @returns {{}}
  */
 const getBody = (req) => {
-  const path = req.path;
+  const path = getPath(req);
   const list = DATA_SENSITIVE_ROUTES;
 
   let output = {};
+  let skipBody = false;
 
   if (list.length) {
     for (const index in list) {
-      if (path.indexOf(list[index]) === -1) {
-        output = req.body;
+      if (path.indexOf(list[index]) > -1) {
+        skipBody = true;
       }
     }
-  } else {
+  }
+
+  if(!skipBody) {
     output = req.body;
   }
 
@@ -61,7 +65,7 @@ const requestLogHandler = async (req, res, next) => {
         userId: req._userId,
         ip: getRealIp(req),
         method: req.method,
-        path: req.path,
+        path: getPath(req),
         query: req.query,
         headers: getUsefullHeaders(req),
         body: getBody(req),
