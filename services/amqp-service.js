@@ -1,6 +1,5 @@
 const amqplib = require("amqplib");
 
-const {processDepositEvent} = require("../services/subscribers-service");
 const retry = require('../util/retryHandler');
 
 const rabbitUrl = process.env.RABBITMQ_CONNECTION;
@@ -37,6 +36,8 @@ const send = async (exchange, routingKey, data) => {
 
 const subscribeDepositsChannel = async () => {
   try {
+    const {processDepositEvent} = require("../services/subscribers-service");
+
     const cfg = DEPOSIT_CREATED_SUBSCRIBER;
     channel.prefetch(cfg.prefetch);
 
