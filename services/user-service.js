@@ -544,9 +544,8 @@ exports.checkFirstDepositBonus = async (dd) => {
 
     if (!alreadyHasBonus && hasSpecialPromoFlag) {
       const formattedAmount = fromWei(dd.amount).decimalPlaces(0).toNumber();
-      const bonusAmount = formattedAmount*2;
-
-      bonusCfg.amount = Math.min(bonusAmount, bonusCfg.max);
+      //the same amount as bonus
+      bonusCfg.amount = Math.min(formattedAmount, bonusCfg.max);
 
       await walletUtil.transferBonus(bonusCfg, userId);
     }
