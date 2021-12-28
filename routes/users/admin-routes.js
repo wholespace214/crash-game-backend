@@ -15,4 +15,8 @@ router.post(
   adminController.transferToUser,
 );
 
+router.get('/users/:id',
+  adminController.getUser
+  )
+
 module.exports = router;

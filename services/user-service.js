@@ -3,7 +3,7 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet /*, ONE*/, fromWei } = require('@wallfair.io/trading-engine');
+const { Wallet /*, ONE*/, fromWei, Query } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -14,6 +14,7 @@ const _ = require('lodash');
 const {BONUS_TYPES} = require('../util/constants');
 const walletUtil = require("../util/wallet");
 const mongoose = require("mongoose");
+const {NotFoundError} = require('../util/error-handler')
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
@@ -587,3 +588,33 @@ exports.addBonusFlagOnly = async (userId, bonusCfg) => {
     });
   }
 };
+
+exports.getUserDataForAdmin = async (userId) => {
+  const queryRunner = new Query();
+  const one = 1000000000000000000
+  const u = await User.findOne({ _id: userId })
+  if(!u) throw NotFoundError()
+  let KYCCount = 0
+    if(u.kyc.uid){
+      KYCCount = await User.count({"kyc.uid": u.kyc.uid})
+    }
+    const balance = await queryRunner
+      .query(
+        `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
+
+    const bets = await queryRunner
+      .query(
+        `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
+
+    const transactions = await queryRunner
+      .query(
+        `select created_at, cast(amount / ${one} as integer), internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+
+    return {
+      ...u.toObject(),
+      KYCCount,
+      balance: (balance && balance.length) ? balance[0].balance : 0,
+      bets,
+      transactions
+    }
+}

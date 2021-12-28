@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { ErrorHandler } = require("../util/error-handler");
+const { ErrorHandler} = require("../util/error-handler");
 const {
   AccountNamespace,
   WFAIR_SYMBOL,
@@ -11,6 +11,7 @@ const {
 } = require("@wallfair.io/trading-engine");
 const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
+const userService = require('../services/user-service')
 
 exports.transferToUser = async (req, res, next) => {
   if (!req.user) {
@@ -98,3 +99,14 @@ exports.transferToUser = async (req, res, next) => {
     return next(new ErrorHandler('Something went wrong'));
   }
 };
+
+exports.getUser = async (req, res, next) => {
+  const {id} = req.params;
+  try {
+    const data = await userService.getUserDataForAdmin(id)
+    return res.send(data)
+  } catch (e) {
+    console.error(e)
+    return next(new ErrorHandler(500));
+  }
+}
