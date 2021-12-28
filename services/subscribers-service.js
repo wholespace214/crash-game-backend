@@ -39,10 +39,9 @@ const processDepositEvent = async (event, data) => {
 
   if(eventName === notificationEvents.EVENT_DEPOSIT_CREATED) {
     const dd = data?.data;
-    const userId = dd?.userId;
 
     //check some bonuses, catch error and continue execution of this fn
-    await userService.checkFirstDepositBonus(userId).catch((err)=> {
+    await userService.checkFirstDepositBonus(dd).catch((err)=> {
       console.error('checkFirstDepositBonus err', err);
     });
 
@@ -60,5 +59,6 @@ const processDepositEvent = async (event, data) => {
     await sendMail(process.env.DEPOSIT_NOTIFICATION_EMAIL, `${notificationEvents.EVENT_DEPOSIT_CREATED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
   }
 }
+
 
 module.exports = { processDepositEvent };
