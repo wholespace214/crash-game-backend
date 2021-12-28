@@ -545,11 +545,7 @@ exports.checkFirstDepositBonus = async (dd) => {
       const formattedAmount = fromWei(dd.amount).decimalPlaces(0).toNumber();
       const bonusAmount = formattedAmount*2;
 
-      if(bonusAmount < bonusCfg.max) {
-        bonusCfg.amount = bonusAmount;
-      } else {
-        bonusCfg.amount = bonusCfg.max;
-      }
+      bonusCfg.amount = Math.min(bonusAmount, bonusCfg.max);
 
       await walletUtil.transferBonus(bonusCfg, userId);
     }
