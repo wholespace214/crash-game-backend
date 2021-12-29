@@ -476,7 +476,7 @@ const confirmEmail = async (req, res, next) => {
       //     console.error('createUserAwardEvent', err);
       //   });
 
-      await userService.checkConfirmEmailBonus(userId);
+      // await userService.checkConfirmEmailBonus(userId);
 
       res.status(200).send({ status: 'OK' });
     } else {

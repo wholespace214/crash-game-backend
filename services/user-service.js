@@ -3,8 +3,8 @@ const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet /*, ONE*/, fromWei } = require('@wallfair.io/trading-engine');
-const { WFAIR_REWARDS, BONUS_STATES /*, AWARD_TYPES*/ } = require('../util/constants');
+const { Wallet /*, ONE*/, fromWei, Query } = require('@wallfair.io/trading-engine');
+const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
@@ -14,6 +14,7 @@ const _ = require('lodash');
 const {BONUS_TYPES} = require('../util/constants');
 const walletUtil = require("../util/wallet");
 const mongoose = require("mongoose");
+const {NotFoundError} = require('../util/error-handler')
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
@@ -531,16 +532,22 @@ exports.checkUserGotBonus = async (bonusName, userId)=> {
 
 /***
  * check if user is eligible to get FIRST_DEPOSIT_450 bonus
- * @param userId
+ * @param dd {object} DEPOSIT DATA
  * @returns {Promise<void>} undefined
  */
-exports.checkFirstDepositBonus = async (userId) => {
+exports.checkFirstDepositBonus = async (dd) => {
+  const userId = dd?.userId;
   if(userId) {
-    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.FIRST_DEPOSIT_450.type, userId);
+    const bonusCfg = _.cloneDeep(BONUS_TYPES.FIRST_DEPOSIT_DOUBLE_DEC21);
+    const alreadyHasBonus = await this.checkUserGotBonus(bonusCfg.type, userId);
     const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
 
     if (!alreadyHasBonus && hasSpecialPromoFlag) {
-      await walletUtil.transferBonus(BONUS_TYPES.FIRST_DEPOSIT_450, userId);
+      const formattedAmount = fromWei(dd.amount).decimalPlaces(0).toNumber();
+      //the same amount as bonus
+      bonusCfg.amount = Math.min(formattedAmount, bonusCfg.max);
+
+      await walletUtil.transferBonus(bonusCfg, userId);
     }
   }
 };
@@ -580,3 +587,33 @@ exports.addBonusFlagOnly = async (userId, bonusCfg) => {
     });
   }
 };
+
+exports.getUserDataForAdmin = async (userId) => {
+  const queryRunner = new Query();
+  const one = 1000000000000000000
+  const u = await User.findOne({ _id: userId })
+  if(!u) throw new NotFoundError()
+  let KYCCount = 0
+    if(u.kyc.uid){
+      KYCCount = await User.count({"kyc.uid": u.kyc.uid})
+    }
+    const balance = await queryRunner
+      .query(
+        `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
+
+    const bets = await queryRunner
+      .query(
+        `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
+
+    const transactions = await queryRunner
+      .query(
+        `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+
+    return {
+      ...u.toObject(),
+      KYCCount,
+      balance: (balance && balance.length) ? balance[0].balance : 0,
+      bets,
+      transactions
+    }
+}

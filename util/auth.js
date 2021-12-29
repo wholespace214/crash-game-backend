@@ -51,6 +51,7 @@ exports.setPassportStrategies = () => {
 
 /**
  * Adds req.isAdmin that indicates if the logged in user
+ * add user id to req._userId for api_logs
  * is an admin
  */
 exports.evaluateIsAdmin = (req, res, next) => {
@@ -59,6 +60,7 @@ exports.evaluateIsAdmin = (req, res, next) => {
       console.log(err);
     }
     req.isAdmin = !err && user && user.admin;
+    req._userId = user?._id?.toString();
     next();
   })(req, res, next);
 };

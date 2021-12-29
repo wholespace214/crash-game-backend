@@ -77,7 +77,7 @@ module.exports = {
       //add special flag for new people
       await userService.addBonusFlagOnly(wFairUserId.toString(), BONUS_TYPES.LAUNCH_PROMO_2021);
 
-      await userService.checkUserRegistrationBonus(wFairUserId.toString());
+      // await userService.checkUserRegistrationBonus(wFairUserId.toString());
 
       let initialReward = 0;
       // if (ref) {
@@ -225,9 +225,9 @@ module.exports = {
         //add special flag for new people
         await userService.addBonusFlagOnly(newUserId.toString(), BONUS_TYPES.LAUNCH_PROMO_2021);
 
-        await userService.checkUserRegistrationBonus(newUserId.toString());
+        // await userService.checkUserRegistrationBonus(newUserId.toString());
         //treat as confirm email, when new account and logged-in through provider
-        await userService.checkConfirmEmailBonus(newUserId.toString());
+        // await userService.checkConfirmEmailBonus(newUserId.toString());
 
         const initialReward = 0;
         amqp.send(
