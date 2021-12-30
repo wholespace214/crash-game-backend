@@ -6,7 +6,17 @@ const DATA_SENSITIVE_ROUTES = [
 ];
 
 const getRealIp = (req) => {
-  return req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.connection.remoteAddress;
+  const forwardedFor = req.headers['x-forwarded-for'];
+
+  if(forwardedFor) {
+    const isSplittable = forwardedFor.indexOf(',') > -1;
+    if(isSplittable) {
+      return forwardedFor.split(',')?.[0]?.replace(/\s+/g, '');
+    }
+    return forwardedFor;
+  }
+
+  return req.connection.remoteAddress || req.socket.remoteAddress;
 }
 
 const getPath = (req) => {
