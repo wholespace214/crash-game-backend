@@ -1,4 +1,4 @@
-const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
+const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
@@ -609,11 +609,14 @@ exports.getUserDataForAdmin = async (userId) => {
       .query(
         `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
 
+    const apiLogs = await ApiLogs.find({userId}, ['ip', 'createdAt', 'api_type', 'path', 'statusCode'], {limit: 100})
+
     return {
       ...u.toObject(),
       KYCCount,
       balance: (balance && balance.length) ? balance[0].balance : 0,
       bets,
-      transactions
+      transactions,
+      apiLogs
     }
 }
