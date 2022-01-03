@@ -609,7 +609,7 @@ exports.getUserDataForAdmin = async (userId) => {
       .query(
         `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
 
-    const apiLogs = await ApiLogs.find({userId}, ['ip', 'createdAt', 'api_type', 'path', 'statusCode'], {limit: 100})
+    const apiLogs = await ApiLogs.find({userId}, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], {limit: 100})
 
     return {
       ...u.toObject(),
