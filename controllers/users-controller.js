@@ -28,7 +28,7 @@ const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
 const walletUtil = require("../util/wallet");
-const {BONUS_TYPES} = require("../util/constants");
+const { BONUS_TYPES } = require("../util/constants");
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -722,7 +722,7 @@ async function addBonus(req, res, next) {
       success: false
     }
 
-    if(isAdmin && userId) {
+    if (isAdmin && userId) {
       await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
       output.success = true;
     }
@@ -745,7 +745,7 @@ async function checkBonus(req, res, next) {
 
     const bonusCfg = BONUS_TYPES?.[type];
 
-    if(!bonusCfg) {
+    if (!bonusCfg) {
       throw new Error('Bonus type not found.');
     }
 
@@ -776,6 +776,29 @@ function buyWithCrypto(req, res, next) {
     })
     .catch((e) => {
       console.error('[BUY_WITH_CRYPTO]: Error sending email', e);
+    });
+
+  return res.status(200).send('OK');
+}
+
+function buyWithFiat(req, res, next) {
+  if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
+  const { currency, amount, estimate, userId } = req.body;
+  const email = req.user.email;
+
+  mailService
+    .sendBuyWithFiatEmail({
+      currency,
+      userId,
+      amount,
+      estimate,
+      email,
+    })
+    .then(() => {
+      console.log('[BUY_WITH_FIAT]: Email sent');
+    })
+    .catch((e) => {
+      console.error('[BUY_WITH_FIAT]: Error sending email', e);
     });
 
   return res.status(200).send('OK');
@@ -841,7 +864,7 @@ async function refreshKycRoute(req, res, next) {
 
     let output = {};
 
-    if(refreshToken) {
+    if (refreshToken) {
       output = await kycService.refreshUserKyc(userId, refreshToken);
     }
 
@@ -876,6 +899,7 @@ exports.getUserKycData = getUserKycData;
 exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
+exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;

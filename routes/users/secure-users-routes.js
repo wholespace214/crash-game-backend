@@ -63,6 +63,7 @@ router.get('/:userId/kyc-data', userController.getUserKycData);
 
 router.get('/kyc/status', userController.getKycStatus);
 router.post('/buy-with-crypto', userController.buyWithCrypto);
+router.post('/buy-with-fiat', userController.buyWithFiat);
 router.post('/consent', userController.updateUserConsent);
 
 router.post(
