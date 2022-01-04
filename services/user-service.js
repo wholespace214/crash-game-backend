@@ -536,8 +536,8 @@ exports.checkUserGotBonus = async (bonusName, userId)=> {
  * @returns {Promise<void>} undefined
  */
 exports.checkFirstDepositBonus = async (dd) => {
-  const userId = dd?.userId;
-  if(userId) {
+  const userId = dd?.internal_user_id;
+  if (userId) {
     const bonusCfg = _.cloneDeep(BONUS_TYPES.FIRST_DEPOSIT_DOUBLE_DEC21);
     const alreadyHasBonus = await this.checkUserGotBonus(bonusCfg.type, userId);
     const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
