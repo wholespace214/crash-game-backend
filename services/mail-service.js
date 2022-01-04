@@ -38,7 +38,7 @@ exports.sendBuyWithCryptoEmail = async (data) => {
     .replace('{{estimate}}', data.estimate)
     .replace('{{email}}', data.email)
 
-  await sendMail('deposits@alpacasino.io', 'Buy With Crypto Form', generatedTemplate);
+  await sendMail('deposits@alpacasino.io', `${process.env.ENVIRONMENT} - Buy With Crypto Form`, generatedTemplate);
 }
 exports.sendBuyWithFiatEmail = async (data) => {
   const generatedTemplate = email_buy_with_fiat
@@ -48,7 +48,7 @@ exports.sendBuyWithFiatEmail = async (data) => {
     .replace('{{email}}', data.email)
     .replace('{{userid}}', data.userId)
 
-  await sendMail('deposits@alpacasino.io', 'Buy with Fiat Request', generatedTemplate);
+  await sendMail('deposits@alpacasino.io', `${process.env.ENVIRONMENT} - Buy with Fiat Request`, generatedTemplate);
 }
 
 /***
