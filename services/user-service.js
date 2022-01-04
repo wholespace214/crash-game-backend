@@ -481,7 +481,7 @@ exports.checkUserRegistrationBonus = async (userId) => {
   const validUntil = new Date(bonusValidUntil);
 
   //skip check when bonus period is over
-  if(validUntil < now) {
+  if (validUntil < now) {
     return;
   }
 
