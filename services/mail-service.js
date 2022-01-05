@@ -7,6 +7,7 @@ const { generate } = require('../helper');
 const email_confirm = fs.readFileSync('./emails/email-confirm.html', 'utf8');
 const email_reset_password = fs.readFileSync('./emails/email-reset-password.html', 'utf8');
 const email_buy_with_crypto = fs.readFileSync('./emails/buy-with-crypto.html', 'utf8');
+const email_buy_with_fiat = fs.readFileSync('./emails/buy-with-fiat.html', 'utf8');
 
 exports.sendConfirmMail = async (user) => {
   const emailCode = generate(6);
@@ -37,7 +38,17 @@ exports.sendBuyWithCryptoEmail = async (data) => {
     .replace('{{estimate}}', data.estimate)
     .replace('{{email}}', data.email)
 
-  await sendMail('deposits@alpacasino.io', 'Buy With Crypto Form', generatedTemplate);
+  await sendMail('deposits@alpacasino.io', `${process.env.ENVIRONMENT} - Buy With Crypto Form`, generatedTemplate);
+}
+exports.sendBuyWithFiatEmail = async (data) => {
+  const generatedTemplate = email_buy_with_fiat
+    .replace('{{currency}}', data.currency)
+    .replace('{{amount}}', data.amount)
+    .replace('{{estimate}}', data.estimate)
+    .replace('{{email}}', data.email)
+    .replace('{{userid}}', data.userId)
+
+  await sendMail('deposits@alpacasino.io', `${process.env.ENVIRONMENT} - Buy with Fiat Request`, generatedTemplate);
 }
 
 /***

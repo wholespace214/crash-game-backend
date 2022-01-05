@@ -93,21 +93,6 @@ services:
   - key: DB_CONNECTION
     scope: RUN_AND_BUILD_TIME
     value: $PRODUCTION_MONGO_DB_URL
-  - key: AUTH0_DOMAIN
-    scope: RUN_AND_BUILD_TIME
-    value: $AUTH0_DOMAIN
-  - key: AUTH0_CLIENT_ID
-    scope: RUN_AND_BUILD_TIME
-    value: $AUTH0_CLIENT_ID
-  - key: AUTH0_CLIENT_SECRET
-    scope: RUN_AND_BUILD_TIME
-    value: $AUTH0_CLIENT_SECRET
-  - key: AUTH0_AUDIENCE
-    scope: RUN_AND_BUILD_TIME
-    value: $AUTH0_AUDIENCE
-  - key: AUTH0_CONNECTION_ID
-    scope: RUN_AND_BUILD_TIME
-    value: $AUTH0_CONNECTION_ID
   - key: AWS_S3_CLIENT_ID
     scope: RUN_AND_BUILD_TIME
     value: $AWS_S3_CLIENT_ID

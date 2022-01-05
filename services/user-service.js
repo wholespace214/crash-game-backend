@@ -1,4 +1,4 @@
-const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
+const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
@@ -481,7 +481,7 @@ exports.checkUserRegistrationBonus = async (userId) => {
   const validUntil = new Date(bonusValidUntil);
 
   //skip check when bonus period is over
-  if(validUntil < now) {
+  if (validUntil < now) {
     return;
   }
 
@@ -536,8 +536,8 @@ exports.checkUserGotBonus = async (bonusName, userId)=> {
  * @returns {Promise<void>} undefined
  */
 exports.checkFirstDepositBonus = async (dd) => {
-  const userId = dd?.userId;
-  if(userId) {
+  const userId = dd?.internal_user_id;
+  if (userId) {
     const bonusCfg = _.cloneDeep(BONUS_TYPES.FIRST_DEPOSIT_DOUBLE_DEC21);
     const alreadyHasBonus = await this.checkUserGotBonus(bonusCfg.type, userId);
     const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
@@ -609,11 +609,14 @@ exports.getUserDataForAdmin = async (userId) => {
       .query(
         `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
 
+    const apiLogs = await ApiLogs.find({userId}, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], {limit: 100, sort: {createdAt: -1}})
+
     return {
       ...u.toObject(),
       KYCCount,
       balance: (balance && balance.length) ? balance[0].balance : 0,
       bets,
-      transactions
+      transactions,
+      apiLogs
     }
 }

@@ -6,11 +6,11 @@ const rabbitUrl = process.env.RABBITMQ_CONNECTION;
 
 let connection, channel;
 
-const DEPOSIT_CREATED_SUBSCRIBER =   {
+const DEPOSIT_CREATED_SUBSCRIBER = {
   exchange: 'universal_events',
   exchangeType: 'topic',
   queue: 'universal_events.backend',
-  routingKey: 'event.deposit_created',
+  routingKeys: ['event.deposit_created', 'event.withdraw_requested'],
   durable: true,
   autoDelete: false,
   prefetch: 50
@@ -36,7 +36,7 @@ const send = async (exchange, routingKey, data) => {
 
 const subscribeDepositsChannel = async () => {
   try {
-    const {processDepositEvent} = require("../services/subscribers-service");
+    const {processDepositEvent, processWithdrawEvent} = require("../services/subscribers-service");
 
     const cfg = DEPOSIT_CREATED_SUBSCRIBER;
     channel.prefetch(cfg.prefetch);
@@ -48,24 +48,36 @@ const subscribeDepositsChannel = async () => {
       durable: cfg.durable,
       autoDelete: cfg.autoDelete
     });
-    await channel.bindQueue(q.queue, cfg.exchange, cfg.routingKey);
+
+    cfg.routingKeys.forEach(async (routingKey) => {
+      await channel.bindQueue(q.queue, cfg.exchange, routingKey);
+    })
 
     channel.consume(
       q.queue,
       async (msg) => {
-        await processDepositEvent(
-          msg.fields.routingKey, JSON.parse(msg.content.toString())
-        ).catch((consumeErr) => {
-          console.error('processDepositEvent failed with error:', consumeErr);
-          retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
-        })
+        if (msg.fields.routingKey === 'event.withdraw_requested') {
+          await processWithdrawEvent(
+            msg.fields.routingKey, JSON.parse(msg.content.toString())
+          ).catch((consumeErr) => {
+            console.error('processDepositEvent failed with error:', consumeErr);
+            retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
+          })
+        } else {
+          await processDepositEvent(
+            msg.fields.routingKey, JSON.parse(msg.content.toString())
+          ).catch((consumeErr) => {
+            console.error('processDepositEvent failed with error:', consumeErr);
+            retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
+          })
+        }
       },
       {
         noAck: true
       }
     );
 
-    console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange on "${cfg.routingKey}" routing key subscribed. Waiting for messages...`);
+    console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange on [${cfg.routingKeys.join(', ')}] routing keys subscribed. Waiting for messages...`);
   } catch (e) {
     console.error("subscribeDepositsChannel error", e);
   }
