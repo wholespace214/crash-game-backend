@@ -7,6 +7,8 @@ const {
   Transactions,
   ExternalTransactionOriginator,
   fromWei,
+  AccountNamespace,
+  WFAIR_SYMBOL,
 } = require('@wallfair.io/trading-engine');
 const { CasinoTradeContract, CASINO_TRADE_STATE } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
@@ -186,7 +188,7 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = await WFAIR.getBalance(userId);
+    const balance = await WFAIR.getBalance(userId, AccountNamespace.USR, WFAIR_SYMBOL);
     const formattedBalance = fromWei(balance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
