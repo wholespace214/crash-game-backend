@@ -21,9 +21,9 @@ const getConversionData = async ({ convertFrom, convertTo }) => {
 exports.getMarketPrice = async ({ convertFrom, convertTo, amount }) => {
   const data = await getConversionData({ convertFrom, convertTo });
   const symbol = convertTo;
-  const price = data[symbol]['quote'][convertFrom]?.price || 0;
+  const price = data?.[symbol]?.quote?.[convertFrom]?.price;
 
-  const convertedAmount = (1 / price) * amount;
+  const convertedAmount = price ? (1 / price) * amount : 0;
 
   return {
     [symbol]: data[symbol],

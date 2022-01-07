@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE casino_trades ADD COLUMN currency VARCHAR(255);
+
+COMMIT;
