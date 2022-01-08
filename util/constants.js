@@ -51,7 +51,7 @@ const BONUS_TYPES = {
   FIRST_DEPOSIT_DOUBLE_DEC21: {
     type: 'FIRST_DEPOSIT_DOUBLE_DEC21',
     neededBonusType: 'LAUNCH_PROMO_2021',
-    max: 25_000
+    max: 100_000
   },
   LAUNCH_PROMO_2021: {
     type: 'LAUNCH_PROMO_2021'
