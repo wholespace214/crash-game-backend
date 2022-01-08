@@ -55,6 +55,10 @@ const BONUS_TYPES = {
   },
   LAUNCH_PROMO_2021: {
     type: 'LAUNCH_PROMO_2021'
+  },
+  USER_OPTIONAL_BONUS: {
+    optional: true,
+    type: 'USER_OPTIONAL_BONUS'
   }
 }
 

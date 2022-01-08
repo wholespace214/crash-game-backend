@@ -736,6 +736,47 @@ async function addBonus(req, res, next) {
   }
 }
 
+async function handleBonusFlag(req, res, next) {
+  try {
+    const method = req.method;
+    const { type } = req.params;
+    const userId = req.user.id;
+
+    const output = {
+      success: false,
+      message: null
+    };
+
+    if(type && userId) {
+      const bonusCfg = BONUS_TYPES[type];
+
+      if(bonusCfg && bonusCfg.optional) {
+          if(method === 'POST') {
+            const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userId);
+            if(!alreadyHasBonus) {
+              await userService.addBonusFlagOnly(userId, bonusCfg);
+              output.message = 'Successfully added.'
+              output.success = true;
+            }
+          } else {
+            await userService.removeBonusFlagOnly(userId, bonusCfg);
+            output.message = 'Successfully deleted.'
+            output.success = true;
+          }
+        } else {
+          output.message = 'Bonus already exist or not optional.'
+        }
+      } else {
+        output.message = 'Bonus not found.'
+    }
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 async function checkBonus(req, res, next) {
   try {
     const { type } = req.params;
@@ -754,6 +795,19 @@ async function checkBonus(req, res, next) {
     output.totalUsers = await userService.getUsersCountByBonus(bonusCfg.type);
 
     return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
+async function getBonusesByUser(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    const bonuses = await userService.getBonusesByUser(userId);
+
+    return res.send(bonuses?.bonus || []);
   } catch (err) {
     console.error(err);
     next(new ErrorHandler(422, err.message));
@@ -908,3 +962,5 @@ exports.banUser = banUser;
 exports.addBonus = addBonus;
 exports.checkBonus = checkBonus;
 exports.refreshKycRoute = refreshKycRoute;
+exports.handleBonusFlag = handleBonusFlag;
+exports.getBonusesByUser = getBonusesByUser;
