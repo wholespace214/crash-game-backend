@@ -68,7 +68,7 @@ const sendMail = async (email, subject, template, attachments = []) => {
   try {
     const info = {
       to: email,
-      from: 'no-reply@wallfair.io',
+      from: 'no-reply@alpacasino.io',
       subject: subject,
       html: template,
       attachments
