@@ -588,6 +588,39 @@ exports.addBonusFlagOnly = async (userId, bonusCfg) => {
   }
 };
 
+
+/***
+ * remove special bonus flag only, without transfer
+ * @param userId
+ * @param bonusCfg
+ * @returns {Promise<void>} undefined
+ */
+exports.removeBonusFlagOnly = async (userId, bonusCfg) => {
+  if(userId && bonusCfg) {
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $pull: {
+        bonus: {
+          name: bonusCfg.type
+        }
+      }
+    });
+  }
+};
+
+
+/***
+ * return all bonuses user have
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.getBonusesByUser = async (userId) => {
+    return await User.findOne({
+      '_id': userId
+    }, {bonus: 1, _id: 0});
+};
+
 exports.getUserDataForAdmin = async (userId) => {
   const queryRunner = new Query();
   const one = 1000000000000000000
