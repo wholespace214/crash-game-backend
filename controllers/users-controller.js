@@ -203,7 +203,7 @@ const getUserInfo = async (req, res, next) => {
       balances: balances.map(balance => {
         return {
           symbol: balance.symbol,
-          balance: balance.balance,
+          balance: fromWei(balance.balance).toFixed(4),
         };
       }),
       totalWin: userService.getTotalWin(BigInt(wfairBalance)).toString(),
