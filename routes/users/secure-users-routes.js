@@ -82,4 +82,8 @@ router.post('/add-bonus', userController.addBonus);
 
 router.get('/kyc/refresh', userController.refreshKycRoute);
 
+router.post('/bonusflag/:type', userController.handleBonusFlag);
+router.delete('/bonusflag/:type', userController.handleBonusFlag);
+router.get('/bonusflag/check', userController.getBonusesByUser);
+
 module.exports = router;
