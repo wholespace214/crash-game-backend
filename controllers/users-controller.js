@@ -188,8 +188,9 @@ const getUserInfo = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User not found'));
     }
 
-    const balance = await WFAIR.getBalance(userId, AccountNamespace.USR, WFAIR_SYMBOL);
-    const formattedBalance = fromWei(balance).toFixed(4);
+    const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
+    const wfairBalance = balances.find(balance => balance.symbol === WFAIR_SYMBOL)?.balance || 0;
+    const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
     res.status(200).json({
@@ -199,7 +200,13 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      totalWin: userService.getTotalWin(BigInt(balance)).toString(),
+      balances: balances.map(balance => {
+        return {
+          symbol: balance.symbol,
+          balance: balance.balance,
+        };
+      }),
+      totalWin: userService.getTotalWin(BigInt(wfairBalance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
