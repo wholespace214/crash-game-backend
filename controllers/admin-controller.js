@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { ErrorHandler} = require("../util/error-handler");
+const { ErrorHandler } = require("../util/error-handler");
 const {
   AccountNamespace,
   WFAIR_SYMBOL,
@@ -101,9 +101,36 @@ exports.transferToUser = async (req, res, next) => {
 };
 
 exports.getUser = async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
     const data = await userService.getUserDataForAdmin(id)
+    return res.send(data)
+  } catch (e) {
+    console.error(e)
+    return next(new ErrorHandler(500));
+  }
+}
+
+exports.listUsers = async (req, res, next) => {
+  if (!req.user) {
+    return next(new ErrorHandler(403, 'Not authorized'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const {
+    search,
+    sortField = 'date',
+    sortOrder = 'desc',
+    limit = 10,
+    page = 1,
+  } = req.query;
+
+  try {
+    const data = await userService.searchUsers(+limit, +limit * (+page - 1), search, sortField, sortOrder);
     return res.send(data)
   } catch (e) {
     console.error(e)
