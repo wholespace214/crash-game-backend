@@ -291,7 +291,7 @@ module.exports = {
         return next(new BannedError(user));
       }
 
-      const valid = user && (await bcrypt.compare(password, user.password));
+      const valid = user?.password && (await bcrypt.compare(password, user.password));
 
       if (!valid) {
         return next(new ErrorHandler(401, 'Invalid login'));
