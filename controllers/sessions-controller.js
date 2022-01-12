@@ -349,6 +349,7 @@ module.exports = {
 
       // check if token matches
       if (user.passwordResetToken !== req.body.passwordResetToken) {
+        logger.error(`Expected ${user.passwordResetToken} password token but got ${req.body.passwordResetToken}`);
         return next(new ErrorHandler(401, 'Token not valid'));
       }
 
