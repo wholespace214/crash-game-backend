@@ -17,6 +17,10 @@ router.post(
 
 router.get('/users/:id',
   adminController.getUser
-  )
+)
+
+router.get('/users',
+  adminController.listUsers
+)
 
 module.exports = router;

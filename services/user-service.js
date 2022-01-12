@@ -11,10 +11,10 @@ const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
-const {BONUS_TYPES} = require('../util/constants');
+const { BONUS_TYPES } = require('../util/constants');
 const walletUtil = require("../util/wallet");
 const mongoose = require("mongoose");
-const {NotFoundError} = require('../util/error-handler')
+const { NotFoundError } = require('../util/error-handler')
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
@@ -492,7 +492,7 @@ exports.checkUserRegistrationBonus = async (userId) => {
   if (alreadyRegistered1k500 <= totalUsers) {
     const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_1k_500.type, userId);
     //just to make sure, bonus type entry not exist yet for the user
-    if(!alreadyHasBonus) {
+    if (!alreadyHasBonus) {
       await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
     }
   }
@@ -509,10 +509,10 @@ exports.checkUserRegistrationBonus = async (userId) => {
 
 };
 
-exports.getUsersCountByBonus = async (bonusName)=> {
+exports.getUsersCountByBonus = async (bonusName) => {
   const alreadyRegistered = await User.find({
     'bonus.name': bonusName
-  }, {_id: 1}, {
+  }, { _id: 1 }, {
     sort: {
       date: -1
     }
@@ -521,11 +521,11 @@ exports.getUsersCountByBonus = async (bonusName)=> {
   return alreadyRegistered.length;
 }
 
-exports.checkUserGotBonus = async (bonusName, userId)=> {
+exports.checkUserGotBonus = async (bonusName, userId) => {
   const userData = await User.findOne({
     'bonus.name': bonusName,
     '_id': userId
-  }, {_id: 1});
+  }, { _id: 1 });
 
   return userData ? true : false;
 }
@@ -558,7 +558,7 @@ exports.checkFirstDepositBonus = async (dd) => {
  * @returns {Promise<void>} undefined
  */
 exports.checkConfirmEmailBonus = async (userId) => {
-  if(userId) {
+  if (userId) {
     const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.EMAIL_CONFIRM_50.type, userId);
     const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
 
@@ -575,7 +575,7 @@ exports.checkConfirmEmailBonus = async (userId) => {
  * @returns {Promise<void>} undefined
  */
 exports.addBonusFlagOnly = async (userId, bonusCfg) => {
-  if(userId && bonusCfg) {
+  if (userId && bonusCfg) {
     await User.updateOne({
       _id: mongoose.Types.ObjectId(userId)
     }, {
@@ -596,7 +596,7 @@ exports.addBonusFlagOnly = async (userId, bonusCfg) => {
  * @returns {Promise<void>} undefined
  */
 exports.removeBonusFlagOnly = async (userId, bonusCfg) => {
-  if(userId && bonusCfg) {
+  if (userId && bonusCfg) {
     await User.updateOne({
       _id: mongoose.Types.ObjectId(userId)
     }, {
@@ -616,40 +616,72 @@ exports.removeBonusFlagOnly = async (userId, bonusCfg) => {
  * @returns {Promise<void>} undefined
  */
 exports.getBonusesByUser = async (userId) => {
-    return await User.findOne({
-      '_id': userId
-    }, {bonus: 1, _id: 0});
+  return await User.findOne({
+    '_id': userId
+  }, { bonus: 1, _id: 0 });
 };
+
+exports.searchUsers = async (limit, skip, search, sortField, sortOrder) => {
+  let query = {};
+  if (search) {
+    const qOr = [
+      { username: new RegExp(search, 'i') },
+      { email: new RegExp(search, 'i') },
+      { _id: search },
+    ];
+
+    if (!mongoose.Types.ObjectId.isValid(search)) {
+      qOr.pop();
+    }
+
+    query = {
+      $or: qOr,
+    }
+  }
+
+  const users = await User.find(query)
+    .select('_id username email status date amountWon admin')
+    .sort({ [sortField]: sortOrder })
+    .limit(limit)
+    .skip(skip);
+
+  const count = await User.find(query).count();
+
+  return {
+    users,
+    count
+  }
+}
 
 exports.getUserDataForAdmin = async (userId) => {
   const queryRunner = new Query();
   const one = 1000000000000000000
   const u = await User.findOne({ _id: userId })
-  if(!u) throw new NotFoundError()
+  if (!u) throw new NotFoundError()
   let KYCCount = 0
-    if(u.kyc.uid){
-      KYCCount = await User.count({"kyc.uid": u.kyc.uid})
-    }
-    const balance = await queryRunner
-      .query(
-        `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
+  if (u.kyc.uid) {
+    KYCCount = await User.count({ "kyc.uid": u.kyc.uid })
+  }
+  const balance = await queryRunner
+    .query(
+      `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
 
-    const bets = await queryRunner
-      .query(
-        `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
+  const bets = await queryRunner
+    .query(
+      `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
 
-    const transactions = await queryRunner
-      .query(
-        `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+  const transactions = await queryRunner
+    .query(
+      `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
 
-    const apiLogs = await ApiLogs.find({userId}, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], {limit: 100, sort: {createdAt: -1}})
+  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 100, sort: { createdAt: -1 } })
 
-    return {
-      ...u.toObject(),
-      KYCCount,
-      balance: (balance && balance.length) ? balance[0].balance : 0,
-      bets,
-      transactions,
-      apiLogs
-    }
+  return {
+    ...u.toObject(),
+    KYCCount,
+    balance: (balance && balance.length) ? balance[0].balance : 0,
+    bets,
+    transactions,
+    apiLogs
+  }
 }
