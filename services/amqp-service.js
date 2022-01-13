@@ -10,7 +10,7 @@ const DEPOSIT_CREATED_SUBSCRIBER = {
   exchange: 'universal_events',
   exchangeType: 'topic',
   queue: 'universal_events.backend',
-  routingKeys: ['event.deposit_created', 'event.withdraw_requested'],
+  routingKeys: ['event.deposit_created', 'event.webhook_triggered', 'event.withdraw_requested'],
   durable: true,
   autoDelete: false,
   prefetch: 50
@@ -36,7 +36,7 @@ const send = async (exchange, routingKey, data) => {
 
 const subscribeDepositsChannel = async () => {
   try {
-    const {processDepositEvent, processWithdrawEvent} = require("../services/subscribers-service");
+    const { processDepositEvent, processWithdrawEvent } = require("../services/subscribers-service");
 
     const cfg = DEPOSIT_CREATED_SUBSCRIBER;
     channel.prefetch(cfg.prefetch);
@@ -60,7 +60,7 @@ const subscribeDepositsChannel = async () => {
           await processWithdrawEvent(
             msg.fields.routingKey, JSON.parse(msg.content.toString())
           ).catch((consumeErr) => {
-            console.error('processDepositEvent failed with error:', consumeErr);
+            console.error('processWithdrawEvent failed with error:', consumeErr);
             retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
           })
         } else {
