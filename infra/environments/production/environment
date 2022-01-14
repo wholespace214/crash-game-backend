@@ -1,0 +1,16 @@
+CLIENT_URL=https://alpacasino.io
+VERIFY_URL=https://alpacasino.io/
+REACT_APP_SHOW_UPCOMING_FEATURES=false
+FACEBOOK_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/facebook
+GOOGLE_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/google
+ENVIRONMENT=PRODUCTION
+BACKEND_URL=https://rm-api.alpacasino.io
+DISCORD_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/discord
+TWITCH_OAUTH_REDIRECT_URI=https://alpacasino.io/oauth/twitch
+DEPOSIT_NOTIFICATION_EMAIL=deposit-info@wallfair.io
+DEPOSIT_WALLET_BITCOIN=bc1qrdf9ndd8264dyl66n45cl22lavunymdgnjpj96
+DEPOSIT_WALLET_ETHEREUM=0xCdE7a3DCb537C81730DB750C0315D1730980759c
+DEPOSIT_WALLET_LITECOIN=ltc1qnzlfm88cgr58yxmjzm92se5ug6te6w5yhjfyjn
+REWARD_WALLET=0x15469F0c1854a072a20e593474F93eeE7d7aA3F3
+CRYPTOPAY_URL=https://business.cryptopay.me
+CRYPTOPAY_API_KEY=GUXsSke9TWvGmsve1BzuaQ
