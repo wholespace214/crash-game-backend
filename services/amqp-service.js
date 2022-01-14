@@ -61,7 +61,7 @@ const subscribeDepositsChannel = async () => {
             msg.fields.routingKey, JSON.parse(msg.content.toString())
           ).catch((consumeErr) => {
             console.error('processWithdrawEvent failed with error:', consumeErr);
-            retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
+            retry(processWithdrawEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
           })
         } else {
           await processDepositEvent(
