@@ -774,7 +774,8 @@ async function addBonusManually(req, res, next) {
 
     const output = {
       totalBonusAdded: 0,
-      totalEntries: 0
+      totalEntries: 0,
+      emailsNotFound: 0
     }
 
     const fileStream = fs.createReadStream(file.path);
@@ -787,13 +788,17 @@ async function addBonusManually(req, res, next) {
     for await (const email of rl) {
       if (email) {
         const userFromEmail = await userService.getUserByEmail(email);
-        const userIdFromEmail = userFromEmail._id;
+        const userIdFromEmail = userFromEmail?._id;
 
-        const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
+        if(userIdFromEmail) {
+          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
 
-        if(!alreadyHasBonus) {
-          await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
-          output.totalBonusAdded += 1;
+          if(!alreadyHasBonus) {
+            await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
+            output.totalBonusAdded += 1;
+          }
+        } else {
+          output.emailsNotFound += 1;
         }
 
         output.totalEntries += 1;
