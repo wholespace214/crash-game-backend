@@ -17,6 +17,10 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
+const fs = require('fs');
+const readline = require('readline');
+const { promisify } = require('util')
+const unlinkAsync = promisify(fs.unlink)
 
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
@@ -743,6 +747,69 @@ async function addBonus(req, res, next) {
   }
 }
 
+
+async function addBonusManually(req, res, next) {
+  try {
+    const isAdmin = req.user.admin;
+    const type = req.body?.type;
+    const file = req?.file;
+
+    const bonusCfg = BONUS_TYPES?.[type];
+
+    if (!type) {
+      throw new Error('Type not defined in form-data.');
+    }
+
+    if (!isAdmin) {
+      throw new Error('User must be logged in as admin.');
+    }
+
+    if (!file) {
+      throw new Error('File not defined in form-data.');
+    }
+
+    if (!bonusCfg) {
+      throw new Error('Bonus type not exist.');
+    }
+
+    const output = {
+      totalBonusAdded: 0,
+      totalEntries: 0
+    }
+
+    const fileStream = fs.createReadStream(file.path);
+
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity // '\r\n' as linebreak
+    });
+
+    for await (const email of rl) {
+      if (email) {
+        const userFromEmail = await userService.getUserByEmail(email);
+        const userIdFromEmail = userFromEmail._id;
+
+        const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
+
+        if(!alreadyHasBonus) {
+          await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
+          output.totalBonusAdded += 1;
+        }
+
+        output.totalEntries += 1;
+      }
+    }
+
+    //cleanup after processing file
+    await unlinkAsync(file.path);
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}
+
 async function handleBonusFlag(req, res, next) {
   try {
     const method = req.method;
@@ -971,3 +1038,4 @@ exports.checkBonus = checkBonus;
 exports.refreshKycRoute = refreshKycRoute;
 exports.handleBonusFlag = handleBonusFlag;
 exports.getBonusesByUser = getBonusesByUser;
+exports.addBonusManually = addBonusManually;

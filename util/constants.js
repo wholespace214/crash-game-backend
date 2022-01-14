@@ -59,6 +59,10 @@ const BONUS_TYPES = {
   USER_OPTIONAL_BONUS: {
     optional: true,
     type: 'USER_OPTIONAL_BONUS'
+  },
+  SURVEY_20220112: {
+    type: 'SURVEY_20220112',
+    amount: 500,
   }
 }
 
