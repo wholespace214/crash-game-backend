@@ -21,6 +21,7 @@ const WFAIR = new Wallet();
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
+exports.getUserByEmail = async (email) => User.findOne({ email });
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 

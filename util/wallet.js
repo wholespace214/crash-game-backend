@@ -6,6 +6,7 @@ const { User } = require('@wallfair.io/wallfair-commons').models;
 exports.transferBonus = async (bonusCfg, userId) => {
   const transactionManager = new TransactionManager();
   const amountToTransfer = toWei(bonusCfg.amount).toString();
+  const userIdString = userId.toString();
   await transactionManager.startTransaction();
 
   try {
@@ -16,7 +17,7 @@ exports.transferBonus = async (bonusCfg, userId) => {
         symbol: WFAIR_SYMBOL
       },
       {
-        owner: userId,
+        owner: userIdString,
         namespace: AccountNamespace.USR,
         symbol: WFAIR_SYMBOL
       },
@@ -24,7 +25,7 @@ exports.transferBonus = async (bonusCfg, userId) => {
     );
 
     await User.updateOne({
-      _id: mongoose.Types.ObjectId(userId)
+      _id: mongoose.Types.ObjectId(userIdString)
     }, {
       $push: {
         bonus: {
