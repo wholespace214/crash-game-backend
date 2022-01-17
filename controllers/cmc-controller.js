@@ -7,9 +7,7 @@ const getMarketPrice = async (req, res, next) => {
 
     res.status(200).json(quoteResponse);
   } catch (err) {
-    console.error(err.message);
-    let error = res.status(422).send(err.message);
-    next(error);
+    next(err);
   }
 };
 

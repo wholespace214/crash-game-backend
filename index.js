@@ -17,6 +17,8 @@ const { handleError } = require('./util/error-handler');
 const { initDb } = require('@wallfair.io/trading-engine');
 // const { initDatabase } = require('@wallfair.io/wallfair-casino');
 
+const { requestLogHandler } = require('./services/request-log-service');
+
 let mongoURL = process.env.DB_CONNECTION;
 
 /**
@@ -71,7 +73,8 @@ async function main() {
   await initDb();
 
   const amqp = require('./services/amqp-service');
-  amqp.init();
+  await amqp.init();
+  await amqp.subscribeDepositsChannel();
 
   // Import Admin service
   const adminService = require('./services/admin-service');
@@ -112,6 +115,9 @@ async function main() {
   server.use(express.json({ limit: '5mb' }));
   server.use(express.urlencoded({ limit: '5mb', extended: true }));
 
+  // request log handler
+  server.use(requestLogHandler);
+
   // Home Route
   server.get('/', (req, res) => {
     res.status(200).send({
@@ -133,9 +139,7 @@ async function main() {
   const userMessagesRoutes = require('./routes/users/user-messages-routes');
   const fractalWebhooks = require('./routes/webhooks/fractal-webhooks');
   const quoteRoutes = require('./routes/users/quote-routes');
-
-  const auth0ShowcaseRoutes = require('./routes/auth0-showcase-routes');
-  server.use(auth0ShowcaseRoutes);
+  const adminRoutes = require('./routes/users/admin-routes');
 
   // Using Routes
   server.use('/api/event', eventRoutes);
@@ -160,6 +164,7 @@ async function main() {
   server.use('/webhooks/fractal/', fractalWebhooks);
 
   server.use('/api/quote', passport.authenticate('jwt', { session: false }), quoteRoutes);
+  server.use('/api/admin', passport.authenticate('jwt_admin', { session: false }), adminRoutes);
 
   // Error handler middleware
   // eslint-disable-next-line no-unused-vars

@@ -1,23 +1,27 @@
-const { User, UniversalEvent } = require('@wallfair.io/wallfair-commons').models;
+const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons').models;
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 // const { BetContract } = require('@wallfair.io/smart_contract_mock');
-const { Wallet,/*, ONE*/
-  fromWei } = require('@wallfair.io/trading-engine');
-const { WFAIR_REWARDS/*, AWARD_TYPES*/ } = require('../util/constants');
+const { Wallet /*, ONE*/, fromWei, Query } = require('@wallfair.io/trading-engine');
+const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
+const { BONUS_TYPES } = require('../util/constants');
+const walletUtil = require("../util/wallet");
+const mongoose = require("mongoose");
+const { NotFoundError } = require('../util/error-handler')
 
 const WFAIR = new Wallet();
 // const WFAIR_TOKEN = 'WFAIR';
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
+exports.getUserByEmail = async (email) => User.findOne({ email });
 
 exports.getUserById = async (id, session) => User.findOne({ _id: id }).session(session);
 
@@ -124,7 +128,7 @@ exports.payoutUser = async (/*userId, bet*/) => {
 
 exports.getBalanceOf = async (userId) => {
   return fromWei(await WFAIR.getBalance(userId)).toFixed(4);
-}
+};
 
 const INITIAL_LIQUIDITY = 5000n;
 
@@ -144,47 +148,58 @@ exports.updateUser = async (userId, updatedUser) => {
     const oldName = _.clone(user.name);
     user.name = updatedUser.name;
 
-    amqp.send('universal_events', 'event.user_changed_name', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_NAME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        name: updatedUser.name,
-        oldName: oldName,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_changed_name',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_NAME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          name: updatedUser.name,
+          oldName: oldName,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
-    await updateUserData({
-      userId,
-      'data.user.name': { $exists: true }
-    }, {
-      'data.user.name': updatedUser.name
-    }).catch((err) => {
-      console.error('updateUserData failed', err)
-    })
+    await updateUserData(
+      {
+        userId,
+        'data.user.name': { $exists: true },
+      },
+      {
+        'data.user.name': updatedUser.name,
+      }
+    ).catch((err) => {
+      console.error('updateUserData failed', err);
+    });
   }
 
   if (updatedUser.username && updatedUser.username !== user.username) {
     const oldUsername = _.clone(user.username);
     user.username = updatedUser.username;
 
-    amqp.send('universal_events', 'event.user_changed_username', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_USERNAME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: updatedUser.username,
-        oldUsername,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_changed_username',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_USERNAME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: updatedUser.username,
+          oldUsername,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
     //update username across the events for this user, only when data.user exists at all, we need to have these unified across the events,
     // so for user specific things, we need to use proper user property
@@ -235,20 +250,24 @@ exports.updateUser = async (userId, updatedUser) => {
     user.profilePicture = imageLocation.split('?')[0];
     user.alpacaBuilderProps = updatedUser.alpacaBuilderProps;
 
-    amqp.send('universal_events', 'event.user_uploaded_picture', JSON.stringify({
-      event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: _.get(updatedUser, 'username'),
-        image: updatedUser.image,
-        updatedAt: Date.now(),
-      },
+    amqp.send(
+      'universal_events',
+      'event.user_uploaded_picture',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_UPLOADED_PICTURE,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: _.get(updatedUser, 'username'),
+          image: updatedUser.image,
+          updatedAt: Date.now(),
+        },
 
-      date: Date.now(),
-      broadcast: true
-    }));
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
   }
 
   if (
@@ -257,29 +276,36 @@ exports.updateUser = async (userId, updatedUser) => {
   ) {
     user.notificationSettings = updatedUser.notificationSettings;
 
-    amqp.send('universal_events', 'event.user_updated_email_preferences', JSON.stringify({
-      event: notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES,
-      producer: 'user',
-      producerId: userId,
-      data: { notificationSettings: user.notificationSettings }
-    }));
+    amqp.send(
+      'universal_events',
+      'event.user_updated_email_preferences',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_UPDATED_EMAIL_PREFERENCES,
+        producer: 'user',
+        producerId: userId,
+        data: { notificationSettings: user.notificationSettings },
+      })
+    );
   }
 
   if (updatedUser.aboutMe && user.aboutMe !== updatedUser.aboutMe) {
-    amqp.send('universal_events', 'event.user_changed_about_me', JSON.stringify({
-      event: notificationEvents.EVENT_USER_CHANGED_ABOUT_ME,
-      producer: 'user',
-      producerId: userId,
-      data: {
-        userId,
-        username: updatedUser.username,
-        notificationSettings: user.notificationSettings,
-        updatedAt: Date.now(),
-      },
-      date: Date.now(),
-      broadcast: true
-    }));
-
+    amqp.send(
+      'universal_events',
+      'event.user_changed_about_me',
+      JSON.stringify({
+        event: notificationEvents.EVENT_USER_CHANGED_ABOUT_ME,
+        producer: 'user',
+        producerId: userId,
+        data: {
+          userId,
+          username: updatedUser.username,
+          notificationSettings: user.notificationSettings,
+          updatedAt: Date.now(),
+        },
+        date: Date.now(),
+        broadcast: true,
+      })
+    );
 
     user.aboutMe = updatedUser.aboutMe;
   }
@@ -310,12 +336,16 @@ exports.updateUserPreferences = async (userId, preferences) => {
     user.preferences.currency = preferences.currency;
   }
 
-  amqp.send('universal_events', 'event.user_set_currency', JSON.stringify({
-    event: notificationEvents.EVENT_USER_SET_CURRENCY,
-    producer: 'user',
-    producerId: userId,
-    data: { currency: user.preferences.currency },
-  }));
+  amqp.send(
+    'universal_events',
+    'event.user_set_currency',
+    JSON.stringify({
+      event: notificationEvents.EVENT_USER_SET_CURRENCY,
+      producer: 'user',
+      producerId: userId,
+      data: { currency: user.preferences.currency },
+    })
+  );
 
   return await user.save();
 };
@@ -359,21 +389,25 @@ exports.createUserAwardEvent = async ({ userId, awardData, broadcast = false }) 
   //add token amount for award during event creation
   if (awardData?.award) {
     await this.mintUser(userId, awardData.award).catch((err) => {
-      console.error('award mintUser', err)
-    })
+      console.error('award mintUser', err);
+    });
   }
 
-  amqp.send('universal_events', 'event.user_award', JSON.stringify({
-    event: notificationEvents.EVENT_USER_AWARD,
-    producer: 'user',
-    producerId: userId,
-    data: {
-      userId,
-      awardData
-    },
-    broadcast
-  }));
-}
+  amqp.send(
+    'universal_events',
+    'event.user_award',
+    JSON.stringify({
+      event: notificationEvents.EVENT_USER_AWARD,
+      producer: 'user',
+      producerId: userId,
+      data: {
+        userId,
+        awardData,
+      },
+      broadcast,
+    })
+  );
+};
 
 /***
  * check total bets for user and save USER_AWARD event, after reaching each levels
@@ -415,3 +449,240 @@ exports.checkAwardExist = async (userId, type) => {
     'data.type': type,
   });
 };
+
+/***
+ * Set user's ban deadline, provide zero to nullify ban date
+ * @param {string} userId
+ * @param {number} duration
+ * @returns {Promise<User>}
+ */
+exports.updateBanDeadline = async (userId, duration = 0, description = null) => {
+  if (!userId) {
+    throw new Error(`Invalid ban data supllied: userId - ${userId}, duration - ${duration}`);
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error(`No user found with ID '${userId}'`);
+  }
+  const now = Date.now();
+  user.status = duration === 0 ? 'active' : 'banned';
+  user.reactivateOn = duration === 0 ? null : new Date(now + duration);
+  user.statusDescription = description;
+  return user.save();
+};
+
+/***
+ * create user bonus for first 1000 users
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkUserRegistrationBonus = async (userId) => {
+  const bonusValidUntil = BONUS_TYPES.LAUNCH_1k_500.endDate;
+  const now = new Date();
+  const validUntil = new Date(bonusValidUntil);
+
+  //skip check when bonus period is over
+  if (validUntil < now) {
+    return;
+  }
+
+  const totalUsers = 1000;
+
+  const alreadyRegistered1k500 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_1k_500.type);
+
+  if (alreadyRegistered1k500 <= totalUsers) {
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_1k_500.type, userId);
+    //just to make sure, bonus type entry not exist yet for the user
+    if (!alreadyHasBonus) {
+      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
+    }
+  }
+
+  // second bonus check BONUS_TYPES.LAUNCH_2k_400
+  // check only when 1 reach 1000
+  // if(alreadyRegistered1k500 >= 1000) {
+  //   const alreadyRegistered2k400 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_2k_400.type);
+  //
+  //   if(alreadyRegistered2k400 <= 1000) {
+  //     await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_2k_400, userId);
+  //   }
+  // }
+
+};
+
+exports.getUsersCountByBonus = async (bonusName) => {
+  const alreadyRegistered = await User.find({
+    'bonus.name': bonusName
+  }, { _id: 1 }, {
+    sort: {
+      date: -1
+    }
+  });
+
+  return alreadyRegistered.length;
+}
+
+exports.checkUserGotBonus = async (bonusName, userId) => {
+  const userData = await User.findOne({
+    'bonus.name': bonusName,
+    '_id': userId
+  }, { _id: 1 });
+
+  return userData ? true : false;
+}
+
+/***
+ * check if user is eligible to get FIRST_DEPOSIT_450 bonus
+ * @param dd {object} DEPOSIT DATA
+ * @returns {Promise<void>} undefined
+ */
+exports.checkFirstDepositBonus = async (dd) => {
+  const userId = dd?.internal_user_id;
+  if (userId) {
+    const bonusCfg = _.cloneDeep(BONUS_TYPES.FIRST_DEPOSIT_DOUBLE_DEC21);
+    const alreadyHasBonus = await this.checkUserGotBonus(bonusCfg.type, userId);
+    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
+
+    if (!alreadyHasBonus && hasSpecialPromoFlag) {
+      const formattedAmount = fromWei(dd.amount).decimalPlaces(0).toNumber();
+      //the same amount as bonus
+      bonusCfg.amount = Math.min(formattedAmount, bonusCfg.max);
+
+      await walletUtil.transferBonus(bonusCfg, userId);
+    }
+  }
+};
+
+/***
+ * check if user is eligible to get EMAIL_CONFIRM_50 bonus
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.checkConfirmEmailBonus = async (userId) => {
+  if (userId) {
+    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.EMAIL_CONFIRM_50.type, userId);
+    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
+
+    if (!alreadyHasBonus && hasSpecialPromoFlag) {
+      await walletUtil.transferBonus(BONUS_TYPES.EMAIL_CONFIRM_50, userId);
+    }
+  }
+};
+
+/***
+ * add special bonus flag only, without transfer
+ * @param userId
+ * @param bonusCfg
+ * @returns {Promise<void>} undefined
+ */
+exports.addBonusFlagOnly = async (userId, bonusCfg) => {
+  if (userId && bonusCfg) {
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $push: {
+        bonus: {
+          name: bonusCfg.type
+        }
+      }
+    });
+  }
+};
+
+
+/***
+ * remove special bonus flag only, without transfer
+ * @param userId
+ * @param bonusCfg
+ * @returns {Promise<void>} undefined
+ */
+exports.removeBonusFlagOnly = async (userId, bonusCfg) => {
+  if (userId && bonusCfg) {
+    await User.updateOne({
+      _id: mongoose.Types.ObjectId(userId)
+    }, {
+      $pull: {
+        bonus: {
+          name: bonusCfg.type
+        }
+      }
+    });
+  }
+};
+
+
+/***
+ * return all bonuses user have
+ * @param userId
+ * @returns {Promise<void>} undefined
+ */
+exports.getBonusesByUser = async (userId) => {
+  return await User.findOne({
+    '_id': userId
+  }, { bonus: 1, _id: 0 });
+};
+
+exports.searchUsers = async (limit, skip, search, sortField, sortOrder) => {
+  let query = {};
+  if (search) {
+    const qOr = [
+      { username: new RegExp(search, 'i') },
+      { email: new RegExp(search, 'i') },
+      { _id: search },
+    ];
+
+    if (!mongoose.Types.ObjectId.isValid(search)) {
+      qOr.pop();
+    }
+
+    query = {
+      $or: qOr,
+    }
+  }
+
+  const users = await User.find(query)
+    .select('_id username email status date amountWon admin')
+    .sort({ [sortField]: sortOrder })
+    .limit(limit)
+    .skip(skip);
+
+  const count = await User.find(query).count();
+
+  return {
+    users,
+    count
+  }
+}
+
+exports.getUserDataForAdmin = async (userId) => {
+  const queryRunner = new Query();
+  const one = 1000000000000000000
+  const u = await User.findOne({ _id: userId })
+  if (!u) throw new NotFoundError()
+  let KYCCount = 0
+  if (u.kyc.uid) {
+    KYCCount = await User.count({ "kyc.uid": u.kyc.uid })
+  }
+  const balance = await queryRunner
+    .query(
+      `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
+
+  const bets = await queryRunner
+    .query(
+      `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
+
+  const transactions = await queryRunner
+    .query(
+      `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+
+  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 100, sort: { createdAt: -1 } })
+
+  return {
+    ...u.toObject(),
+    KYCCount,
+    balance: (balance && balance.length) ? balance[0].balance : 0,
+    bets,
+    transactions,
+    apiLogs
+  }
+}

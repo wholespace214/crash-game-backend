@@ -7,6 +7,9 @@ const { check, oneOf } = require('express-validator');
 // Import User Controller
 const userController = require('../../controllers/users-controller');
 
+const multer = require('multer');
+const upload = multer({ dest: 'tmp/uploads/' })
+
 router.post(
   '/bindWalletAddress',
   [check('walletAddress').notEmpty()],
@@ -63,14 +66,28 @@ router.get('/:userId/kyc-data', userController.getUserKycData);
 
 router.get('/kyc/status', userController.getKycStatus);
 router.post('/buy-with-crypto', userController.buyWithCrypto);
+router.post('/buy-with-fiat', userController.buyWithFiat);
 router.post('/consent', userController.updateUserConsent);
 
 router.post(
   '/cryptopay/channel',
-  [
-    check('currency').isIn(['BTC', 'ETH', 'LTC'])
-  ],
+  [check('currency').isIn(['BTC', 'ETH', 'LTC'])],
   userController.cryptoPayChannel
 );
+
+router.post(
+  '/:userId/ban',
+  [check('duration').isNumeric(), check('description').isString()],
+  userController.banUser
+);
+
+router.post('/add-bonus', userController.addBonus);
+router.post('/add-bonus-manually', upload.single('file'), userController.addBonusManually);
+
+router.get('/kyc/refresh', userController.refreshKycRoute);
+
+router.post('/bonusflag/:type', userController.handleBonusFlag);
+router.delete('/bonusflag/:type', userController.handleBonusFlag);
+router.get('/bonusflag/check', userController.getBonusesByUser);
 
 module.exports = router;

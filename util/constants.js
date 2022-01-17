@@ -27,9 +27,50 @@ const DEFAULT = {
   betLiquidity: 50_0000n,
 };
 
+const BONUS_STATES = {
+  Active: 0,
+  Used: 1,
+  Expired: 2
+}
+
+const BONUS_TYPES = {
+  LAUNCH_1k_500: {
+    type: 'LAUNCH_1k_500',
+    amount: 500,
+    endDate: '12/31/2021 23:59:59'
+  },
+  LAUNCH_2k_400: {
+    type: 'LAUNCH_2k_400',
+    amount: 100
+  },
+  EMAIL_CONFIRM_50: {
+    type: 'EMAIL_CONFIRM_50',
+    amount: 50,
+    neededBonusType: 'LAUNCH_PROMO_2021'
+  },
+  FIRST_DEPOSIT_DOUBLE_DEC21: {
+    type: 'FIRST_DEPOSIT_DOUBLE_DEC21',
+    neededBonusType: 'LAUNCH_PROMO_2021',
+    max: 100_000
+  },
+  LAUNCH_PROMO_2021: {
+    type: 'LAUNCH_PROMO_2021'
+  },
+  USER_OPTIONAL_BONUS: {
+    optional: true,
+    type: 'USER_OPTIONAL_BONUS'
+  },
+  SURVEY_20220112: {
+    type: 'SURVEY_20220112',
+    amount: 500,
+  }
+}
+
 module.exports = {
   AWARD_TYPES,
   WFAIR_REWARDS,
   INFLUENCERS,
   DEFAULT,
+  BONUS_TYPES,
+  BONUS_STATES
 };
