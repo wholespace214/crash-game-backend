@@ -76,6 +76,15 @@ router.post(
 );
 
 router.post(
+  '/moonpay/url',
+  [
+    check('amount').isNumeric(),
+    check('currency').isIn(['EUR', 'USD']),
+  ],
+  userController.generateMoonpayUrl
+)
+
+router.post(
   '/:userId/ban',
   [check('duration').isNumeric(), check('description').isString()],
   userController.banUser

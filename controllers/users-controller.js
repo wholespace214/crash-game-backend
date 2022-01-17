@@ -21,6 +21,7 @@ const fs = require('fs');
 const readline = require('readline');
 const { promisify } = require('util')
 const unlinkAsync = promisify(fs.unlink)
+const moonpayService = require('../services/moonpay-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
@@ -826,27 +827,27 @@ async function handleBonusFlag(req, res, next) {
       message: null
     };
 
-    if(type && userId) {
+    if (type && userId) {
       const bonusCfg = BONUS_TYPES[type];
 
-      if(bonusCfg && bonusCfg.optional) {
-          if(method === 'POST') {
-            const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userId);
-            if(!alreadyHasBonus) {
-              await userService.addBonusFlagOnly(userId, bonusCfg);
-              output.message = 'Successfully added.'
-              output.success = true;
-            }
-          } else {
-            await userService.removeBonusFlagOnly(userId, bonusCfg);
-            output.message = 'Successfully deleted.'
+      if (bonusCfg && bonusCfg.optional) {
+        if (method === 'POST') {
+          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userId);
+          if (!alreadyHasBonus) {
+            await userService.addBonusFlagOnly(userId, bonusCfg);
+            output.message = 'Successfully added.'
             output.success = true;
           }
         } else {
-          output.message = 'Bonus already exist or not optional.'
+          await userService.removeBonusFlagOnly(userId, bonusCfg);
+          output.message = 'Successfully deleted.'
+          output.success = true;
         }
       } else {
-        output.message = 'Bonus not found.'
+        output.message = 'Bonus already exist or not optional.'
+      }
+    } else {
+      output.message = 'Bonus not found.'
     }
 
     return res.send(output);
@@ -963,6 +964,25 @@ const cryptoPayChannel = async (req, res, next) => {
   }
 };
 
+const generateMoonpayUrl = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const { amount, currency } = req.body;
+  const { id, email } = req.user;
+
+  try {
+    const url = moonpayService.generateUrl(id, email, amount, currency);
+    return res.status(200).send({ url });
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to create cryptopay channel'));
+  }
+};
+
 const banUser = async (req, res, next) => {
   if (!req.user || !req.user.admin) {
     return next(new ErrorHandler(403, 'Action forbidden'));
@@ -1044,3 +1064,4 @@ exports.refreshKycRoute = refreshKycRoute;
 exports.handleBonusFlag = handleBonusFlag;
 exports.getBonusesByUser = getBonusesByUser;
 exports.addBonusManually = addBonusManually;
+exports.generateMoonpayUrl = generateMoonpayUrl;
