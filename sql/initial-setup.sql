@@ -13,6 +13,7 @@ CREATE INDEX bet_rep_idx ON bet_reports (bet_id);
 CREATE INDEX sende_receiver_idx ON token_transactions (sender, receiver);
 CREATE TABLE IF NOT EXISTS amm_price_action (betid varchar(255), trx_timestamp timestamp, outcomeIndex integer, quote decimal, PRIMARY KEY(betid, outcomeIndex, trx_timestamp));
 CREATE TABLE IF NOT EXISTS ExternalGamesTokens(TokenID uuid UNIQUE, UserId varchar(255) NOT NULL, GameName varchar(255), GameType varchar(255), Provider varchar(255), created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS casino_rewards (ID SERIAL PRIMARY KEY, userId varchar(255) NOT NULL, refId varchar(255), tradeId int, gameId varchar(255), type varchar(255), amount NUMERIC, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, UNIQUE (tradeId, type));
 
 CREATE TABLE IF NOT EXISTS casino_external_trades (
 	ID SERIAL PRIMARY KEY,
