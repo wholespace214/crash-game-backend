@@ -14,7 +14,9 @@ const generateGamesInserts = () => {
   const filePath = path.join(__dirname, 'evoplayGames.sql');
   const gameProvider  = 'Evoplay';
 
-  fs.unlinkSync(filePath);
+  if(fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
 
   const fileStream = fs.createWriteStream(filePath, {
     flags: 'a' // 'a' means appending (old data will be preserved)
