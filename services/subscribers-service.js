@@ -1,6 +1,6 @@
 const { fromWei } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
-const {sendMail} = require("../services/mail-service");
+const { sendMail } = require("../services/mail-service");
 const userService = require("../services/user-service");
 const fs = require("fs");
 const emailDepositCreated = fs.readFileSync(__dirname + '/../emails/deposit-created.html', 'utf8');
@@ -38,15 +38,19 @@ const exampleDepositData = {
 const processDepositEvent = async (event, data) => {
   const eventName = data?.event;
 
-  if(eventName === notificationEvents.EVENT_DEPOSIT_CREATED) {
+  if ([notificationEvents.EVENT_DEPOSIT_CREATED, notificationEvents.EVENT_WEBHOOK_TRIGGERED].includes(eventName)) {
     const dd = data?.data;
 
+    if (eventName === notificationEvents.EVENT_WEBHOOK_TRIGGERED && dd.status !== 'completed') {
+      return;
+    }
+
     //check some bonuses, catch error and continue execution of this fn
-    await userService.checkFirstDepositBonus(dd).catch((err)=> {
+    await userService.checkFirstDepositBonus(dd).catch((err) => {
       console.error('checkFirstDepositBonus err', err);
     });
 
-    if(!process.env.DEPOSIT_NOTIFICATION_EMAIL) {
+    if (!process.env.DEPOSIT_NOTIFICATION_EMAIL) {
       console.log('DEPOSIT_NOTIFICATION_EMAIL is empty, skipping email notification for deposits...');
       return;
     }
