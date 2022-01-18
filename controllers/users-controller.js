@@ -791,10 +791,10 @@ async function addBonusManually(req, res, next) {
         const userFromEmail = await userService.getUserByEmail(email);
         const userIdFromEmail = userFromEmail?._id;
 
-        if(userIdFromEmail) {
+        if (userIdFromEmail) {
           const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
 
-          if(!alreadyHasBonus) {
+          if (!alreadyHasBonus) {
             await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
             output.totalBonusAdded += 1;
           }
@@ -965,17 +965,10 @@ const cryptoPayChannel = async (req, res, next) => {
 };
 
 const generateMoonpayUrl = async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return next(new ErrorHandler(400, errors));
-  }
-
-  const { amount, currency } = req.body;
   const { id, email } = req.user;
 
   try {
-    const url = moonpayService.generateUrl(id, email, amount, currency);
+    const url = moonpayService.generateUrl(id, email);
     return res.status(200).send({ url });
   } catch (e) {
     console.error(e.message);
