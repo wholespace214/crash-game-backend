@@ -74,6 +74,10 @@ router.post(
 
 router.post(
   '/moonpay/url',
+  [
+    check('amount').isNumeric(),
+    check('currency').isIn(['EUR', 'USD']),
+  ],
   userController.generateMoonpayUrl
 )
 
