@@ -7,11 +7,13 @@ const {
   ExternalTransactionOriginator,
   ExternalTransactionStatus,
   Transactions,
-  toWei
+  toWei,
+  Query,
+  fromWei
 } = require("@wallfair.io/trading-engine");
 const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
-const userService = require('../services/user-service')
+const userService = require('../services/user-service');
 
 exports.transferToUser = async (req, res, next) => {
   if (!req.user) {
@@ -135,5 +137,49 @@ exports.listUsers = async (req, res, next) => {
   } catch (e) {
     console.error(e)
     return next(new ErrorHandler(500));
+  }
+}
+
+exports.createPromoCode = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const {
+    name,
+    type,
+    value,
+    count,
+    expiresAt
+  } = req.body;
+
+  try {
+    const queryRunner = new Query();
+    const result = await queryRunner.query(
+      `INSERT INTO promo_code(name, type, value, count, expires_at) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [name, type, toWei(value).toString(), count || 0, expiresAt]
+    );
+    return res.status(201).send(result);
+  } catch (e) {
+    console.error('CRATE PROMO CODE: ', e.message);
+    return next(new ErrorHandler('Failed to create a promo code'));
+  }
+};
+
+exports.getPromoCodes = async (req, res, next) => {
+  try {
+    const result = await new Query().query(`SELECT * FROM promo_code`);
+    return res.status(200)
+      .send(result.map((r) => {
+        return {
+          ...r,
+          value: fromWei(r.value).toFixed(2),
+        }
+      }));
+  } catch (e) {
+    console.error('GET PROMO CODES: ', e.message);
+    return next(new ErrorHandler('Failed to fetch promo codes'));
   }
 }
