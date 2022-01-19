@@ -17,10 +17,26 @@ router.post(
 
 router.get('/users/:id',
   adminController.getUser
-)
+);
 
 router.get('/users',
   adminController.listUsers
-)
+);
+
+router.post(
+  '/promo-codes',
+  [
+    check('name').notEmpty(),
+    check('type').notEmpty(),
+    check('value').isNumeric(),
+    check('expiresAt').notEmpty(),
+  ],
+  adminController.createPromoCode
+);
+
+router.get(
+  '/promo-codes',
+  adminController.getPromoCodes
+);
 
 module.exports = router;

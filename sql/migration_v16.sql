@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS promo_code(
 	count int,
 	expires_at timestamp with time zone NOT NULL,
 	created_at timestamp with time zone NOT NULL DEFAULT now(),
-    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
 	CONSTRAINT "PK_61de9e33d3100daed3518b1a" PRIMARY KEY (id)
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS promo_code_user(
 	count int,
 	usage int DEFAULT 1,
 	created_at timestamp with time zone NOT NULL DEFAULT now(),
-    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
 	CONSTRAINT "PK_61de9fbc5a2ac4d93b5fb1cd" PRIMARY KEY (user_id, promo_code_id, ref_id)
 );
 
