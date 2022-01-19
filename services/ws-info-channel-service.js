@@ -1,4 +1,3 @@
-const userService = require("./user-service");
 const cmcUtil = require('../util/cmc');
 const amqp = require('../services/amqp-service');
 const {redisClient} = require('../util/redis');
@@ -9,7 +8,7 @@ const INFO_KEY_PREFIX = `${INFO_CHANNEL_NAME}/`;
 
 const init = async () => {
   try {
-    console.log('INIT INFO CHANNEL JOBS');
+    console.log('ATTACH INFO CHANNEL JOBS');
     await schedulePriceUpdate();
 
     agenda.on("fail", (err, job) => {
@@ -51,14 +50,12 @@ const schedulePriceUpdate = async () => {
 
     const quote = res?.WFAIR?.quote || {};
     const output = {
-      'EUR': quote.EUR.price,
-      'USD': quote.USD.price,
-      'BTC': quote.BTC.price,
-      'ETH': quote.ETH.price,
-      'LTC': quote.LTC.price
+      'EUR': quote?.EUR.price,
+      'USD': quote?.USD.price,
+      'BTC': quote?.BTC.price,
+      'ETH': quote?.ETH.price,
+      'LTC': quote?.LTC.price
     }
-
-    console.log('output', output);
 
     await redisClient.HSET(PRICE_UPDATED_KEY, output);
 
@@ -73,7 +70,7 @@ const schedulePriceUpdate = async () => {
     }));
   });
 
-  agenda.every("60 seconds", "schedulePriceUpdate", null, { lockLifetime: 10000, skipImmediate: false });
+  agenda.every("60 seconds", "schedulePriceUpdate", null, { lockLifetime: 2 * 1000 * 60, skipImmediate: false });
 }
 
 module.exports.init = init;
