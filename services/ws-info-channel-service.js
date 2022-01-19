@@ -54,9 +54,11 @@ const schedulePriceUpdate = async () => {
       'USD': quote?.USD.price,
       'BTC': quote?.BTC.price,
       'ETH': quote?.ETH.price,
-      'LTC': quote?.LTC.price
+      'LTC': quote?.LTC.price,
+      _updatedAt: new Date().toUTCString()
     }
 
+    // await redisClient.DEL(PRICE_UPDATED_KEY);
     await redisClient.HSET(PRICE_UPDATED_KEY, output);
 
     amqp.send('api_info_events', 'event.price_updated', JSON.stringify({
