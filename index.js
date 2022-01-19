@@ -18,8 +18,6 @@ const { initDb } = require('@wallfair.io/trading-engine');
 // const { initDatabase } = require('@wallfair.io/wallfair-casino');
 
 const { requestLogHandler } = require('./services/request-log-service');
-const amqp = require("./services/amqp-service");
-const {notificationEvents} = require("@wallfair.io/wallfair-commons/constants/eventTypes");
 
 let mongoURL = process.env.DB_CONNECTION;
 
@@ -78,16 +76,12 @@ async function main() {
   await amqp.init();
   await amqp.subscribeDepositsChannel();
 
-  amqp.send('api_info_events', 'event.price_updated', JSON.stringify({
-    to: 'API_INFO_CHANNEL',
-    event: 'API_INFO',
-    producer: 'backend',
-    data: {
-      type: 'PRICE_UPDATED',
-      data: 'data'
-    },
-
-  }));
+  //init redis connection
+  const redisUtil = require("./util/redis");
+  await redisUtil.redisClient.connect();
+  //init api-info-channel
+  const wsInfoChannelService = require('./services/ws-info-channel-service');
+  await wsInfoChannelService.init();
 
   // Import Admin service
   const adminService = require('./services/admin-service');

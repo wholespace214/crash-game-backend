@@ -1,11 +1,12 @@
 const axios = require("axios");
 
 const getConversionData = async ({ convertFrom, convertTo }) => {
+  let convertFromString = typeof convertFrom === 'string' ? convertFrom : convertFrom.join(',');
 
   const APIKEY = process.env.CMC_API_KEY || "";
 
   const apiPath =
-    `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?convert=${convertFrom}&symbol=${convertTo}&CMC_PRO_API_KEY=${APIKEY}`;
+    `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?convert=${convertFromString}&symbol=${convertTo}&CMC_PRO_API_KEY=${APIKEY}`;
 
   return await axios.get(apiPath)
     .then(response => {

@@ -63,6 +63,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "pg-format": "^1.0.4",
+    "redis": "^4.0.2",
     "slugify": "^1.6.0",
     "tslib": "^2.3.1",
     "twilio": "^3.67.2"
