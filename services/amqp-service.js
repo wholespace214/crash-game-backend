@@ -24,10 +24,10 @@ const init = async () => {
   channel = await connection.createChannel();
 };
 
-const send = async (exchange, routingKey, data) => {
+const send = async (exchange, routingKey, data, options) => {
   try {
     await channel.assertExchange(exchange, "topic", { durable: true });
-    channel.publish(exchange, routingKey, Buffer.from(data));
+    channel.publish(exchange, routingKey, Buffer.from(data), options);
     console.log("PUBLISH %s - %s", exchange, routingKey);
   } catch (e) {
     console.error("Error in publishing message", e);
