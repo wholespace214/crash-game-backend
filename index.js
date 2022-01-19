@@ -77,8 +77,11 @@ async function main() {
   await amqp.subscribeDepositsChannel();
 
   //init redis connection
-  const redisUtil = require("./util/redis");
+  const redisUtil = require('./util/redis');
   await redisUtil.redisClient.connect();
+  //init agenda
+  const {agenda} = require('./util/agenda');
+  await agenda.start();
   //init api-info-channel
   const wsInfoChannelService = require('./services/ws-info-channel-service');
   await wsInfoChannelService.init();
