@@ -21,7 +21,7 @@ const init = async () => {
 }
 
 const schedulePriceUpdate = async () => {
-  agenda.define("schedulePriceUpdate", async (job) => {
+  agenda.define("schedulePriceUpdate", async () => {
     const PRICE_UPDATED_KEY = `${INFO_KEY_PREFIX}PRICE_UPDATED`;
 
     const res = await cmcUtil.getMarketPrice({
