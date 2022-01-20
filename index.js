@@ -76,6 +76,16 @@ async function main() {
   await amqp.init();
   await amqp.subscribeDepositsChannel();
 
+  //init redis connection
+  const redisUtil = require('./util/redis');
+  await redisUtil.redisClient.connect();
+  //init agenda
+  const {agenda} = require('./util/agenda');
+  await agenda.start();
+  //init api-info-channel
+  const wsInfoChannelService = require('./services/ws-info-channel-service');
+  await wsInfoChannelService.init();
+
   // Import Admin service
   const adminService = require('./services/admin-service');
   adminService.setMongoose(mongoDBConnection);
