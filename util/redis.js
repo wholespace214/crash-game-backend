@@ -3,7 +3,7 @@ const redis = require('redis');
 
 const redisClient = redis.createClient({
   url: process.env.REDIS_CONNECTION,
-  legacyMode: true
+  legacyMode: false
 });
 
 module.exports = {
