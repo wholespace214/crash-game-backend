@@ -59,7 +59,7 @@ const schedulePriceUpdate = async () => {
     }
 
     // await redisClient.DEL(PRICE_UPDATED_KEY);
-    await redisClient.HSET(PRICE_UPDATED_KEY, output);
+    await redisClient.v4.HSET(PRICE_UPDATED_KEY, output);
 
     amqp.send('api_info_events', 'event.price_updated', JSON.stringify({
       to: 'API_INFO_CHANNEL',
