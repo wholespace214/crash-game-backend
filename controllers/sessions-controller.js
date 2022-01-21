@@ -66,6 +66,7 @@ module.exports = {
         password: passwordHash,
         preferences: {
           currency: 'WFAIR',
+          gamesCurrency: 'USD'
         },
         ref, cid, sid,
         tosConsentedAt: new Date(),
@@ -218,6 +219,7 @@ module.exports = {
           ...(!userData.emailConfirmed && { emailCode: generate(6) }),
           preferences: {
             currency: 'WFAIR',
+            gamesCurrency: 'USD'
           },
           ref, cid, sid
         });

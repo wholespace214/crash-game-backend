@@ -329,11 +329,21 @@ exports.updateUserPreferences = async (userId, preferences) => {
   let user = await User.findById(userId);
 
   if (preferences) {
-    const valid = CURRENCIES.includes(preferences.currency);
-    if (!valid) {
-      throw new Error(`User validation failed. Invalid currency ${preferences.currency}`);
+    if(preferences.currency) {
+      const valid = CURRENCIES.includes(preferences.currency);
+      if (!valid) {
+        throw new Error(`User validation failed. Invalid currency ${preferences.currency}`);
+      }
+      user.preferences.currency = preferences.currency;
     }
-    user.preferences.currency = preferences.currency;
+
+    if(preferences.gamesCurrency) {
+      const valid = CURRENCIES.includes(preferences.gamesCurrency);
+      if (!valid) {
+        throw new Error(`User validation failed. Invalid currency ${preferences.gamesCurrency}`);
+      }
+      user.preferences.gamesCurrency = preferences.gamesCurrency;
+    }
   }
 
   amqp.send(
@@ -343,7 +353,10 @@ exports.updateUserPreferences = async (userId, preferences) => {
       event: notificationEvents.EVENT_USER_SET_CURRENCY,
       producer: 'user',
       producerId: userId,
-      data: { currency: user.preferences.currency },
+      data: {
+        currency: user.preferences.currency,
+        gamesCurrency: user.preferences.gamesCurrency
+      },
     })
   );
 
