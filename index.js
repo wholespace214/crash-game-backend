@@ -77,14 +77,19 @@ async function main() {
   await amqp.subscribeDepositsChannel();
 
   //init redis connection
-  const redisUtil = require('./util/redis');
-  await redisUtil.redisClient.connect();
+  const { createClient } = require('redis');
+  const redisClient = createClient({
+    url: process.env.REDIS_CONNECTION,
+    no_ready_check: false
+  });
+  redisClient.on('connect', () => console.log('::> Redis Client Connected'));
+  redisClient.on('error', (err) => console.error('<:: Redis Client Error', err));
   //init agenda
-  const {agenda} = require('./util/agenda');
+  const { agenda } = require('./util/agenda');
   await agenda.start();
   //init api-info-channel
   const wsInfoChannelService = require('./services/ws-info-channel-service');
-  await wsInfoChannelService.init();
+  await wsInfoChannelService.init(redisClient);
 
   // Import Admin service
   const adminService = require('./services/admin-service');

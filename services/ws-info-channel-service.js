@@ -1,29 +1,29 @@
 const cmcUtil = require('../util/cmc');
 const amqp = require('../services/amqp-service');
-const {redisClient} = require('../util/redis');
-const {agenda} = require('../util/agenda');
+const { agenda } = require('../util/agenda');
 
 const INFO_CHANNEL_NAME = 'INFO_CHANNEL';
 const INFO_KEY_PREFIX = `${INFO_CHANNEL_NAME}/`;
 
-const init = async () => {
+let redisClient;
+
+const init = async (redis) => {
   try {
+    redisClient = redis;
     console.log('ATTACH INFO CHANNEL JOBS');
     await schedulePriceUpdate();
 
     agenda.on("fail", (err, job) => {
       console.log(`Job ${job.attrs.name} failed with error: ${err.message}, Stack: ${err.stack}`);
     });
-  } catch(e) {
+  } catch (e) {
     throw new Error(e);
   }
-
 }
 
 const schedulePriceUpdate = async () => {
   agenda.define("schedulePriceUpdate", async () => {
     const PRICE_UPDATED_KEY = `${INFO_KEY_PREFIX}PRICE_UPDATED`;
-
     const res = await cmcUtil.getMarketPrice({
       convertFrom: ['USD', 'EUR', 'BTC', 'LTC', 'ETH'],
       convertTo: 'WFAIR',
@@ -59,7 +59,7 @@ const schedulePriceUpdate = async () => {
     }
 
     // await redisClient.DEL(PRICE_UPDATED_KEY);
-    await redisClient.v4.HSET(PRICE_UPDATED_KEY, output);
+    await redisClient.hmset(PRICE_UPDATED_KEY, output, () => { });
 
     amqp.send('api_info_events', 'event.price_updated', JSON.stringify({
       to: 'API_INFO_CHANNEL',
@@ -74,7 +74,7 @@ const schedulePriceUpdate = async () => {
 
   let agendaInterval = "5 minutes";
 
-  if(process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     agendaInterval = "4 hours";
   }
 
