@@ -72,7 +72,13 @@ const schedulePriceUpdate = async () => {
     }));
   });
 
-  agenda.every("60 seconds", "schedulePriceUpdate", null, { lockLifetime: 2 * 1000 * 60, skipImmediate: false });
+  let agendaInterval = "5 minutes";
+
+  if(process.env.NODE_ENV !== 'production') {
+    agendaInterval = "4 hours";
+  }
+
+  agenda.every(agendaInterval, "schedulePriceUpdate", null, { lockLifetime: 2 * 1000 * 60, skipImmediate: false });
 }
 
 module.exports.init = init;
