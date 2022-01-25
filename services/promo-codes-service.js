@@ -47,7 +47,6 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
       {
         from: process.env.REWARD_WALLET,
         fromNamespace: AccountNamespace.ETH,
-        symbol: 'BFAIR',
         minAmount: opts.minAmount,
       }
     );

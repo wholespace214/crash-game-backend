@@ -8,7 +8,7 @@ const {
   ExternalTransactionOriginator,
   fromWei,
   AccountNamespace,
-  WFAIR_SYMBOL,
+  BN,
 } = require('@wallfair.io/trading-engine');
 const { CasinoTradeContract, CASINO_TRADE_STATE } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
@@ -195,7 +195,9 @@ const getUserInfo = async (req, res, next) => {
     }
 
     const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
-    const wfairBalance = balances.find(balance => balance.symbol === WFAIR_SYMBOL)?.balance || 0;
+    const wfairBalance = balances.length > 1 ?
+      balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
+      balances[0].balance;
     const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
@@ -206,13 +208,12 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      balances: balances.map(balance => {
+      balances: balances.map(b => {
         return {
-          symbol: balance.symbol,
-          balance: fromWei(balance.balance).toFixed(4),
+          symbol: b.symbol,
+          balance: fromWei(b.balance).toFixed(4),
         };
       }),
-      totalWin: userService.getTotalWin(BigInt(wfairBalance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
