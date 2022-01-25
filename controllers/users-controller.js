@@ -1030,6 +1030,23 @@ async function refreshKycRoute(req, res, next) {
   }
 }
 
+const claimPromoCode = async (req, res, next) => {
+  try {
+    await casinoContract.claimPromoCode(
+      req.user.id,
+      req.body.promoCode,
+      req.body.refId
+    );
+    console.log(
+      `User ${req.user.id} successfully claimed promo code ${req.body.promoCode}. Reference: ${req.body.refId}`
+    );
+    return res.status(204).send();
+  } catch (e) {
+    console.error('PROMO CODES ERROR: ', e.message);
+    return next(`Failed to claim promo code ${req.body.promoCode}`);
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -1065,3 +1082,4 @@ exports.handleBonusFlag = handleBonusFlag;
 exports.getBonusesByUser = getBonusesByUser;
 exports.addBonusManually = addBonusManually;
 exports.generateMoonpayUrl = generateMoonpayUrl;
+exports.claimPromoCode = claimPromoCode;

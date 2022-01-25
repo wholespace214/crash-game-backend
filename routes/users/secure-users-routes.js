@@ -99,4 +99,10 @@ router.post('/bonusflag/:type', userController.handleBonusFlag);
 router.delete('/bonusflag/:type', userController.handleBonusFlag);
 router.get('/bonusflag/check', userController.getBonusesByUser);
 
+router.post(
+  '/promo-codes/claim',
+  [check('promoCode').notEmpty()],
+  userController.claimPromoCode
+);
+
 module.exports = router;
