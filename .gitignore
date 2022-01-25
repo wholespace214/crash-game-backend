@@ -27,3 +27,5 @@ yarn-error.log*
 
 # istanbul (nyc) temp_dir
 .nyc_output
+
+tmp/

@@ -50,8 +50,7 @@ const processDepositEvent = async (event, data) => {
       dd?.internal_user_id,
       PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21,
       {
-        amount: new BN(dd.amount),
-        useMinAmount: true,
+        minAmount: new BN(dd.amount),
       }
     ).catch((err) => console.error('checkFirstDepositBonus err', err));
 

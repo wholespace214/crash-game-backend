@@ -34,8 +34,9 @@ const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
-const walletUtil = require("../util/wallet");
 const { BONUS_TYPES } = require("../util/constants");
+const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
+const promoCodeService = require('../services/promo-codes-service');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -726,36 +727,11 @@ function randomUsername(req, res) {
   return res.send({ username });
 }
 
-
-async function addBonus(req, res, next) {
-  try {
-    const { userId } = req.body;
-    const isAdmin = req.user.admin;
-
-    const output = {
-      success: false
-    }
-
-    if (isAdmin && userId) {
-      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
-      output.success = true;
-    }
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-
 async function addBonusManually(req, res, next) {
   try {
     const isAdmin = req.user.admin;
     const type = req.body?.type;
     const file = req?.file;
-
-    const bonusCfg = BONUS_TYPES?.[type];
 
     if (!type) {
       throw new Error('Type not defined in form-data.');
@@ -769,14 +745,11 @@ async function addBonusManually(req, res, next) {
       throw new Error('File not defined in form-data.');
     }
 
-    if (!bonusCfg) {
-      throw new Error('Bonus type not exist.');
-    }
-
     const output = {
       totalBonusAdded: 0,
       totalEntries: 0,
-      emailsNotFound: 0
+      emailsNotFound: [],
+      bonusClaimed: [],
     }
 
     const fileStream = fs.createReadStream(file.path);
@@ -789,17 +762,23 @@ async function addBonusManually(req, res, next) {
     for await (const email of rl) {
       if (email) {
         const userFromEmail = await userService.getUserByEmail(email);
-        const userIdFromEmail = userFromEmail?._id;
+        const userId = userFromEmail?._id;
 
-        if (userIdFromEmail) {
-          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
+        if (userId) {
+          try {
+            const bonusUsed = await promoCodeService.isClaimedBonus(userId.toString(), type);
 
-          if (!alreadyHasBonus) {
-            await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
-            output.totalBonusAdded += 1;
+            if (!bonusUsed) {
+              await promoCodeService.claimPromoCodeBonus(userId.toString(), type);
+              output.totalBonusAdded += 1;
+            } else {
+              output.bonusClaimed.push(userFromEmail.email);
+            }
+          } catch (e) {
+            console.error(`Failed to add bonus to user ${userId}. ${e.message}`);
           }
         } else {
-          output.emailsNotFound += 1;
+          output.emailsNotFound.push(email);
         }
 
         output.totalEntries += 1;
@@ -1035,7 +1014,7 @@ const claimPromoCode = async (req, res, next) => {
     await casinoContract.claimPromoCode(
       req.user.id,
       req.body.promoCode,
-      req.body.refId
+      req.body.refId || PROMO_CODE_DEFAULT_REF
     );
     console.log(
       `User ${req.user.id} successfully claimed promo code ${req.body.promoCode}. Reference: ${req.body.refId}`
@@ -1075,7 +1054,6 @@ exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
-exports.addBonus = addBonus;
 exports.checkBonus = checkBonus;
 exports.refreshKycRoute = refreshKycRoute;
 exports.handleBonusFlag = handleBonusFlag;

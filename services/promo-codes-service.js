@@ -1,4 +1,4 @@
-const { AccountNamespace, BN } = require("@wallfair.io/trading-engine");
+const { AccountNamespace } = require("@wallfair.io/trading-engine");
 const { CasinoTradeContract } = require("@wallfair.io/wallfair-casino");
 const { PROMO_CODE_DEFAULT_REF } = require("../util/constants");
 
@@ -12,19 +12,32 @@ exports.addUserPromoCode = async (userId, promoCodeName) => {
   }
 };
 
+exports.isClaimedBonus = async (userId, promoCodeName) => {
+  const result = await casinoContract.getPromoCodeUser(
+    userId,
+    promoCodeName,
+    PROMO_CODE_DEFAULT_REF,
+    ['CLAIMED', 'FINALIZED']
+  );
+  return result.length > 0;
+}
+
 exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
   if (!userId) return;
 
   try {
-    const promoCodeUser = await casinoContract.getPromoCodeUser(
-      userId,
-      promoCodeName,
-      PROMO_CODE_DEFAULT_REF,
-      ['NEW']
-    );
+    if (!opts.instantTransfer) {
+      const promoCodeUser = await casinoContract.getPromoCodeUser(
+        userId,
+        promoCodeName,
+        PROMO_CODE_DEFAULT_REF,
+        ['NEW']
+      );
 
-    if (!promoCodeUser?.length) {
-      return;
+      if (!promoCodeUser) {
+        console.warn('Promo code is not initialized');
+        return;
+      }
     }
 
     await casinoContract.claimPromoCode(
@@ -35,9 +48,7 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
         from: process.env.REWARD_WALLET,
         fromNamespace: AccountNamespace.ETH,
         symbol: 'BFAIR',
-        amount: opts.useMinAmount && opts.amount ?
-          BN.min(opts.amount, new BN(promoCodeUser[0].value)).toString() :
-          opts.amount || promoCodeUser[0].value,
+        minAmount: opts.minAmount,
       }
     );
   } catch (e) {

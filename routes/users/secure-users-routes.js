@@ -90,7 +90,6 @@ router.post(
   userController.banUser
 );
 
-router.post('/add-bonus', userController.addBonus);
 router.post('/add-bonus-manually', upload.single('file'), userController.addBonusManually);
 
 router.get('/kyc/refresh', userController.refreshKycRoute);
