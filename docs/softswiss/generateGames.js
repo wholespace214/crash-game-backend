@@ -2,15 +2,12 @@ const SoftswissGames = [
   ...require('./games/bgaming.json')
 ] ;
 const path = require('path') ;
-const fs = require('fs')
-const mongoose = require('mongoose')
+const fs = require('fs');
 
-const objectIdByName = (gamename) => {
-  const encoded = new Buffer(String(gamename)).toString('hex').substring(0,23)
-  const fill = 24 - encoded.length
-  return encoded + ' '.repeat(fill).replace(/./g, (v, i) =>
-    ((parseInt(encoded[(i*2)%encoded.length], 16) + parseInt(i*2, 16))%16).toString(16)
-  )
+const crypto = require('crypto')
+
+const gameIdFromString = (gamename) => {
+  return crypto.createHash('sha1').update(String(gamename)).digest('hex');
 }
 
 const generateGamesInserts = () => {
@@ -28,12 +25,13 @@ const generateGamesInserts = () => {
 
   for (let key in SoftswissGames) {
     const gameInfo = SoftswissGames[key];
-    const gameProvider  = `${gameInfo.provider}/${gameInfo.producer}`;
+    const gameProvider = `${gameInfo.provider}/${gameInfo.producer}`;
     const catSubType = gameInfo.category;
+    const label = gameInfo.title;
     const name = gameInfo.identifier;
-    const gameId = objectIdByName(name);
+    const gameId = gameIdFromString(name);
 
-    fileStream.write(`INSERT INTO games (id, name, label, provider, enabled, category) VALUES ($$${gameId}$$, $$${name}$$, $$${name}$$, $$${gameProvider}$$, true, $$${catSubType}$$);`)
+    fileStream.write(`INSERT INTO games (id, name, label, provider, enabled, category) VALUES ($$${gameId}$$, $$${name}$$, $$${label}$$, $$${gameProvider}$$, true, $$${catSubType}$$);`)
     fileStream.write('\n')
   }
 
@@ -41,7 +39,7 @@ const generateGamesInserts = () => {
   fileStream.write('\n');
 }
 
-// generateGamesInserts();
+generateGamesInserts();
 
 // const game1 = objectIdByName('softswiss:WildTexas');
 // const game2 = objectIdByName('softswiss:WestTown');
