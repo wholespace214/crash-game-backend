@@ -1,5 +1,4 @@
 const { AccountNamespace, fromWei } = require("@wallfair.io/trading-engine");
-const { AccountNamespace, fromWei } = require("@wallfair.io/trading-engine");
 const { CasinoTradeContract } = require("@wallfair.io/wallfair-casino");
 const { PROMO_CODE_DEFAULT_REF } = require("../util/constants");
 
