@@ -158,7 +158,8 @@ exports.createPromoCode = async (req, res, next) => {
     const queryRunner = new Query();
     const result = await queryRunner.query(
       `INSERT INTO promo_code(name, type, value, count, expires_at) 
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING *`,
       [name, type, toWei(value).toString(), count || 0, expiresAt]
     );
     return res.status(201).send(result);
@@ -182,4 +183,18 @@ exports.getPromoCodes = async (req, res, next) => {
     console.error('GET PROMO CODES: ', e.message);
     return next(new ErrorHandler('Failed to fetch promo codes'));
   }
-}
+};
+
+exports.updatePromoCode = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await new Query().query(
+      'UPDATE promo_code SET expires_at = $1 WHERE id = $2 RETURNING *',
+      [req.body.expiresAt, id]
+    );
+    return res.status(200).send(result);
+  } catch (e) {
+    console.error('UPDATE PROMO CODE: ', e.message);
+    return next(new ErrorHandler('Failed to update promo code'));
+  }
+};

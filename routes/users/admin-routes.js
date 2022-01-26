@@ -39,4 +39,9 @@ router.get(
   adminController.getPromoCodes
 );
 
+router.patch(
+  '/promo-codes/:id',
+  adminController.updatePromoCode
+);
+
 module.exports = router;
