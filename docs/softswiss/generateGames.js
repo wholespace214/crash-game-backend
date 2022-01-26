@@ -28,8 +28,8 @@ const generateGamesInserts = () => {
     const gameProvider = `${gameInfo.provider}/${gameInfo.producer}`;
     const catSubType = gameInfo.category;
     const label = gameInfo.title;
-    const name = gameInfo.identifier;
-    const gameId = gameIdFromString(name);
+    const name = gameInfo.identifier2;
+    const gameId = gameInfo.identifier;
 
     fileStream.write(`INSERT INTO games (id, name, label, provider, enabled, category) VALUES ($$${gameId}$$, $$${name}$$, $$${label}$$, $$${gameProvider}$$, true, $$${catSubType}$$);`)
     fileStream.write('\n')
