@@ -1,0 +1,1837 @@
+[
+  {
+    "title": "All Lucky Clovers",
+    "identifier": "softswiss:AllLuckyClover",
+    "identifier2": "AllLuckyClover",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": false,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 100,
+    "payout": 97,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "All Lucky Clovers 100",
+    "identifier": "softswiss:AllLuckyClover100",
+    "identifier2": "AllLuckyClover100",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 100,
+    "payout": 97,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "All Lucky Clovers 20",
+    "identifier": "softswiss:AllLuckyClover20",
+    "identifier2": "AllLuckyClover20",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 97,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "All Lucky Clovers 40",
+    "identifier": "softswiss:AllLuckyClover40",
+    "identifier2": "AllLuckyClover40",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 40,
+    "payout": 97,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "All Lucky Clovers 5",
+    "identifier": "softswiss:AllLuckyClover5",
+    "identifier2": "AllLuckyClover5",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 5,
+    "payout": 97,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Aloha King Elvis",
+    "identifier": "softswiss:AlohaKingElvis",
+    "identifier2": "AlohaKingElvis",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 94.92,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "released_at": "2021-07-22T00:00:00.000Z",
+    "bonus_buy": true,
+    "multiplier": 2000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "American Roulette",
+    "identifier": "softswiss:AmericanRoulette",
+    "identifier2": "AmericanRoulette",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "roulette",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 94.74,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Avalon: The Lost Kingdom",
+    "identifier": "softswiss:Avalon",
+    "identifier2": "Avalon",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 95,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Aztec Magic",
+    "identifier": "softswiss:AztecMagic",
+    "identifier2": "AztecMagic",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 15,
+    "payout": 96.96,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Aztec Magic Deluxe",
+    "identifier": "softswiss:AztecMagicDeluxe",
+    "identifier2": "AztecMagicDeluxe",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.96,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Baccarat",
+    "identifier": "softswiss:Baccarat",
+    "identifier2": "Baccarat",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98.76,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Multihand Blackjack Pro",
+    "identifier": "softswiss:BlackjackPro",
+    "identifier2": "BlackjackPro",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99.23,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Blackjack Surrender",
+    "identifier": "softswiss:BlackjackSurrender",
+    "identifier2": "BlackjackSurrender",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99.41,
+    "hd": true,
+    "accumulating": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Bob's Coffee Shop",
+    "identifier": "softswiss:BobsCoffeeShop",
+    "identifier2": "BobsCoffeeShop",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 96.5,
+    "volatility_rating": "very-high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Bonanza Billion",
+    "identifier": "softswiss:BonanzaBillion",
+    "identifier2": "BonanzaBillion",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 96,
+    "volatility_rating": "high",
+    "hd": true,
+    "released_at": "2021-12-02T00:00:00.000Z",
+    "bonus_buy": true,
+    "multiplier": 20000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Book Of Cats",
+    "identifier": "softswiss:BookOfCats",
+    "identifier2": "BookOfCats",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 94,
+    "volatility_rating": "very-high",
+    "hd": true,
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Book of Pyramids",
+    "identifier": "softswiss:BookOfPyramids",
+    "identifier2": "BookOfPyramids",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.13,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Brave Viking",
+    "identifier": "softswiss:BraveViking",
+    "identifier2": "BraveViking",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.09,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 6000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Candy Monsta",
+    "identifier": "softswiss:CandyMonsta",
+    "identifier2": "CandyMonsta",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 94.06,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "released_at": "2021-10-12T00:00:00.000Z",
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Caribbean Poker",
+    "identifier": "softswiss:CaribbeanPoker",
+    "identifier2": "CaribbeanPoker",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 94.78,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Casino Hold`em",
+    "identifier": "softswiss:CasinoHoldem",
+    "identifier2": "CasinoHoldem",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98.75,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Cherry Fiesta",
+    "identifier": "softswiss:CherryFiesta",
+    "identifier2": "CherryFiesta",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 96.98,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Crazy Starter",
+    "identifier": "softswiss:CrazyStarter",
+    "identifier2": "CrazyStarter",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.04,
+    "volatility_rating": "low-medium",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Deep Sea",
+    "identifier": "softswiss:DeepSea",
+    "identifier2": "DeepSea",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 15,
+    "payout": 94,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 35000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Desert Treasure",
+    "identifier": "softswiss:DesertTreasure",
+    "identifier2": "DesertTreasure",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 95.95,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 8000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Dig Dig Digger",
+    "identifier": "softswiss:DigDigDigger",
+    "identifier2": "DigDigDigger",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 95.5,
+    "volatility_rating": "very-high",
+    "hd": true,
+    "released_at": "2021-06-17T00:00:00.000Z",
+    "bonus_buy": true,
+    "multiplier": 5500,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Domnitors",
+    "identifier": "softswiss:Domnitors",
+    "identifier2": "Domnitors",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.3,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Domnitors Deluxe",
+    "identifier": "softswiss:DomnitorsDeluxe",
+    "identifier2": "DomnitorsDeluxe",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.31,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Double Exposure",
+    "identifier": "softswiss:DoubleExposure",
+    "identifier2": "DoubleExposure",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.07,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Dragon's Gold 100",
+    "identifier": "softswiss:DragonsGold100",
+    "identifier2": "DragonsGold100",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 100,
+    "payout": 96.9,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "released_at": "2021-09-09T00:00:00.000Z",
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Elvis Frog in Vegas",
+    "identifier": "softswiss:ElvisFroginVegas",
+    "identifier2": "ElvisFrog",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 94,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 2500,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "European Roulette",
+    "identifier": "softswiss:EuropeanRoulette",
+    "identifier2": "EuropeanRoulette",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "roulette",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.3,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Fantasy Park",
+    "identifier": "softswiss:FantasyPark",
+    "identifier2": "FantasyPark",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.65,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Fire Lightning",
+    "identifier": "softswiss:FireLightning",
+    "identifier2": "FireLightning",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 93.9,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Four Lucky Clover",
+    "identifier": "softswiss:FourLuckyClover",
+    "identifier2": "FourLuckyClover",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 94,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 2500,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Four Lucky Diamonds",
+    "identifier": "softswiss:FourLuckyDiamonds",
+    "identifier2": "FourLuckyDiamonds",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 94,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 2500,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "French Roulette",
+    "identifier": "softswiss:FrenchRoulette",
+    "identifier2": "FrenchRoulette",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "roulette",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.3,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Fruit Million",
+    "identifier": "softswiss:FruitMillion",
+    "identifier2": "FruitMillion",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 100,
+    "payout": 97.1,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 3000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Hawaii Cocktails",
+    "identifier": "softswiss:HawaiiCocktails",
+    "identifier2": "HawaiiCocktails",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.3,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 50000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Heads and Tails",
+    "identifier": "softswiss:HeadsTails",
+    "identifier2": "HeadsTails",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "casual",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Hello Easter",
+    "identifier": "softswiss:HelloEaster",
+    "identifier2": "HelloEaster",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 96.5,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 9000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Hi-Lo Switch",
+    "identifier": "softswiss:HiLoSwitch",
+    "identifier2": "HiLoSwitch",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 96,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Hit The Route",
+    "identifier": "softswiss:HitTheRoute",
+    "identifier2": "HitTheRoute",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 40,
+    "payout": 97,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 15000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Jacks or Better",
+    "identifier": "softswiss:JacksOrBetter",
+    "identifier2": "JacksOrBetter",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "video_poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 95,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Jogo Do Bicho",
+    "identifier": "softswiss:JogoDoBicho",
+    "identifier2": "JogoDoBicho",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "lottery",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 94,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Johnny Cash",
+    "identifier": "softswiss:JohnnyCash",
+    "identifier2": "JohnnyCash",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 93.9,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Journey Flirt",
+    "identifier": "softswiss:JourneyFlirt",
+    "identifier2": "JourneyFlirt",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "ways": 243,
+    "payout": 96.6,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 15000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Lucky Blue",
+    "identifier": "softswiss:LuckyBlue",
+    "identifier2": "LuckyBlue",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 96.96,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Lucky Dama Muerta",
+    "identifier": "softswiss:LuckyDamaMuerta",
+    "identifier2": "LuckyDamaMuerta",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 96.1,
+    "volatility_rating": "high",
+    "hd": true,
+    "released_at": "2021-10-18T00:00:00.000Z",
+    "multiplier": 2750,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Lucky Lady's Clover",
+    "identifier": "softswiss:LuckyLadyClover",
+    "identifier2": "LuckyLadyClover",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.31,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Lucky Lady Moon",
+    "identifier": "softswiss:LuckyLadyMoon",
+    "identifier2": "LuckyLadyMoon",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "new",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 10,
+    "payout": 97,
+    "volatility_rating": "medium",
+    "hd": true,
+    "multiplier": 27000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Lucky Sweets",
+    "identifier": "softswiss:LuckySweets",
+    "identifier2": "LuckySweets",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 5,
+    "payout": 96.54,
+    "volatility_rating": "low-medium",
+    "hd": true,
+    "multiplier": 9000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Mechanical Clover",
+    "identifier": "softswiss:MechanicalClover",
+    "identifier2": "MechanicalClover",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 5,
+    "payout": 95.42,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 24360,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Mechanical Orange",
+    "identifier": "softswiss:MechanicalOrange",
+    "identifier2": "MechanicalOrange",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 1,
+    "payout": 96,
+    "volatility_rating": "low-medium",
+    "hd": true,
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Minesweeper",
+    "identifier": "softswiss:Minesweeper",
+    "identifier2": "Minesweeper",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "casual",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98.1,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Miss Cherry Fruits",
+    "identifier": "softswiss:MissCherryFruits",
+    "identifier2": "MissCherryFruits",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 96.13,
+    "volatility_rating": "medium",
+    "hd": true,
+    "released_at": "2021-09-30T00:00:00.000Z",
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Multihand Blackjack",
+    "identifier": "softswiss:MultihandBlackjack",
+    "identifier2": "MultihandBlackjack",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99.22,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Oasis Poker",
+    "identifier": "softswiss:OasisPoker",
+    "identifier2": "OasisPoker",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98.96,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Platinum Lightning",
+    "identifier": "softswiss:PlatinumLightning",
+    "identifier2": "PlatinumLightning",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.29,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 8888,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Platinum Lightning Deluxe",
+    "identifier": "softswiss:PlatinumLightningDeluxe",
+    "identifier2": "PlatinumLightningDeluxe",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.29,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 8888,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Plinko",
+    "identifier": "softswiss:Plinko",
+    "identifier2": "Plinko",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "casual",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99,
+    "hd": true,
+    "accumulating": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Pontoon",
+    "identifier": "softswiss:Pontoon",
+    "identifier2": "Pontoon",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "card",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99.51,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Princess of Sky",
+    "identifier": "softswiss:PrincessOfSky",
+    "identifier2": "PrincessOfSky",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 95.99,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Princess Royal",
+    "identifier": "softswiss:PrincessRoyal",
+    "identifier2": "PrincessRoyal",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 97.1,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 9000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Road 2 Riches",
+    "identifier": "softswiss:Road2Riches",
+    "identifier2": "Road2Riches",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 50,
+    "payout": 96.24,
+    "volatility_rating": "high",
+    "hd": true,
+    "released_at": "2021-11-11T00:00:00.000Z",
+    "bonus_buy": true,
+    "multiplier": 2000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Rocket Dice",
+    "identifier": "softswiss:RocketDice",
+    "identifier2": "RocketDice",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "craps",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 99,
+    "hd": true,
+    "accumulating": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Scratch Dice",
+    "identifier": "softswiss:ScratchDice",
+    "identifier2": "ScratchDice",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "casual",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.2,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Scroll of Adventure",
+    "identifier": "softswiss:ScrollOfAdventure",
+    "identifier2": "ScrollOfAdventure",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 5,
+    "payout": 97.13,
+    "volatility_rating": "very-high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Sic Bo",
+    "identifier": "softswiss:SicBo",
+    "identifier2": "SicBo",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "craps",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.22,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Sic Bo Macau",
+    "identifier": "softswiss:SicBoMacau",
+    "identifier2": "SicBoMacau",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "craps",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.22,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Slotomon Go",
+    "identifier": "softswiss:SlotomonGo",
+    "identifier2": "SlotomonGo",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 5,
+    "payout": 97.13,
+    "volatility_rating": "high",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Space XY",
+    "identifier": "softswiss:SpaceXY",
+    "identifier2": "SpaceXY",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "casual",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97,
+    "hd": true,
+    "released_at": "2022-01-13T00:00:00.000Z",
+    "multiplier": 10000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Spin and Spell",
+    "identifier": "softswiss:SpinAndSpell",
+    "identifier2": "SpinAndSpell",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 95.8,
+    "volatility_rating": "very-high",
+    "hd": true,
+    "multiplier": 1000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Texas Hold`em",
+    "identifier": "softswiss:TexasHoldem",
+    "identifier2": "TexasHoldem",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 98.75,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Trey Poker",
+    "identifier": "softswiss:TreyPoker",
+    "identifier2": "TreyPoker",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 97.99,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "WBC Ring of Riches",
+    "identifier": "softswiss:WbcRingOfRiches",
+    "identifier2": "WbcRingOfRiches",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 20,
+    "payout": 95.48,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "multiplier": 9200,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "West Town",
+    "identifier": "softswiss:WestTown",
+    "identifier2": "WestTown",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 9,
+    "payout": 96.95,
+    "volatility_rating": "low",
+    "hd": true,
+    "multiplier": 5000,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Wild Texas",
+    "identifier": "softswiss:WildTexas",
+    "identifier2": "WildTexas",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "video_poker",
+    "has_freespins": false,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "payout": 95,
+    "hd": true,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  },
+  {
+    "title": "Zorro Wild Heart",
+    "identifier": "softswiss:ZorroWildHeart",
+    "identifier2": "ZorroWildHeart",
+    "provider": "softswiss",
+    "producer": "bgaming",
+    "category": "slots",
+    "has_freespins": true,
+    "feature_group": "basic",
+    "devices": [
+      "desktop",
+      "mobile"
+    ],
+    "lines": 25,
+    "payout": 96.93,
+    "volatility_rating": "medium-high",
+    "hd": true,
+    "released_at": "2021-11-18T00:00:00.000Z",
+    "multiplier": 2800,
+    "restrictions": {
+      "default": {
+        "blacklist": []
+      }
+    }
+  }
+]
