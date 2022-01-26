@@ -2,7 +2,6 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-// const { BetContract } = require('@wallfair.io/smart_contract_mock');
 const { Wallet /*, ONE*/, fromWei, Query } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
@@ -11,13 +10,10 @@ const amqp = require('./amqp-service');
 const { getUserBetsAmount } = require('./statistics-service');
 const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
-const { BONUS_TYPES } = require('../util/constants');
-const walletUtil = require("../util/wallet");
 const mongoose = require("mongoose");
 const { NotFoundError } = require('../util/error-handler')
 
 const WFAIR = new Wallet();
-// const WFAIR_TOKEN = 'WFAIR';
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
@@ -482,157 +478,6 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
   user.reactivateOn = duration === 0 ? null : new Date(now + duration);
   user.statusDescription = description;
   return user.save();
-};
-
-/***
- * create user bonus for first 1000 users
- * @param userId
- * @returns {Promise<void>} undefined
- */
-exports.checkUserRegistrationBonus = async (userId) => {
-  const bonusValidUntil = BONUS_TYPES.LAUNCH_1k_500.endDate;
-  const now = new Date();
-  const validUntil = new Date(bonusValidUntil);
-
-  //skip check when bonus period is over
-  if (validUntil < now) {
-    return;
-  }
-
-  const totalUsers = 1000;
-
-  const alreadyRegistered1k500 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_1k_500.type);
-
-  if (alreadyRegistered1k500 <= totalUsers) {
-    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_1k_500.type, userId);
-    //just to make sure, bonus type entry not exist yet for the user
-    if (!alreadyHasBonus) {
-      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500, userId);
-    }
-  }
-
-  // second bonus check BONUS_TYPES.LAUNCH_2k_400
-  // check only when 1 reach 1000
-  // if(alreadyRegistered1k500 >= 1000) {
-  //   const alreadyRegistered2k400 = await this.getUsersCountByBonus(BONUS_TYPES.LAUNCH_2k_400.type);
-  //
-  //   if(alreadyRegistered2k400 <= 1000) {
-  //     await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_2k_400, userId);
-  //   }
-  // }
-
-};
-
-exports.getUsersCountByBonus = async (bonusName) => {
-  const alreadyRegistered = await User.find({
-    'bonus.name': bonusName
-  }, { _id: 1 }, {
-    sort: {
-      date: -1
-    }
-  });
-
-  return alreadyRegistered.length;
-}
-
-exports.checkUserGotBonus = async (bonusName, userId) => {
-  const userData = await User.findOne({
-    'bonus.name': bonusName,
-    '_id': userId
-  }, { _id: 1 });
-
-  return userData ? true : false;
-}
-
-/***
- * check if user is eligible to get FIRST_DEPOSIT_450 bonus
- * @param dd {object} DEPOSIT DATA
- * @returns {Promise<void>} undefined
- */
-exports.checkFirstDepositBonus = async (dd) => {
-  const userId = dd?.internal_user_id;
-  if (userId) {
-    const bonusCfg = _.cloneDeep(BONUS_TYPES.FIRST_DEPOSIT_DOUBLE_DEC21);
-    const alreadyHasBonus = await this.checkUserGotBonus(bonusCfg.type, userId);
-    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
-
-    if (!alreadyHasBonus && hasSpecialPromoFlag) {
-      const formattedAmount = fromWei(dd.amount).decimalPlaces(0).toNumber();
-      //the same amount as bonus
-      bonusCfg.amount = Math.min(formattedAmount, bonusCfg.max);
-
-      await walletUtil.transferBonus(bonusCfg, userId);
-    }
-  }
-};
-
-/***
- * check if user is eligible to get EMAIL_CONFIRM_50 bonus
- * @param userId
- * @returns {Promise<void>} undefined
- */
-exports.checkConfirmEmailBonus = async (userId) => {
-  if (userId) {
-    const alreadyHasBonus = await this.checkUserGotBonus(BONUS_TYPES.EMAIL_CONFIRM_50.type, userId);
-    const hasSpecialPromoFlag = await this.checkUserGotBonus(BONUS_TYPES.LAUNCH_PROMO_2021.type, userId);
-
-    if (!alreadyHasBonus && hasSpecialPromoFlag) {
-      await walletUtil.transferBonus(BONUS_TYPES.EMAIL_CONFIRM_50, userId);
-    }
-  }
-};
-
-/***
- * add special bonus flag only, without transfer
- * @param userId
- * @param bonusCfg
- * @returns {Promise<void>} undefined
- */
-exports.addBonusFlagOnly = async (userId, bonusCfg) => {
-  if (userId && bonusCfg) {
-    await User.updateOne({
-      _id: mongoose.Types.ObjectId(userId)
-    }, {
-      $push: {
-        bonus: {
-          name: bonusCfg.type
-        }
-      }
-    });
-  }
-};
-
-
-/***
- * remove special bonus flag only, without transfer
- * @param userId
- * @param bonusCfg
- * @returns {Promise<void>} undefined
- */
-exports.removeBonusFlagOnly = async (userId, bonusCfg) => {
-  if (userId && bonusCfg) {
-    await User.updateOne({
-      _id: mongoose.Types.ObjectId(userId)
-    }, {
-      $pull: {
-        bonus: {
-          name: bonusCfg.type
-        }
-      }
-    });
-  }
-};
-
-
-/***
- * return all bonuses user have
- * @param userId
- * @returns {Promise<void>} undefined
- */
-exports.getBonusesByUser = async (userId) => {
-  return await User.findOne({
-    '_id': userId
-  }, { bonus: 1, _id: 0 });
 };
 
 exports.searchUsers = async (limit, skip, search, sortField, sortOrder) => {

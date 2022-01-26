@@ -1,4 +1,5 @@
-const { AccountNamespace } = require("@wallfair.io/trading-engine");
+const { AccountNamespace, fromWei } = require("@wallfair.io/trading-engine");
+const { AccountNamespace, fromWei } = require("@wallfair.io/trading-engine");
 const { CasinoTradeContract } = require("@wallfair.io/wallfair-casino");
 const { PROMO_CODE_DEFAULT_REF } = require("../util/constants");
 
@@ -20,6 +21,16 @@ exports.isClaimedBonus = async (userId, promoCodeName) => {
     ['CLAIMED', 'FINALIZED']
   );
   return result.length > 0;
+}
+
+exports.getOpenPromoCodes = async (userId) => {
+  const promoCodes = await casinoContract.getOpenPromoCodes(userId);
+  return promoCodes.map(p => {
+    return {
+      ...p,
+      value: fromWei(p.value).toFixed(4),
+    }
+  })
 }
 
 exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {

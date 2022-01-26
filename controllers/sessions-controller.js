@@ -268,6 +268,7 @@ module.exports = {
         userId: user.id,
         session: await authService.generateJwt(user),
         shouldAcceptToS: hasAcceptedLatestConsent(user),
+        promoCodes: await promoCodesService.getOpenPromoCodes(user._id.toString()),
       });
     } catch (err) {
       logger.error(err);

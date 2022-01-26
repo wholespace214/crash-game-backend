@@ -34,7 +34,6 @@ const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
-const { BONUS_TYPES } = require("../util/constants");
 const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
 const promoCodeService = require('../services/promo-codes-service');
 
@@ -723,12 +722,12 @@ const getUserTransactions = async (req, res, next) => {
   }
 };
 
-function randomUsername(req, res) {
+const randomUsername = (req, res) => {
   const username = faker.internet.userName();
   return res.send({ username });
 }
 
-async function addBonusManually(req, res, next) {
+const addBonusManually = async (req, res, next) => {
   try {
     const isAdmin = req.user.admin;
     const type = req.body?.type;
@@ -796,85 +795,7 @@ async function addBonusManually(req, res, next) {
   }
 }
 
-async function handleBonusFlag(req, res, next) {
-  try {
-    const method = req.method;
-    const { type } = req.params;
-    const userId = req.user.id;
-
-    const output = {
-      success: false,
-      message: null
-    };
-
-    if (type && userId) {
-      const bonusCfg = BONUS_TYPES[type];
-
-      if (bonusCfg && bonusCfg.optional) {
-        if (method === 'POST') {
-          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userId);
-          if (!alreadyHasBonus) {
-            await userService.addBonusFlagOnly(userId, bonusCfg);
-            output.message = 'Successfully added.'
-            output.success = true;
-          }
-        } else {
-          await userService.removeBonusFlagOnly(userId, bonusCfg);
-          output.message = 'Successfully deleted.'
-          output.success = true;
-        }
-      } else {
-        output.message = 'Bonus already exist or not optional.'
-      }
-    } else {
-      output.message = 'Bonus not found.'
-    }
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-async function checkBonus(req, res, next) {
-  try {
-    const { type } = req.params;
-
-    const output = {
-      totalUsers: 0,
-      bonusType: type
-    }
-
-    const bonusCfg = BONUS_TYPES?.[type];
-
-    if (!bonusCfg) {
-      throw new Error('Bonus type not found.');
-    }
-
-    output.totalUsers = await userService.getUsersCountByBonus(bonusCfg.type);
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-async function getBonusesByUser(req, res, next) {
-  try {
-    const userId = req.user.id;
-
-    const bonuses = await userService.getBonusesByUser(userId);
-
-    return res.send(bonuses?.bonus || []);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-function buyWithCrypto(req, res, next) {
+const buyWithCrypto = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, wallet, amount, estimate } = req.body;
   const email = req.user.email;
@@ -897,7 +818,7 @@ function buyWithCrypto(req, res, next) {
   return res.status(200).send('OK');
 }
 
-function buyWithFiat(req, res, next) {
+const buyWithFiat = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, amount, estimate, userId } = req.body;
   const email = req.user.email;
@@ -989,7 +910,7 @@ const banUser = async (req, res, next) => {
   }
 };
 
-async function refreshKycRoute(req, res, next) {
+const refreshKycRoute = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -1055,10 +976,7 @@ exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
-exports.checkBonus = checkBonus;
 exports.refreshKycRoute = refreshKycRoute;
-exports.handleBonusFlag = handleBonusFlag;
-exports.getBonusesByUser = getBonusesByUser;
 exports.addBonusManually = addBonusManually;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.claimPromoCode = claimPromoCode;

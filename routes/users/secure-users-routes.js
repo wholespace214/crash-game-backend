@@ -90,14 +90,9 @@ router.post(
   userController.banUser
 );
 
-router.post('/add-bonus-manually', upload.single('file'), userController.addBonusManually);
-
 router.get('/kyc/refresh', userController.refreshKycRoute);
 
-router.post('/bonusflag/:type', userController.handleBonusFlag);
-router.delete('/bonusflag/:type', userController.handleBonusFlag);
-router.get('/bonusflag/check', userController.getBonusesByUser);
-
+router.post('/promo-codes/add', upload.single('file'), userController.addBonusManually);
 router.post(
   '/promo-codes/claim',
   [check('promoCode').notEmpty()],
