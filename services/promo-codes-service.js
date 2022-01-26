@@ -44,8 +44,8 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
         ['NEW']
       );
 
-      if (!promoCodeUser) {
-        console.warn('Promo code is not initialized');
+      if (!promoCodeUser.length) {
+        console.warn(`Promo code ${promoCodeName} is not active for user ${userId}`);
         return;
       }
     }
