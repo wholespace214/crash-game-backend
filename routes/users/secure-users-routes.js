@@ -7,9 +7,6 @@ const { check, oneOf } = require('express-validator');
 // Import User Controller
 const userController = require('../../controllers/users-controller');
 
-const multer = require('multer');
-const upload = multer({ dest: 'tmp/uploads/' })
-
 router.post(
   '/bindWalletAddress',
   [check('walletAddress').notEmpty()],
@@ -92,7 +89,6 @@ router.post(
 
 router.get('/kyc/refresh', userController.refreshKycRoute);
 
-router.post('/promo-codes/add', upload.single('file'), userController.addBonusManually);
 router.post(
   '/promo-codes/claim',
   [check('promoCode').notEmpty()],

@@ -17,10 +17,6 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
-const fs = require('fs');
-const readline = require('readline');
-const { promisify } = require('util')
-const unlinkAsync = promisify(fs.unlink)
 const moonpayService = require('../services/moonpay-service');
 
 const { ErrorHandler } = require('../util/error-handler');
@@ -35,7 +31,6 @@ const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
 const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
-const promoCodeService = require('../services/promo-codes-service');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -727,74 +722,6 @@ const randomUsername = (req, res) => {
   return res.send({ username });
 }
 
-const addBonusManually = async (req, res, next) => {
-  try {
-    const isAdmin = req.user.admin;
-    const type = req.body?.type;
-    const file = req?.file;
-
-    if (!type) {
-      throw new Error('Type not defined in form-data.');
-    }
-
-    if (!isAdmin) {
-      throw new Error('User must be logged in as admin.');
-    }
-
-    if (!file) {
-      throw new Error('File not defined in form-data.');
-    }
-
-    const output = {
-      totalBonusAdded: 0,
-      totalEntries: 0,
-      emailsNotFound: [],
-      bonusClaimed: [],
-    }
-
-    const fileStream = fs.createReadStream(file.path);
-
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity // '\r\n' as linebreak
-    });
-
-    for await (const email of rl) {
-      if (email) {
-        const userFromEmail = await userService.getUserByEmail(email);
-        const userId = userFromEmail?._id;
-
-        if (userId) {
-          try {
-            const bonusUsed = await promoCodeService.isClaimedBonus(userId.toString(), type);
-
-            if (!bonusUsed) {
-              await promoCodeService.claimPromoCodeBonus(userId.toString(), type);
-              output.totalBonusAdded += 1;
-            } else {
-              output.bonusClaimed.push(userFromEmail.email);
-            }
-          } catch (e) {
-            console.error(`Failed to add bonus to user ${userId}. ${e.message}`);
-          }
-        } else {
-          output.emailsNotFound.push(email);
-        }
-
-        output.totalEntries += 1;
-      }
-    }
-
-    //cleanup after processing file
-    await unlinkAsync(file.path);
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
 const buyWithCrypto = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, wallet, amount, estimate } = req.body;
@@ -977,6 +904,5 @@ exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
 exports.refreshKycRoute = refreshKycRoute;
-exports.addBonusManually = addBonusManually;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.claimPromoCode = claimPromoCode;

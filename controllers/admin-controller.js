@@ -14,6 +14,11 @@ const {
 const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
 const userService = require('../services/user-service');
+const promoCodeService = require('../services/promo-codes-service');
+const fs = require('fs');
+const readline = require('readline');
+const { promisify } = require('util')
+const unlinkAsync = promisify(fs.unlink)
 
 exports.transferToUser = async (req, res, next) => {
   if (!req.user) {
@@ -198,3 +203,62 @@ exports.updatePromoCode = async (req, res, next) => {
     return next(new ErrorHandler('Failed to update promo code'));
   }
 };
+
+exports.addBonusManually = async (req, res, next) => {
+  try {
+    const { promoCode, refId } = req.body;
+    const file = req?.file;
+
+    if (!file) {
+      return next(new ErrorHandler('File not defined in form-data'));
+    }
+
+    const output = {
+      totalBonusAdded: 0,
+      totalEntries: 0,
+      emailsNotFound: [],
+      bonusClaimed: [],
+    }
+
+    const fileStream = fs.createReadStream(file.path);
+
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity // '\r\n' as linebreak
+    });
+
+    for await (const email of rl) {
+      if (email) {
+        const userFromEmail = await userService.getUserByEmail(email);
+        const userId = userFromEmail?._id;
+
+        if (userId) {
+          try {
+            const bonusUsed = await promoCodeService.isClaimedBonus(userId.toString(), promoCode);
+
+            if (!bonusUsed) {
+              await promoCodeService.addUserPromoCode(userId.toString(), promoCode, refId);
+              output.totalBonusAdded += 1;
+            } else {
+              output.bonusClaimed.push(userFromEmail.email);
+            }
+          } catch (e) {
+            console.error(`Failed to add bonus to user ${userId}. ${e.message}`);
+          }
+        } else {
+          output.emailsNotFound.push(email);
+        }
+
+        output.totalEntries += 1;
+      }
+    }
+
+    //cleanup after processing file
+    await unlinkAsync(file.path);
+
+    return res.send(output);
+  } catch (err) {
+    console.error(err);
+    next(new ErrorHandler(422, err.message));
+  }
+}

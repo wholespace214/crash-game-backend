@@ -1,12 +1,12 @@
-const { AccountNamespace, fromWei } = require("@wallfair.io/trading-engine");
+const { fromWei } = require("@wallfair.io/trading-engine");
 const { CasinoTradeContract } = require("@wallfair.io/wallfair-casino");
 const { PROMO_CODE_DEFAULT_REF } = require("../util/constants");
 
 const casinoContract = new CasinoTradeContract();
 
-exports.addUserPromoCode = async (userId, promoCodeName) => {
+exports.addUserPromoCode = async (userId, promoCodeName, ref = PROMO_CODE_DEFAULT_REF) => {
   try {
-    await casinoContract.createUserPromoCode(userId, PROMO_CODE_DEFAULT_REF, promoCodeName);
+    await casinoContract.createUserPromoCode(userId, ref, promoCodeName);
   } catch (e) {
     console.error('ADD USER PROMO CODE: ', e.message);
   }
@@ -55,8 +55,6 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
       promoCodeName,
       PROMO_CODE_DEFAULT_REF,
       {
-        from: process.env.REWARD_WALLET,
-        fromNamespace: AccountNamespace.ETH,
         minAmount: opts.minAmount,
       }
     );
