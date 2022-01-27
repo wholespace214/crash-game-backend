@@ -25,7 +25,7 @@
     "@aws-sdk/s3-request-presigner": "^3.35.0",
     "@sendgrid/mail": "^7.4.7",
     "@wallfair.io/trading-engine": "^0.1.52",
-    "@wallfair.io/wallfair-casino": "0.1.54",
+    "@wallfair.io/wallfair-casino": "0.1.55",
     "@wallfair.io/wallfair-commons": "1.8.19",
     "admin-bro": "^4.0.1",
     "agenda": "^4.2.1",
