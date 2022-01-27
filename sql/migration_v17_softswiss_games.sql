@@ -1,6 +1,6 @@
 BEGIN;
 
--- adapt id field to handle SHA-1 40 chars length
+-- adapt id field to handle up to 50 chars game name as unique identifier
 ALTER TABLE games ALTER COLUMN "id" TYPE varchar(50);
 
 -- insert softswiss/bgaming games
