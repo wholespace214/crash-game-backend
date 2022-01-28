@@ -116,6 +116,20 @@ async function main() {
   const awsS3Service = require('./services/aws-s3-service');
   awsS3Service.init();
 
+  //(auto migration) convert roomId to string, when ObjectID
+  const isObjectIdStillExist = await mongoDBConnection.models.ChatMessage.find(
+    { roomId : { $type: "objectId" } }
+  );
+
+  if(isObjectIdStillExist && isObjectIdStillExist.length) {
+    await mongoDBConnection.models.ChatMessage.updateMany(
+      { roomId : { $type: "objectId" } },
+      [{ $set: { roomId: { $toString: "$$CURRENT.roomId" } } }]
+    )
+  }
+
+
+
   // Jwt verification
   const passport = require('passport');
   const auth = require('./util/auth');

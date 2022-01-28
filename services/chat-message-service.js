@@ -12,7 +12,7 @@ exports.getChatMessagesByEvent = async (eventId) => ChatMessage.find({ roomId: e
 exports.getLatestChatMessagesByRoom = async (roomId, limit = 100, skip = 0) =>
   ChatMessage.aggregate([
     {
-      $match: { roomId: mongoose.Types.ObjectId(roomId) },
+      $match: { roomId: roomId },
     },
     { $sort: { date: -1 } },
     {
