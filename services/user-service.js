@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -521,9 +521,10 @@ exports.getUserDataForAdmin = async (userId) => {
   if (u.kyc.uid) {
     KYCCount = await User.count({ "kyc.uid": u.kyc.uid })
   }
-  const balance = await queryRunner
-    .query(
-      `select cast(balance / ${one} as integer) as "balance" from account where owner_account = '${userId}'`)
+  const balances = WFAIR.getBalances(userId, AccountNamespace.USR);
+  const balance = balances.length > 1 ?
+    balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
+    balances[0].balance;
 
   const bets = await queryRunner
     .query(
@@ -538,7 +539,7 @@ exports.getUserDataForAdmin = async (userId) => {
   return {
     ...u.toObject(),
     KYCCount,
-    balance: (balance && balance.length) ? balance[0].balance : 0,
+    balance: fromWei(balance).toFixed(2),
     bets,
     transactions,
     apiLogs
