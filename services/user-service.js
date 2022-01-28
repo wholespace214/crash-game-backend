@@ -521,7 +521,7 @@ exports.getUserDataForAdmin = async (userId) => {
   if (u.kyc.uid) {
     KYCCount = await User.count({ "kyc.uid": u.kyc.uid })
   }
-  const balances = WFAIR.getBalances(userId, AccountNamespace.USR);
+  const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
   const balance = balances.length > 1 ?
     balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
     balances[0].balance;
