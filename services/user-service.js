@@ -553,7 +553,7 @@ exports.getUserDataForAdmin = async (userId) => {
       return {
         name: b.name,
         amount: fromWei(b.value).toFixed(2),
-        status: b.status,
+        state: b.status,
       }
     }),
     bets,
