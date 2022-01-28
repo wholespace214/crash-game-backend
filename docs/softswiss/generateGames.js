@@ -4,11 +4,11 @@ const SoftswissGames = [
 const path = require('path') ;
 const fs = require('fs');
 
-const crypto = require('crypto')
+// const crypto = require('crypto')
 
-const gameIdFromString = (gamename) => {
-  return crypto.createHash('sha1').update(String(gamename)).digest('hex');
-}
+// const gameIdFromString = (gamename) => {
+//   return crypto.createHash('sha1').update(String(gamename)).digest('hex');
+// }
 
 const generateGamesInserts = () => {
   const filePath = path.join(__dirname, 'softswissBgamingGames.sql');
