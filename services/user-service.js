@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query, AccountNamespace, BN } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -12,8 +12,10 @@ const awsS3Service = require('./aws-s3-service');
 const _ = require('lodash');
 const mongoose = require("mongoose");
 const { NotFoundError } = require('../util/error-handler')
+const { CasinoTradeContract } = require('@wallfair.io/wallfair-casino');
 
 const WFAIR = new Wallet();
+const casinoContract = new CasinoTradeContract();
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
@@ -528,20 +530,39 @@ exports.getUserDataForAdmin = async (userId) => {
 
   const bets = await queryRunner
     .query(
-      `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`)
+      `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`);
 
-  const transactions = await queryRunner
-    .query(
-      `select created_at, cast(amount / ${one} as integer) as "amount", internal_user_id, originator, status from external_transaction_log where internal_user_id = '${userId}' order by created_at;`)
+  const transactions = await new Transactions().getExternalTransactionLogs({
+    select: ['created_at', 'amount', 'internal_user_id', 'originator', 'status'],
+    where: {
+      internal_user_id: userId
+    },
+    order: {
+      created_at: 'DESC'
+    }
+  });
+  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 100, sort: { createdAt: -1 } });
 
-  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 100, sort: { createdAt: -1 } })
+  const bonus = await casinoContract.getPromoCodeUserByType(userId, 'BONUS');
 
   return {
     ...u.toObject(),
     KYCCount,
     balance: fromWei(balance).toFixed(2),
+    bonus: bonus.map(b => {
+      return {
+        name: b.name,
+        amount: fromWei(b.value).toFixed(2),
+        status: b.status,
+      }
+    }),
     bets,
-    transactions,
-    apiLogs
+    transactions: transactions.map(t => {
+      return {
+        ...t,
+        amount: fromWei(t.amount).toFixed(2),
+      }
+    }),
+    apiLogs,
   }
 }
