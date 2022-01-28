@@ -32,7 +32,7 @@ exports.getOpenPromoCodes = async (userId) => {
   })
 }
 
-exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
+exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}, refId = PROMO_CODE_DEFAULT_REF) => {
   if (!userId) return;
 
   try {
@@ -40,7 +40,7 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
       const promoCodeUser = await casinoContract.getPromoCodeUser(
         userId,
         promoCodeName,
-        PROMO_CODE_DEFAULT_REF,
+        refId,
         ['NEW']
       );
 
@@ -53,7 +53,7 @@ exports.claimPromoCodeBonus = async (userId, promoCodeName, opts = {}) => {
     await casinoContract.claimPromoCode(
       userId,
       promoCodeName,
-      PROMO_CODE_DEFAULT_REF,
+      refId,
       {
         minAmount: opts.minAmount,
       }

@@ -237,7 +237,12 @@ exports.addBonusManually = async (req, res, next) => {
             const bonusUsed = await promoCodeService.isClaimedBonus(userId.toString(), promoCode);
 
             if (!bonusUsed) {
-              await promoCodeService.addUserPromoCode(userId.toString(), promoCode, refId);
+              await promoCodeService.claimPromoCodeBonus(
+                userId.toString(),
+                promoCode,
+                { instantTransfer: true },
+                refId
+              );
               output.totalBonusAdded += 1;
             } else {
               output.bonusClaimed.push(userFromEmail.email);

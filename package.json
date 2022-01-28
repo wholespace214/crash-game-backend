@@ -55,6 +55,7 @@
     "lodash": "^4.17.21",
     "lodash.pick": "^4.4.0",
     "mailchimp-api-v3": "^1.15.0",
+    "moment": "^2.29.1",
     "mongodb": "^4.1.2",
     "mongoose": "^5.13.9",
     "multer": "^1.4.4",
