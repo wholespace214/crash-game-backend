@@ -8,7 +8,7 @@ const {
   ExternalTransactionOriginator,
   fromWei,
   AccountNamespace,
-  WFAIR_SYMBOL,
+  BN,
 } = require('@wallfair.io/trading-engine');
 const { CasinoTradeContract, CASINO_TRADE_STATE } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
@@ -17,10 +17,6 @@ const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
-const fs = require('fs');
-const readline = require('readline');
-const { promisify } = require('util')
-const unlinkAsync = promisify(fs.unlink)
 const moonpayService = require('../services/moonpay-service');
 
 const { ErrorHandler } = require('../util/error-handler');
@@ -34,8 +30,7 @@ const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
-const walletUtil = require("../util/wallet");
-const { BONUS_TYPES } = require("../util/constants");
+const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
 
 const bindWalletAddress = async (req, res, next) => {
   console.log('Binding wallet address', req.body);
@@ -194,7 +189,9 @@ const getUserInfo = async (req, res, next) => {
     }
 
     const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
-    const wfairBalance = balances.find(balance => balance.symbol === WFAIR_SYMBOL)?.balance || 0;
+    const wfairBalance = balances.length > 1 ?
+      balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
+      balances[0].balance;
     const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
@@ -205,13 +202,12 @@ const getUserInfo = async (req, res, next) => {
       email: user.email,
       profilePicture: user.profilePicture,
       balance: formattedBalance,
-      balances: balances.map(balance => {
+      balances: balances.map(b => {
         return {
-          symbol: balance.symbol,
-          balance: fromWei(balance.balance).toFixed(4),
+          symbol: b.symbol,
+          balance: fromWei(b.balance).toFixed(4),
         };
       }),
-      totalWin: userService.getTotalWin(BigInt(wfairBalance)).toString(),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
       rank,
@@ -721,180 +717,12 @@ const getUserTransactions = async (req, res, next) => {
   }
 };
 
-function randomUsername(req, res) {
+const randomUsername = (req, res) => {
   const username = faker.internet.userName();
   return res.send({ username });
 }
 
-
-async function addBonus(req, res, next) {
-  try {
-    const { userId } = req.body;
-    const isAdmin = req.user.admin;
-
-    const output = {
-      success: false
-    }
-
-    if (isAdmin && userId) {
-      await walletUtil.transferBonus(BONUS_TYPES.LAUNCH_1k_500.amount, userId);
-      output.success = true;
-    }
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-
-async function addBonusManually(req, res, next) {
-  try {
-    const isAdmin = req.user.admin;
-    const type = req.body?.type;
-    const file = req?.file;
-
-    const bonusCfg = BONUS_TYPES?.[type];
-
-    if (!type) {
-      throw new Error('Type not defined in form-data.');
-    }
-
-    if (!isAdmin) {
-      throw new Error('User must be logged in as admin.');
-    }
-
-    if (!file) {
-      throw new Error('File not defined in form-data.');
-    }
-
-    if (!bonusCfg) {
-      throw new Error('Bonus type not exist.');
-    }
-
-    const output = {
-      totalBonusAdded: 0,
-      totalEntries: 0,
-      emailsNotFound: 0
-    }
-
-    const fileStream = fs.createReadStream(file.path);
-
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity // '\r\n' as linebreak
-    });
-
-    for await (const email of rl) {
-      if (email) {
-        const userFromEmail = await userService.getUserByEmail(email);
-        const userIdFromEmail = userFromEmail?._id;
-
-        if (userIdFromEmail) {
-          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userIdFromEmail);
-
-          if (!alreadyHasBonus) {
-            await walletUtil.transferBonus(bonusCfg, userIdFromEmail);
-            output.totalBonusAdded += 1;
-          }
-        } else {
-          output.emailsNotFound += 1;
-        }
-
-        output.totalEntries += 1;
-      }
-    }
-
-    //cleanup after processing file
-    await unlinkAsync(file.path);
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-async function handleBonusFlag(req, res, next) {
-  try {
-    const method = req.method;
-    const { type } = req.params;
-    const userId = req.user.id;
-
-    const output = {
-      success: false,
-      message: null
-    };
-
-    if (type && userId) {
-      const bonusCfg = BONUS_TYPES[type];
-
-      if (bonusCfg && bonusCfg.optional) {
-        if (method === 'POST') {
-          const alreadyHasBonus = await userService.checkUserGotBonus(bonusCfg.type, userId);
-          if (!alreadyHasBonus) {
-            await userService.addBonusFlagOnly(userId, bonusCfg);
-            output.message = 'Successfully added.'
-            output.success = true;
-          }
-        } else {
-          await userService.removeBonusFlagOnly(userId, bonusCfg);
-          output.message = 'Successfully deleted.'
-          output.success = true;
-        }
-      } else {
-        output.message = 'Bonus already exist or not optional.'
-      }
-    } else {
-      output.message = 'Bonus not found.'
-    }
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-async function checkBonus(req, res, next) {
-  try {
-    const { type } = req.params;
-
-    const output = {
-      totalUsers: 0,
-      bonusType: type
-    }
-
-    const bonusCfg = BONUS_TYPES?.[type];
-
-    if (!bonusCfg) {
-      throw new Error('Bonus type not found.');
-    }
-
-    output.totalUsers = await userService.getUsersCountByBonus(bonusCfg.type);
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-async function getBonusesByUser(req, res, next) {
-  try {
-    const userId = req.user.id;
-
-    const bonuses = await userService.getBonusesByUser(userId);
-
-    return res.send(bonuses?.bonus || []);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
-function buyWithCrypto(req, res, next) {
+const buyWithCrypto = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, wallet, amount, estimate } = req.body;
   const email = req.user.email;
@@ -917,7 +745,7 @@ function buyWithCrypto(req, res, next) {
   return res.status(200).send('OK');
 }
 
-function buyWithFiat(req, res, next) {
+const buyWithFiat = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
   const { currency, amount, estimate, userId } = req.body;
   const email = req.user.email;
@@ -1009,7 +837,7 @@ const banUser = async (req, res, next) => {
   }
 };
 
-async function refreshKycRoute(req, res, next) {
+const refreshKycRoute = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
@@ -1029,6 +857,23 @@ async function refreshKycRoute(req, res, next) {
     next(new ErrorHandler(422, err.message));
   }
 }
+
+const claimPromoCode = async (req, res, next) => {
+  try {
+    await casinoContract.claimPromoCode(
+      req.user.id,
+      req.body.promoCode,
+      req.body.refId || PROMO_CODE_DEFAULT_REF
+    );
+    console.log(
+      `User ${req.user.id} successfully claimed promo code ${req.body.promoCode}. Reference: ${req.body.refId}`
+    );
+    return res.status(204).send();
+  } catch (e) {
+    console.error('PROMO CODES ERROR: ', e.message);
+    return next(`Failed to claim promo code ${req.body.promoCode}`);
+  }
+};
 
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
@@ -1058,10 +903,6 @@ exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
-exports.addBonus = addBonus;
-exports.checkBonus = checkBonus;
 exports.refreshKycRoute = refreshKycRoute;
-exports.handleBonusFlag = handleBonusFlag;
-exports.getBonusesByUser = getBonusesByUser;
-exports.addBonusManually = addBonusManually;
 exports.generateMoonpayUrl = generateMoonpayUrl;
+exports.claimPromoCode = claimPromoCode;

@@ -13,8 +13,8 @@ const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/
 const { Account } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
-const userService = require("../services/user-service");
-const {BONUS_TYPES} = require("../util/constants");
+const promoCodesService = require('../services/promo-codes-service');
+const { PROMO_CODES } = require("../util/constants");
 
 module.exports = {
   async createUser(req, res, next) {
@@ -75,54 +75,9 @@ module.exports = {
       const account = new Account();
       await account.createUser(wFairUserId);
 
-      //add special flag for new people
-      await userService.addBonusFlagOnly(wFairUserId.toString(), BONUS_TYPES.LAUNCH_PROMO_2021);
-
-      // await userService.checkUserRegistrationBonus(wFairUserId.toString());
+      await promoCodesService.addUserPromoCode(wFairUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
 
       let initialReward = 0;
-      // if (ref) {
-      //   if (INFLUENCERS.indexOf(ref) > -1) {
-      //     console.debug('[REWARD BY INFLUENCER] ', ref);
-      //     setTimeout(async () => {
-      //       await userService
-      //         .createUserAwardEvent({
-      //           userId: createdUser.id.toString(),
-      //           awardData: {
-      //             type: AWARD_TYPES.CREATED_ACCOUNT_BY_INFLUENCER,
-      //             award: WFAIR_REWARDS.registeredByInfluencer,
-      //             ref,
-      //           },
-      //         })
-      //         .catch((err) => {
-      //           console.error('createUserAwardEvent', err);
-      //         });
-      //     }, 3000);
-      //
-      //     initialReward += WFAIR_REWARDS.registeredByInfluencer;
-      //   } else {
-      //     console.debug('[REWARD BY USER] ', ref);
-      //
-      //     const refList = await userService.getRefByUserId(ref);
-      //     //max ref awards elements per user
-      //     if (refList.length <= 10) {
-      //       setTimeout(async () => {
-      //         await userService
-      //           .createUserAwardEvent({
-      //             userId: ref,
-      //             awardData: {
-      //               type: AWARD_TYPES.CREATED_ACCOUNT_BY_THIS_REF,
-      //               award: WFAIR_REWARDS.referral,
-      //               ref,
-      //             },
-      //           })
-      //           .catch((err) => {
-      //             console.error('createUserAwardEvent', err);
-      //           });
-      //       }, 3000);
-      //     }
-      //   }
-      // }
 
       amqp.send(
         'universal_events',
@@ -224,12 +179,7 @@ module.exports = {
           ref, cid, sid
         });
 
-        //add special flag for new people
-        await userService.addBonusFlagOnly(newUserId.toString(), BONUS_TYPES.LAUNCH_PROMO_2021);
-
-        // await userService.checkUserRegistrationBonus(newUserId.toString());
-        //treat as confirm email, when new account and logged-in through provider
-        // await userService.checkConfirmEmailBonus(newUserId.toString());
+        await promoCodesService.addUserPromoCode(newUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
 
         const initialReward = 0;
         amqp.send(

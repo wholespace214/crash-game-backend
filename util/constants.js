@@ -66,11 +66,26 @@ const BONUS_TYPES = {
   }
 }
 
+const PROMO_CODE_STATUS = {
+  new: 'NEW',
+  claimed: 'CLAIMED',
+  finalized: 'FINALIZED',
+};
+
+const PROMO_CODE_DEFAULT_REF = 'default';
+
+const PROMO_CODES = {
+  FIRST_DEPOSIT_DOUBLE_DEC21: 'FIRST_DEPOSIT_DOUBLE_DEC21',
+};
+
 module.exports = {
   AWARD_TYPES,
   WFAIR_REWARDS,
   INFLUENCERS,
   DEFAULT,
   BONUS_TYPES,
-  BONUS_STATES
+  BONUS_STATES,
+  PROMO_CODE_STATUS,
+  PROMO_CODE_DEFAULT_REF,
+  PROMO_CODES,
 };

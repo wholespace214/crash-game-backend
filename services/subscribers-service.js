@@ -1,10 +1,11 @@
-const { fromWei } = require("@wallfair.io/trading-engine");
+const { fromWei, BN } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
-const userService = require("../services/user-service");
 const fs = require("fs");
 const emailDepositCreated = fs.readFileSync(__dirname + '/../emails/deposit-created.html', 'utf8');
 const emailWithdrawRequested = fs.readFileSync(__dirname + '/../emails/withdraw-requested.html', 'utf8');
+const promoCodesService = require('../services/promo-codes-service');
+const { PROMO_CODES } = require('../util/constants');
 
 /*
 data example for notificationEvents.EVENT_DEPOSIT_CREATED
@@ -45,10 +46,13 @@ const processDepositEvent = async (event, data) => {
       return;
     }
 
-    //check some bonuses, catch error and continue execution of this fn
-    await userService.checkFirstDepositBonus(dd).catch((err) => {
-      console.error('checkFirstDepositBonus err', err);
-    });
+    promoCodesService.claimPromoCodeBonus(
+      dd?.internal_user_id,
+      PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21,
+      {
+        minAmount: new BN(dd.amount),
+      }
+    ).catch((err) => console.error('checkFirstDepositBonus err', err));
 
     if (!process.env.DEPOSIT_NOTIFICATION_EMAIL) {
       console.log('DEPOSIT_NOTIFICATION_EMAIL is empty, skipping email notification for deposits...');

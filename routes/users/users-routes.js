@@ -26,6 +26,5 @@ router.get('/count', userController.getUserCount)
 router.get('/:userId/kyc-start', userController.startKycVerification);
 
 router.get('/random-username', userController.randomUsername)
-router.get('/check-bonus/:type', userController.checkBonus)
 
 module.exports = router;

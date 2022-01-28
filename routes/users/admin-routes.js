@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const { check } = require('express-validator');
 const adminController = require('../../controllers/admin-controller');
+const multer = require('multer');
+const upload = multer({ dest: 'tmp/uploads/' })
 
 router.post(
   '/transfers',
@@ -37,6 +39,20 @@ router.post(
 router.get(
   '/promo-codes',
   adminController.getPromoCodes
+);
+
+router.patch(
+  '/promo-codes/:id',
+  adminController.updatePromoCode
+);
+
+router.post(
+  '/promo-codes/add',
+  [
+    check('promoCode').notEmpty()
+  ],
+  upload.single('file'),
+  adminController.addBonusManually
 );
 
 module.exports = router;

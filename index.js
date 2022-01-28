@@ -71,6 +71,7 @@ async function main() {
 
   // Initialize the postgres database (trading-engine)
   await initDb();
+  // await initDatabase();
 
   const amqp = require('./services/amqp-service');
   await amqp.init();
