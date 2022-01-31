@@ -9,7 +9,8 @@ const {
   Transactions,
   toWei,
   Query,
-  fromWei
+  fromWei,
+  Wallet
 } = require("@wallfair.io/trading-engine");
 const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
@@ -267,3 +268,18 @@ exports.addBonusManually = async (req, res, next) => {
     next(new ErrorHandler(422, err.message));
   }
 }
+
+exports.mintCasinoBonusWallet = async (req, res, next) => {
+  try {
+    new Wallet().mint({
+      owner: 'CASINO',
+      namespace: AccountNamespace.CAS,
+      symbol: 'BFAIR'
+    }, toWei(req.body.amount).toString());
+
+    return res.status(204).send();
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(e.message));
+  }
+};

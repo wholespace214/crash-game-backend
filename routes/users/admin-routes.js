@@ -55,4 +55,13 @@ router.post(
   adminController.addBonusManually
 );
 
+
+router.post(
+  '/casino/mint-bonus',
+  [
+    check('amount').isNumeric()
+  ],
+  adminController.mintCasinoBonusWallet
+);
+
 module.exports = router;
