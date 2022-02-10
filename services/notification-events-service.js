@@ -38,12 +38,12 @@ const categories = {
 exports.listNotificationEvents = async (limit = 10, cat, gameId) => {
   let selectedCat = _.get(categories, cat, []);
 
-  if(!cat) {
+  if (!cat) {
     selectedCat = categories.all;
   }
 
-  if(cat === 'game' && gameId) {
-    return UniversalEvent.find({'data.gameTypeId': gameId}).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
+  if (cat === 'game' && gameId) {
+    return UniversalEvent.find({ 'data.gameTypeId': gameId }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
   }
 
   return UniversalEvent.find({}).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
@@ -52,15 +52,15 @@ exports.listNotificationEvents = async (limit = 10, cat, gameId) => {
 exports.listNotificationEventsByBet = async (limit = 10, betId) => {
   let selectedCat = _.get(categories, "bets", []);
 
-  return UniversalEvent.find({
-    'data.bet._id': betId
+  return await UniversalEvent.find({
+    'data.bet.id': betId
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
 }
 
 exports.listNotificationEventsByUser = async (limit = 10, userId) => {
   let selectedCat = _.get(categories, "users", []);
 
-  return UniversalEvent.find({
+  return await UniversalEvent.find({
     'performedBy': 'user',
     'userId': userId
   }).where('type').in(selectedCat).sort('-createdAt').limit(+limit);
