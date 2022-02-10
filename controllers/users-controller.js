@@ -875,6 +875,47 @@ const claimPromoCode = async (req, res, next) => {
   }
 };
 
+const verifySms = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid verification code or phone'));
+  }
+
+  // Defining User Inputs
+  const { phone, smsToken, userId } = req.body;
+
+  const user = await userService.getUserById(userId);
+  if (!user) {
+    throw new Error('User not found, please try again', 422);
+  }
+  try {
+    await userService.verifySms(user, phone, smsToken);
+
+    res.status(200).send();
+  } catch (err) {
+    console.log(err);
+    next(new ErrorHandler(422, 'Invalid verification code'));
+  }
+};
+
+const sendSms = async (req, res, next) => {
+  // Validating User Inputs
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid phone number'));
+  }
+
+  // Defining User Inputs
+  const { phone } = req.body;
+  try {
+    await userService.sendSms(phone);
+    res.status(200).send();
+  } catch (err) {
+    next(new ErrorHandler(422, 'Unable to send SMS'));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -906,3 +947,5 @@ exports.banUser = banUser;
 exports.refreshKycRoute = refreshKycRoute;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.claimPromoCode = claimPromoCode;
+exports.verifySms = verifySms;
+exports.sendSms = sendSms;

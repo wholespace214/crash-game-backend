@@ -13,10 +13,10 @@ const _ = require('lodash');
 const mongoose = require("mongoose");
 const { NotFoundError } = require('../util/error-handler')
 const { CasinoTradeContract } = require('@wallfair.io/wallfair-casino');
-
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
+const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 exports.getUserByEmail = async (email) => User.findOne({ email });
@@ -327,7 +327,7 @@ exports.updateUserPreferences = async (userId, preferences) => {
   let user = await User.findById(userId);
 
   if (preferences) {
-    if(preferences.currency) {
+    if (preferences.currency) {
       const valid = CURRENCIES.includes(preferences.currency);
       if (!valid) {
         throw new Error(`User validation failed. Invalid currency ${preferences.currency}`);
@@ -335,7 +335,7 @@ exports.updateUserPreferences = async (userId, preferences) => {
       user.preferences.currency = preferences.currency;
     }
 
-    if(preferences.gamesCurrency) {
+    if (preferences.gamesCurrency) {
       const valid = CURRENCIES.includes(preferences.gamesCurrency);
       if (!valid) {
         throw new Error(`User validation failed. Invalid currency ${preferences.gamesCurrency}`);
@@ -513,6 +513,51 @@ exports.searchUsers = async (limit, skip, search, sortField, sortOrder) => {
     count
   }
 }
+
+exports.verifySms = async (user, phone, smsToken) => {
+  if (!user) {
+    throw new Error('Invalid user', 401);
+  }
+
+  try {
+    const verification = await twilio.verify
+      .services(process.env.TWILIO_SID)
+      .verificationChecks.create({ to: phone, code: smsToken });
+    if (verification?.status !== 'approved') {
+      throw new Error('Invalid verification code', 401);
+    }
+  } catch (err) {
+    throw new Error('Invalid verification code', 401);
+  }
+
+
+  try {
+    user.phone = phone;
+    await user.save();
+  } catch (err) {
+    throw new Error('Unable to save user\n' + err, 401);
+
+  }
+
+};
+exports.sendSms = async (phone) => {
+  //Cancel existing code if there's any.
+  try {
+    await twilio.verify.services(process.env.TWILIO_SID)
+      .verifications(phone)
+      .update({ status: 'canceled' })
+  } catch (err) {
+    //Do nothing if no previous code existed
+    console.log('No previous valid sms code, nothing to cancel.')
+  }
+  try {
+    await twilio.verify.services(process.env.TWILIO_SID)
+      .verifications
+      .create({ to: phone, channel: 'sms' })
+  } catch (err) {
+    throw new Error('Unable to send SMS\n' + err, 401);
+  }
+};
 
 exports.getUserDataForAdmin = async (userId) => {
   const queryRunner = new Query();

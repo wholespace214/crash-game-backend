@@ -27,4 +27,14 @@ router.get('/:userId/kyc-start', userController.startKycVerification);
 
 router.get('/random-username', userController.randomUsername)
 
+router.post(
+  '/verify-sms',
+  [check('userId').isString(), check('phone').isMobilePhone(), check('smsToken').isNumeric().isLength({ min: 6, max: 6 })],
+  userController.verifySms
+);
+router.post(
+  '/send-sms',
+  [check('phone').isMobilePhone()],
+  userController.sendSms
+);
 module.exports = router;

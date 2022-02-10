@@ -22,4 +22,5 @@ exports.getUserDataForProvider = async (provider, context) => {
     ...await dataGetter(context),
     accountSource: provider,
   };
-}
+
+};
