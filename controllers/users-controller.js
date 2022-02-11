@@ -191,7 +191,7 @@ const getUserInfo = async (req, res, next) => {
     const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
     const wfairBalance = balances.length > 1 ?
       balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
-      balances[0].balance;
+      balances[0]?.balance || 0;
     const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
 
