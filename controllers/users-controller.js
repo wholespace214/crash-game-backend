@@ -908,6 +908,13 @@ const sendSms = async (req, res, next) => {
 
   // Defining User Inputs
   const { phone } = req.body;
+
+  //Verify if phone number is already linked to another user
+  const user = await userService.getUserByPhone(phone);
+  if (user) {
+    return next(new ErrorHandler(422, 'Phone number already linked to another user'));
+  }
+
   try {
     await userService.sendSms(phone);
     res.status(200).send();
