@@ -95,4 +95,6 @@ router.post(
   userController.claimPromoCode
 );
 
+router.post('/tokens', userController.claimTokens);
+
 module.exports = router;

@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -611,3 +611,37 @@ exports.getUserDataForAdmin = async (userId) => {
     apiLogs,
   }
 }
+
+exports.claimTokens = async (userId) => {
+  const manager = new TransactionManager();
+
+  try {
+    const user = await this.getUserById(userId);
+    const now = new Date();
+
+    if (user.tokensClaimedAt) {
+      const diff = Math.abs(now - user.tokensClaimedAt) / 36e5;
+
+      if (diff < 24) {
+        throw new Error('You reached the daily limit')
+      }
+    }
+
+    await manager.startTransaction();
+
+    await manager.wallet.mint({
+      owner: userId,
+      namespace: AccountNamespace.USR,
+      symbol: WFAIR_SYMBOL
+    }, toWei(100).toString());
+
+    user.tokensClaimedAt = now;
+    await user.save();
+
+    await manager.commitTransaction();
+  } catch (e) {
+    await manager.rollbackTransaction();
+    console.error(e);
+    throw new Error('Failed to claim tokens');
+  }
+};

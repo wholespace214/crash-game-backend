@@ -10,7 +10,7 @@ const { generate, hasAcceptedLatestConsent } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
-const { Account } = require('@wallfair.io/trading-engine');
+const { Account, AccountNamespace, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
 const promoCodesService = require('../services/promo-codes-service');
@@ -72,8 +72,22 @@ module.exports = {
         tosConsentedAt: new Date(),
       });
 
+      const isPlayMoney = process.env.PLAYMONEY === 'true';
+
       const account = new Account();
-      await account.createUser(wFairUserId);
+      await account.createAccount({
+        owner: wFairUserId,
+        namespace: AccountNamespace.USR,
+        symbol: WFAIR_SYMBOL,
+      }, isPlayMoney ? toWei(100).toString() : '0');
+
+      if (isPlayMoney && (await userApi.getOne(ref))) {
+        await account.mint({
+          owner: ref,
+          namespace: AccountNamespace.USR,
+          symbol: WFAIR_SYMBOL,
+        }, toWei(50).toString());
+      }
 
       await promoCodesService.addUserPromoCode(wFairUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
 
