@@ -8,6 +8,7 @@ on:
       - alpa-prod
       - development
       - production
+      - playm
 
 jobs:
   build_and_push:
@@ -48,6 +49,15 @@ jobs:
             cd infra/environments/staging
             kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
             kustomize build .
+      - name: Edit deployment image (playmoney)
+        if: github.ref == 'refs/heads/playm'
+        uses: stefanprodan/kube-tools@v1
+        with:
+          kustomize: 4.2.0
+          command: |
+            cd infra/environments/playmoney
+            kustomize edit set image registry.digitalocean.com/wallfair/backend_k8s:${GITHUB_SHA::6}
+            kustomize build .
       - name: Edit deployment image (development)
         if: github.ref == 'refs/heads/development'
         uses: stefanprodan/kube-tools@v1
@@ -81,6 +91,12 @@ jobs:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
         with:
           args: apply -k infra/environments/staging
+      - uses: actions-hub/kubectl@master
+        if: github.ref == 'refs/heads/playm'
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG_TEST }}
+        with:
+          args: apply -k infra/environments/playmoney
       - uses: actions-hub/kubectl@master
         if: github.ref == 'refs/heads/development'
         env:
