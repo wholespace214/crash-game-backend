@@ -15,7 +15,6 @@ const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
 const promoCodesService = require('../services/promo-codes-service');
 const { PROMO_CODES } = require("../util/constants");
-const User = require('@wallfair.io/wallfair-commons/models/User');
 
 module.exports = {
   async createUser(req, res, next) {
@@ -82,7 +81,7 @@ module.exports = {
         symbol: WFAIR_SYMBOL,
       }, isPlayMoney ? toWei(100).toString() : '0');
 
-      if (isPlayMoney && User.findById(ref)) {
+      if (isPlayMoney && (await userApi.getOne(ref))) {
         await account.mint({
           owner: ref,
           namespace: AccountNamespace.USR,
