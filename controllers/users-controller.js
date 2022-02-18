@@ -923,6 +923,20 @@ const sendSms = async (req, res, next) => {
   }
 };
 
+const claimTokens = async (req, res, next) => {
+  if (process.env.PLAYMONEY !== 'true') {
+    return next(new ErrorHandler(403, 'Action not allowed'));
+  }
+
+  try {
+    await userService.claimTokens(req.user.id);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err.message);
+    next(new ErrorHandler(500, err.message));
+  }
+};
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -956,3 +970,4 @@ exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.claimPromoCode = claimPromoCode;
 exports.verifySms = verifySms;
 exports.sendSms = sendSms;
+exports.claimTokens = claimTokens;
