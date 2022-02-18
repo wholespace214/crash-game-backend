@@ -3,3 +3,4 @@ BACKEND_URL=https://play-api.wallfair.io
 CLIENT_URL=https://play.wallfair.io
 TWITCH_OAUTH_REDIRECT_URI=https://play.wallfair.io/oauth/twitch
 DISCORD_OAUTH_REDIRECT_URI=https://play.wallfair.io/oauth/discord
+PLAYMONEY=true
