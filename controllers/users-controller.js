@@ -194,7 +194,10 @@ const getUserInfo = async (req, res, next) => {
       balances[0]?.balance || 0;
     const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
-
+    let phoneConfirmed = false;
+    if (user.phone) {
+      phoneConfirmed = true;
+    }
     res.status(200).json({
       userId: user._id,
       name: user.name,
@@ -210,6 +213,7 @@ const getUserInfo = async (req, res, next) => {
       }),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
+      phoneConfirmed: phoneConfirmed,
       rank,
       toNextRank,
       amountWon: user.amountWon,
