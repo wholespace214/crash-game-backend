@@ -194,7 +194,10 @@ const getUserInfo = async (req, res, next) => {
       balances[0]?.balance || 0;
     const formattedBalance = fromWei(wfairBalance).toFixed(4);
     const { rank, toNextRank } = await userService.getRankByUserId(userId);
-
+    let phoneConfirmed = false;
+    if (user.phone) {
+      phoneConfirmed = true;
+    }
     res.status(200).json({
       userId: user._id,
       name: user.name,
@@ -210,6 +213,7 @@ const getUserInfo = async (req, res, next) => {
       }),
       admin: user.admin,
       emailConfirmed: user.emailConfirmed,
+      phoneConfirmed: phoneConfirmed,
       rank,
       toNextRank,
       amountWon: user.amountWon,
@@ -902,24 +906,25 @@ const verifySms = async (req, res, next) => {
 const sendSms = async (req, res, next) => {
   // Validating User Inputs
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return next(new ErrorHandler(422, 'Invalid phone number'));
-  }
 
   // Defining User Inputs
   const { phone } = req.body;
 
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(422, 'Invalid phone number: ' + phone));
+  }
+
   //Verify if phone number is already linked to another user
   const user = await userService.getUserByPhone(phone);
   if (user) {
-    return next(new ErrorHandler(422, 'Phone number already linked to another user'));
+    return next(new ErrorHandler(422, 'Phone number already linked to another user: ' + phone));
   }
 
   try {
     await userService.sendSms(phone);
     res.status(200).send();
   } catch (err) {
-    next(new ErrorHandler(422, 'Unable to send SMS'));
+    next(new ErrorHandler(422, 'Unable to send SMS to: ' + phone));
   }
 };
 

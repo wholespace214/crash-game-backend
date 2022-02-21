@@ -16,6 +16,8 @@ const { isUserBanned } = require('../util/user');
 const promoCodesService = require('../services/promo-codes-service');
 const { PROMO_CODES } = require("../util/constants");
 
+const isPlayMoney = process.env.PLAYMONEY === 'true';
+
 module.exports = {
   async createUser(req, res, next) {
     const errors = validationResult(req);
@@ -65,14 +67,12 @@ module.exports = {
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
-          currency: 'WFAIR',
-          gamesCurrency: 'USD'
+          currency: WFAIR_SYMBOL,
+          gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
         },
         ref, cid, sid,
         tosConsentedAt: new Date(),
       });
-
-      const isPlayMoney = process.env.PLAYMONEY === 'true';
 
       const account = new Account();
       await account.createAccount({
@@ -187,11 +187,26 @@ module.exports = {
           birthdate: null,
           ...(!userData.emailConfirmed && { emailCode: generate(6) }),
           preferences: {
-            currency: 'WFAIR',
-            gamesCurrency: 'USD'
+            currency: WFAIR_SYMBOL,
+            gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
           },
           ref, cid, sid
         });
+
+        const account = new Account();
+        await account.createAccount({
+          owner: newUserId,
+          namespace: AccountNamespace.USR,
+          symbol: WFAIR_SYMBOL,
+        }, isPlayMoney ? toWei(100).toString() : '0');
+
+        if (isPlayMoney && (await userApi.getOne(ref))) {
+          await account.mint({
+            owner: ref,
+            namespace: AccountNamespace.USR,
+            symbol: WFAIR_SYMBOL,
+          }, toWei(50).toString());
+        }
 
         await promoCodesService.addUserPromoCode(newUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
 
