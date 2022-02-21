@@ -67,8 +67,8 @@ module.exports = {
         username: username || `wallfair-${counter}`,
         password: passwordHash,
         preferences: {
-          currency: 'WFAIR',
-          gamesCurrency: 'USD'
+          currency: WFAIR_SYMBOL,
+          gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
         },
         ref, cid, sid,
         tosConsentedAt: new Date(),
@@ -187,8 +187,8 @@ module.exports = {
           birthdate: null,
           ...(!userData.emailConfirmed && { emailCode: generate(6) }),
           preferences: {
-            currency: 'WFAIR',
-            gamesCurrency: 'USD'
+            currency: WFAIR_SYMBOL,
+            gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
           },
           ref, cid, sid
         });
