@@ -10,7 +10,7 @@ const { generate, hasAcceptedLatestConsent } = require('../helper');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
-const { Account, AccountNamespace, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
+const { Account, Wallet, AccountNamespace, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
 const promoCodesService = require('../services/promo-codes-service');
@@ -82,7 +82,7 @@ module.exports = {
       }, isPlayMoney ? toWei(100).toString() : '0');
 
       if (isPlayMoney && (await userApi.getOne(ref))) {
-        await account.mint({
+        await new Wallet().mint({
           owner: ref,
           namespace: AccountNamespace.USR,
           symbol: WFAIR_SYMBOL,
@@ -201,7 +201,7 @@ module.exports = {
         }, isPlayMoney ? toWei(100).toString() : '0');
 
         if (isPlayMoney && (await userApi.getOne(ref))) {
-          await account.mint({
+          await new Wallet().mint({
             owner: ref,
             namespace: AccountNamespace.USR,
             symbol: WFAIR_SYMBOL,
