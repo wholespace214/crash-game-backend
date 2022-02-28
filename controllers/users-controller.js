@@ -18,6 +18,7 @@ const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
 const moonpayService = require('../services/moonpay-service');
+const awsS3Service = require('../services/aws-s3-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
@@ -943,6 +944,18 @@ const claimTokens = async (req, res, next) => {
   }
 };
 
+const uploadImage = async (req, res, next) => {
+  try {
+    const imgPath = await awsS3Service.upload(req.user.id, { src: req.body.src, filename: req.body.filename });
+    res.status(200).send({
+      url: imgPath.split('?')[0]
+    });
+  } catch (err) {
+    console.error(err.message);
+    next(new ErrorHandler(500, err.message));
+  }
+}
+
 exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -977,3 +990,4 @@ exports.claimPromoCode = claimPromoCode;
 exports.verifySms = verifySms;
 exports.sendSms = sendSms;
 exports.claimTokens = claimTokens;
+exports.uploadImage = uploadImage;
