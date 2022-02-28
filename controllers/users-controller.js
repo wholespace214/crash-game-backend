@@ -218,6 +218,7 @@ const getUserInfo = async (req, res, next) => {
       toNextRank,
       amountWon: user.amountWon,
       tokensRequestedAt: user.tokensRequestedAt,
+      tokensClaimedAt: user.tokensClaimedAt,
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
