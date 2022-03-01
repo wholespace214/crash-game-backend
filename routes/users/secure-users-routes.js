@@ -97,4 +97,6 @@ router.post(
 
 router.post('/tokens', userController.claimTokens);
 
+router.post('/upload-image', userController.uploadImage);
+
 module.exports = router;
