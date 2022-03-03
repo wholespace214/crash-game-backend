@@ -548,13 +548,14 @@ exports.sendSms = async (phone) => {
       .update({ status: 'canceled' })
   } catch (err) {
     //Do nothing if no previous code existed
-    console.log('No previous valid sms code, nothing to cancel.')
+    console.log('No previous valid sms code, nothing to cancel.', err.message);
   }
   try {
     await twilio.verify.services(process.env.TWILIO_SID)
       .verifications
       .create({ to: phone, channel: 'sms' })
   } catch (err) {
+    console.error('Failed to send sms', err.message);
     throw new Error('Unable to send SMS\n' + err, 401);
   }
 };
