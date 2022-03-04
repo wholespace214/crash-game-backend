@@ -288,7 +288,7 @@ exports.mintBetLiquidity = async (req, res, next) => {
   try {
     new Wallet().mint({
       owner: process.env.BET_LIQUIDITY_WALLET,
-      namespace: AccountNamespace.BET,
+      namespace: AccountNamespace.ETH,
       symbol: WFAIR_SYMBOL
     }, toWei(req.body.amount).toString());
 
