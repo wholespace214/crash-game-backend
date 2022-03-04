@@ -18,6 +18,7 @@ const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
 const moonpayService = require('../services/moonpay-service');
 const awsS3Service = require('../services/aws-s3-service');
+const leaderboardService = require('../services/leaderboard-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
@@ -116,26 +117,14 @@ const rewardRefUserIfNotConfirmed = async (user) => {
   return user.confirmed;
 };
 
-// Receive all users in leaderboard
+// Receive users in specific leaderboard
 const getLeaderboard = async (req, res) => {
   const limit = +req.params.limit;
   const skip = +req.params.skip;
+  const type = req.params.type;
 
-  const users = await User.find({ username: { $exists: true } })
-    .sort({ amountWon: -1, date: -1 })
-    .select({ username: 1, amountWon: 1 })
-    .limit(limit)
-    .skip(skip)
-    .exec();
-
-  const total = await User.countDocuments().exec();
-
-  res.json({
-    total,
-    users,
-    limit,
-    skip,
-  });
+  const results = await leaderboardService.getList(type, limit, skip);
+  res.status(200).json(results);
 };
 
 // Receive specific user information

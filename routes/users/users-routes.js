@@ -3,7 +3,7 @@ const router = require('express').Router();
 const { check } = require('express-validator');
 const userController = require('../../controllers/users-controller');
 
-router.get('/getLeaderboard/:skip/:limit', userController.getLeaderboard);
+router.get('/getLeaderboard/:type/:skip/:limit', userController.getLeaderboard);
 
 router.get(
   '/confirm-email',
