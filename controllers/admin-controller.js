@@ -283,3 +283,18 @@ exports.mintCasinoBonusWallet = async (req, res, next) => {
     return next(new ErrorHandler(e.message));
   }
 };
+
+exports.mintBetLiquidity = async (req, res, next) => {
+  try {
+    new Wallet().mint({
+      owner: process.env.BET_LIQUIDITY_WALLET,
+      namespace: AccountNamespace.BET,
+      symbol: WFAIR_SYMBOL
+    }, toWei(req.body.amount).toString());
+
+    return res.status(204).send();
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(e.message));
+  }
+}

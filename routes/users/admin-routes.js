@@ -64,4 +64,12 @@ router.post(
   adminController.mintCasinoBonusWallet
 );
 
+router.post(
+  '/bet/mint',
+  [
+    check('amount').isNumeric()
+  ],
+  adminController.mintBetLiquidity
+);
+
 module.exports = router;
