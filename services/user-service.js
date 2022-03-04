@@ -114,16 +114,6 @@ exports.createUser = async (user) => {
     });
 };
 
-exports.payoutUser = async (/*userId, bet*/) => {
-  // const betId = bet.id;
-  const LOG_TAG = '[PAYOUT-BET]';
-  // console.debug(LOG_TAG, 'Payed out Bet', betId, userId);
-
-  console.debug(LOG_TAG, 'Requesting Bet Payout');
-  // const betContract = new BetContract(betId, bet.outcomes.length);
-  // await betContract.getPayout(userId);
-};
-
 exports.getBalanceOf = async (userId) => {
   return fromWei(await WFAIR.getBalance(userId)).toFixed(4);
 };

@@ -92,20 +92,6 @@ async function main() {
   const wsInfoChannelService = require('./services/ws-info-channel-service');
   await wsInfoChannelService.init(redisClient);
 
-  // Import Admin service
-  const adminService = require('./services/admin-service');
-  adminService.setMongoose(mongoDBConnection);
-  adminService.initialize();
-
-  const { initBetsJobs } = require('./jobs/bets-jobs');
-  initBetsJobs();
-
-  const { initTwitchSubscribeJob } = require('./jobs/twitch-subscribe-job');
-  initTwitchSubscribeJob();
-
-  const { initYoutubeCheckJob } = require('./jobs/youtube-live-check-job');
-  initYoutubeCheckJob();
-
   // Import cors
   const cors = require('cors');
 
@@ -129,8 +115,6 @@ async function main() {
     )
   }
 
-
-
   // Jwt verification
   const passport = require('passport');
   const auth = require('./util/auth');
@@ -138,10 +122,6 @@ async function main() {
   server.use(passport.initialize());
   server.use(passport.session());
   server.use(auth.evaluateIsAdmin);
-  adminService.buildRouter();
-
-  server.use(adminService.getRootPath(), adminService.getRouter());
-  server.use(adminService.getLoginPath(), adminService.getRouter());
   server.use(express.json({ limit: '5mb' }));
   server.use(express.urlencoded({ limit: '5mb', extended: true }));
 
@@ -157,11 +137,8 @@ async function main() {
 
   // Import Routes
   const userRoute = require('./routes/users/users-routes');
-  const secureEventRoutes = require('./routes/users/secure-events-routes');
   const secureRewardsRoutes = require('./routes/users/secure-rewards-routes');
-  const eventRoutes = require('./routes/users/events-routes');
   const secureUserRoute = require('./routes/users/secure-users-routes');
-  const secureBetTemplateRoute = require('./routes/users/secure-bet-template-routes');
   const twitchWebhook = require('./routes/webhooks/twitch-webhook');
   const chatRoutes = require('./routes/users/chat-routes');
   const notificationEventsRoutes = require('./routes/users/notification-events-routes');
@@ -172,16 +149,9 @@ async function main() {
   const adminRoutes = require('./routes/users/admin-routes');
 
   // Using Routes
-  server.use('/api/event', eventRoutes);
-  server.use('/api/event', passport.authenticate('jwt', { session: false }), secureEventRoutes);
   server.use('/api/user', userRoute);
   server.use('/api/user', passport.authenticate('jwt', { session: false }), secureUserRoute);
   server.use('/api/rewards', passport.authenticate('jwt', { session: false }), secureRewardsRoutes);
-  server.use(
-    '/api/bet-template',
-    passport.authenticate('jwt', { session: false }),
-    secureBetTemplateRoute
-  );
   server.use('/webhooks/twitch/', twitchWebhook);
   server.use('/api/chat', chatRoutes);
   server.use('/api/notification-events', notificationEventsRoutes);
@@ -192,7 +162,6 @@ async function main() {
     userMessagesRoutes
   );
   server.use('/webhooks/fractal/', fractalWebhooks);
-
   server.use('/api/quote', passport.authenticate('jwt', { session: false }), quoteRoutes);
   server.use('/api/admin', passport.authenticate('jwt_admin', { session: false }), adminRoutes);
 

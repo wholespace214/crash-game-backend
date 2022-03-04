@@ -8,12 +8,6 @@ const { check, oneOf } = require('express-validator');
 const userController = require('../../controllers/users-controller');
 
 router.post(
-  '/bindWalletAddress',
-  [check('walletAddress').notEmpty()],
-  userController.bindWalletAddress
-);
-
-router.post(
   '/saveAdditionalInformation',
   oneOf([
     [
@@ -35,11 +29,7 @@ router.post(
 
 router.get('/refList', userController.getRefList);
 
-router.get('/open-bets', userController.getOpenBetsList);
-
 router.get('/history', userController.getHistory);
-
-router.get('/trade-history', userController.getTradeHistory);
 
 router.patch(
   '/:userId',

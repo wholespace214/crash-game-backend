@@ -13,7 +13,6 @@ const {
 const { CasinoTradeContract, CASINO_TRADE_STATE } = require('@wallfair.io/wallfair-casino');
 const { User } = require('@wallfair.io/wallfair-commons').models;
 const userService = require('../services/user-service');
-const tradeService = require('../services/trade-service');
 const statsService = require('../services/statistics-service');
 const mailService = require('../services/mail-service');
 const cryptopayService = require('../services/cryptopay-service');
@@ -32,46 +31,6 @@ const casinoContract = new CasinoTradeContract();
 const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
 const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
-
-const bindWalletAddress = async (req, res, next) => {
-  console.log('Binding wallet address', req.body);
-
-  // retrieve wallet address
-  const { walletAddress } = req.body;
-
-  // ensure address is present
-  if (!walletAddress) {
-    return next(new ErrorHandler(422, 'WalletAddress expected, but was missing'));
-  }
-
-  try {
-    // check if there is already a user with this wallet
-    const walletUser = await User.findOne({ walletAddress });
-
-    // if this address was already bound to another user, return 409 error
-    if (walletUser && walletUser.id !== req.user.id) {
-      return next(new ErrorHandler(409, 'This wallet is already bound to another user'));
-    }
-
-    let user;
-    if (!walletUser) {
-      // retrieve user who made the request
-      user = await userService.getUserById(req.user.id);
-      user.walletAddress = walletAddress;
-      user = await userService.saveUser(user);
-    } else {
-      // do nothing if wallet exists and is already bound to the same user who made the request
-    }
-
-    res.status(201).json({
-      userId: user?.id,
-      walletAddress,
-    });
-  } catch (err) {
-    console.log(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
 
 //@todo this route is not used in frontend, I will move ref reward part in confirm-email route
 const saveAdditionalInformation = async (req, res, next) => {
@@ -297,58 +256,6 @@ const getRefList = async (req, res, next) => {
   }
 };
 
-const getOpenBetsList = async (request, response, next) => {
-  const { user } = request;
-
-  try {
-    if (user) {
-      const trades = await tradeService.getTradesByUserIdAndStatuses(user.id, ['active']);
-
-      const openBets = [];
-
-      for (const trade of trades) {
-        const outcomeIndex = trade._id.outcomeIndex;
-        const betId = trade._id.betId;
-        // const outcomes = trade._id.bet.outcomes || [];
-        let outcomeBuy = 0;
-        let outcomeSell = 0;
-
-        // if (outcomes.length) {
-        //   const betContract = new BetContract(betId, outcomes.length);
-        //   outcomeBuy = await betContract.calcBuy(
-        //     toScaledBigInt(trade.totalInvestmentAmount),
-        //     outcomeIndex
-        //   );
-        //   outcomeSell = await betContract.calcSellFromAmount(
-        //     toScaledBigInt(trade.totalOutcomeTokens),
-        //     outcomeIndex
-        //   );
-        // }
-
-        openBets.push({
-          betId,
-          outcome: outcomeIndex,
-          investmentAmount: trade.totalInvestmentAmount,
-          outcomeAmount: trade.totalOutcomeTokens,
-          lastDate: trade.date,
-          currentBuyAmount: fromScaledBigInt(outcomeBuy),
-          sellAmount: fromScaledBigInt(outcomeSell),
-          status: trade._id.status,
-        });
-      }
-
-      response.status(200).json({
-        openBets,
-      });
-    } else {
-      return next(new ErrorHandler(404, 'User not found'));
-    }
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(500, err.message));
-  }
-};
-
 const getHistory = async (req, res, next) => {
   const { user } = req;
 
@@ -405,56 +312,6 @@ const getHistory = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     next(new ErrorHandler(500, err.message));
-  }
-};
-
-const getTradeHistory = async (req, res, next) => {
-  const user = req.user;
-
-  if (!user) {
-    return next(new ErrorHandler(404, 'User not found'));
-  }
-
-  try {
-    const interactions = await casinoContract.getAMMInteractions(user.id);
-    const finalizedTrades = await tradeService.getTradesByUserIdAndStatuses(user.id, [
-      'closed',
-      'rewarded',
-      'sold',
-    ]);
-
-    const trades = finalizedTrades.map((trade) => {
-      let soldAmount;
-      const bet = trade._id;
-
-      if (bet.status === 'sold') {
-        const sellInteractions = interactions.filter(
-          (i) =>
-            i.bet === bet.betId.toString() &&
-            i.direction === 'SELL' &&
-            i.outcome === bet.outcomeIndex
-        );
-        const totalSellAmount = _.sum(
-          sellInteractions.map(_.property('investmentamount')).map(BigInt).filter(Boolean)
-        );
-        soldAmount = fromScaledBigInt(totalSellAmount);
-      }
-
-      return {
-        ...bet,
-        investmentAmount: trade.totalInvestmentAmount,
-        outcomeAmount: trade.totalOutcomeTokens,
-        lastDate: trade.date,
-        soldAmount,
-      };
-    });
-
-    res.status(200).json({
-      trades,
-    });
-  } catch (e) {
-    console.error(e);
-    next(new ErrorHandler(500, 'Failed to fetch trade history'));
   }
 };
 
@@ -956,15 +813,12 @@ const uploadImage = async (req, res, next) => {
   }
 }
 
-exports.bindWalletAddress = bindWalletAddress;
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
 exports.getUserInfo = getUserInfo;
 exports.getBasicUserInfo = getBasicUserInfo;
 exports.getRefList = getRefList;
-exports.getOpenBetsList = getOpenBetsList;
 exports.getHistory = getHistory;
-exports.getTradeHistory = getTradeHistory;
 exports.confirmEmail = confirmEmail;
 exports.resendConfirmEmail = resendConfirmEmail;
 exports.updateUser = updateUser;
