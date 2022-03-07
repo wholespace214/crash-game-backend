@@ -4,9 +4,10 @@ const moment = require('moment');
 
 const getList = async (type, limit, skip) => {
   let result;
+
   const dates = {
-    start: moment().startOf('day').subtract(1, 'days').toDate(),
-    end: moment().endOf('day').subtract(1, 'days').toDate()
+    start: moment().startOf('day').toDate(),
+    end: moment().endOf('day').toDate()
   };
 
   switch (type) {
@@ -19,15 +20,38 @@ const getList = async (type, limit, skip) => {
     case 'high_volume':
       result = await getHighVolume(limit, skip, dates);
       break;
+    case 'jackpot_winners':
+      result = await getJackpotWinners();
+      break;
     default:
-      result = await getOverall(limit, skip, dates);
+      result = await getOverall(limit, skip);
       break;
   }
 
   return {
-    ...(result ? result : { users: [], total: 0 }),
+    ...(result.users.length ? result : { users: [], total: 0 }),
     limit,
     skip
+  }
+}
+
+const getJackpotWinners = async () => {
+  const yesterdayDates = {
+    start: moment().startOf('day').subtract(1, 'days').toDate(),
+    end: moment().endOf('day').subtract(1, 'days').toDate()
+  };
+
+  const highEventsWinner = await getHighEvents(1, 0, yesterdayDates);
+  const highGamesWinner = await getHighGames(1, 0, yesterdayDates);
+  const highVolumeWinner = await getHighVolume(1, 0, yesterdayDates);
+
+  return {
+    total: 3,
+    users: [
+      ...highEventsWinner.users,
+      ...highGamesWinner.users,
+      ...highVolumeWinner.users
+    ]
   }
 }
 
@@ -37,7 +61,7 @@ const getHighEvents = async (limit, skip, dates) => {
       $match: {
         type: {
           $in: [
-            'Notification/EVENT_USER_REWARD', 'Notification/EVENT_BET_CASHED_OUT'
+            'Notification/EVENT_USER_REWARD',
           ]
         },
         createdAt: {
@@ -56,9 +80,6 @@ const getHighEvents = async (limit, skip, dates) => {
         winReward: {
           $sum: '$data.winToken'
         },
-        winCashout: {
-          $sum: '$data.amount'
-        },
         tmp: {
           $push: {
             profilePicture: '$data.user.profilePicture',
@@ -68,11 +89,7 @@ const getHighEvents = async (limit, skip, dates) => {
       }
     }, {
       $project: {
-        amountWon: {
-          $add: [
-            '$winReward', '$winCashout'
-          ]
-        },
+        amountWon: '$winReward',
         profilePicture: {
           $first: '$tmp.profilePicture'
         },
@@ -123,7 +140,7 @@ const getHighEvents = async (limit, skip, dates) => {
     console.error(err);
   });
 
-  return res[0];
+  return res[0] || { users: [], total: 0 };
 }
 
 const getHighGames = async (limit, skip, dates) => {
@@ -210,7 +227,7 @@ const getHighGames = async (limit, skip, dates) => {
     console.error(err);
   });
 
-  return res[0];
+  return res[0] || { users: [], total: 0 };
 }
 
 const getHighVolume = async (limit, skip, dates) => {
@@ -227,7 +244,7 @@ const getHighVolume = async (limit, skip, dates) => {
       $group: {
         _id: '$data.bet.creator',
         amountWon: {
-          $sum: '$data.trade.investmentAmount'
+          $sum: '$data.trade.investment_amount'
         }
       }
     }, {
@@ -285,7 +302,7 @@ const getHighVolume = async (limit, skip, dates) => {
       .exec();
   }
 
-  return !res[0] ? null : {
+  return !res[0] ? { users: [], total: 0 } : {
     users: res[0].users.map(v => {
       const info = infos.find(s => s._id.toString() === v._id);
       return { ...v, ...(info && info._doc) }
