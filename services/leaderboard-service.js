@@ -78,7 +78,14 @@ const getHighEvents = async (limit, skip, dates) => {
       $group: {
         _id: '$data.user._id',
         winReward: {
-          $sum: '$data.winToken'
+          $sum: {
+            $cond: [
+              {
+                $gt: ['$data.gainAmount', 0]
+              },
+              '$data.gainAmount', 0
+            ]
+          }
         },
         winCashout: {
           $sum: {
@@ -193,7 +200,7 @@ const getHighGames = async (limit, skip, dates) => {
       $group: {
         _id: '$data.userId',
         winReward: {
-          $sum: '$data.reward'
+          $sum: '$data.profitWfair'
         },
         tmp: {
           $push: {
