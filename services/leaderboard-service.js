@@ -61,7 +61,7 @@ const getHighEvents = async (limit, skip, dates) => {
       $match: {
         type: {
           $in: [
-            'Notification/EVENT_USER_REWARD',
+            'Notification/EVENT_USER_REWARD', 'Notification/EVENT_BET_CASHED_OUT'
           ]
         },
         createdAt: {
@@ -80,6 +80,16 @@ const getHighEvents = async (limit, skip, dates) => {
         winReward: {
           $sum: '$data.winToken'
         },
+        winCashout: {
+          $sum: {
+            $cond: [
+              {
+                $gt: ['$data.gain.gainAmount', 0]
+              },
+              '$data.gain.gainAmount', 0
+            ]
+          },
+        },
         tmp: {
           $push: {
             profilePicture: '$data.user.profilePicture',
@@ -89,7 +99,11 @@ const getHighEvents = async (limit, skip, dates) => {
       }
     }, {
       $project: {
-        amountWon: '$winReward',
+        amountWon: {
+          $add: [
+            '$winReward', '$winCashout'
+          ]
+        },
         profilePicture: {
           $first: '$tmp.profilePicture'
         },
@@ -97,7 +111,21 @@ const getHighEvents = async (limit, skip, dates) => {
           $first: '$tmp.username'
         }
       }
-    }, {
+    },
+    {
+      $redact: {
+        $cond: {
+          if: {
+            $lte: [
+              '$amountWon', 0
+            ]
+          },
+          then: '$$PRUNE',
+          else: '$$DESCEND'
+        }
+      }
+    },
+    {
       $sort: {
         amountWon: -1
       }
