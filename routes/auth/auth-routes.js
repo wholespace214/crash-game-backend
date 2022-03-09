@@ -58,4 +58,19 @@ router.post(
   sessionsController.resetPassword,
 );
 
+router.get(
+  '/login/web3/:address',
+  sessionsController.loginWeb3Challenge
+);
+
+router.post(
+  '/login/web3',
+  [
+    check('address').notEmpty(),
+    check('signResponse').notEmpty(),
+    check('challenge').notEmpty(),
+  ],
+  sessionsController.loginWeb3,
+);
+
 module.exports = router;
