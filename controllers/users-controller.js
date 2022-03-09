@@ -29,7 +29,6 @@ const faker = require('faker');
 
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
-const kycService = require('../services/kyc-service.js');
 const { getBanData } = require('../util/user');
 const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
 
@@ -173,7 +172,6 @@ const getUserInfo = async (req, res, next) => {
       status: user.status,
       notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
       alpacaBuilderProps: user.alpacaBuilderProps,
-      kyc: user.kyc,
     });
   } catch (err) {
     console.error(err);
@@ -475,61 +473,6 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
-const startKycVerification = async (req, res) => {
-  const { userId } = req.params;
-  const user = await User.findById(userId);
-  if (!user) {
-    res.writeHeader(200, { 'Content-Type': 'text/html' });
-    res.write(`<h1>KYC Result</h1><p>Something went wrong, please try again.</p>`);
-    res.end();
-  }
-
-  const fractalUiDomain = process.env.FRACTAL_FRONTEND_DOMAIN;
-  const redirectUri = encodeURIComponent(process.env.FRACTAL_AUTH_CALLBACK_URL);
-  const clientId = process.env.FRACTAL_CLIENT_ID;
-  const scope = encodeURIComponent(process.env.FRACTAL_SCOPE);
-  const state = userId;
-  const query = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
-  let url = `https://${fractalUiDomain}/authorize?${query}`;
-  res.redirect(url);
-};
-
-const getUserKycData = async (req, res, next) => {
-  if (req.user.admin === false && req.params.userId !== req.user.id) {
-    return next(new ErrorHandler(403, 'Action not allowed'));
-  }
-  const { userId } = req.params;
-  const user = await User.findById(userId);
-  if (!user) {
-    return next(new ErrorHandler(404));
-  }
-  if (!user.kyc?.refreshToken) {
-    return next(new ErrorHandler(422, `User hasn't completed yet kyc.`));
-  }
-
-  try {
-    const accessToken = await kycService.getNewAccessToken(user.kyc.refreshToken);
-    const result = await kycService.getUserInfoFromFractal(accessToken);
-    res.status(200).send(result);
-  } catch (err) {
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
-const getKycStatus = async (req, res, next) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      return next(new ErrorHandler(404, 'User not found'));
-    }
-
-    res.status(200).json({ status: user.kyc?.status || 'unknown' });
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-};
-
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -689,27 +632,6 @@ const banUser = async (req, res, next) => {
   }
 };
 
-const refreshKycRoute = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-
-    const userData = await userService.getUserById(userId);
-
-    const refreshToken = userData?.kyc?.refreshToken;
-
-    let output = {};
-
-    if (refreshToken) {
-      output = await kycService.refreshUserKyc(userId, refreshToken);
-    }
-
-    return res.send(output);
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(422, err.message));
-  }
-}
-
 const claimPromoCode = async (req, res, next) => {
   try {
     await casinoContract.claimPromoCode(
@@ -817,17 +739,13 @@ exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
 exports.updateStatus = updateStatus;
-exports.startKycVerification = startKycVerification;
 exports.getUserTransactions = getUserTransactions;
-exports.getUserKycData = getUserKycData;
-exports.getKycStatus = getKycStatus;
 exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
 exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
-exports.refreshKycRoute = refreshKycRoute;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.claimPromoCode = claimPromoCode;
 exports.verifySms = verifySms;

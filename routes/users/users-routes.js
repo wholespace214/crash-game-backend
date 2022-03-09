@@ -23,8 +23,6 @@ router.get('/:userId/stats', userController.getUserStats);
 
 router.get('/count', userController.getUserCount)
 
-router.get('/:userId/kyc-start', userController.startKycVerification);
-
 router.get('/random-username', userController.randomUsername)
 
 router.post(

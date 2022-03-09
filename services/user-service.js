@@ -555,10 +555,6 @@ exports.getUserDataForAdmin = async (userId) => {
   const one = 1000000000000000000
   const u = await User.findOne({ _id: userId })
   if (!u) throw new NotFoundError()
-  let KYCCount = 0
-  if (u.kyc.uid) {
-    KYCCount = await User.count({ "kyc.uid": u.kyc.uid })
-  }
   const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
   const balance = balances.length > 1 ?
     balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
@@ -583,7 +579,6 @@ exports.getUserDataForAdmin = async (userId) => {
 
   return {
     ...u.toObject(),
-    KYCCount,
     balance: fromWei(balance).toFixed(2),
     bonus: bonus.map(b => {
       return {

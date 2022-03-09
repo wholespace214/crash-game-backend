@@ -49,9 +49,6 @@ router.post('/:userId/status', userController.updateStatus);
 
 router.get('/wallet/transactions', userController.getUserTransactions);
 
-router.get('/:userId/kyc-data', userController.getUserKycData);
-
-router.get('/kyc/status', userController.getKycStatus);
 router.post('/buy-with-crypto', userController.buyWithCrypto);
 router.post('/buy-with-fiat', userController.buyWithFiat);
 router.post('/consent', userController.updateUserConsent);
@@ -76,8 +73,6 @@ router.post(
   [check('duration').isNumeric(), check('description').isString()],
   userController.banUser
 );
-
-router.get('/kyc/refresh', userController.refreshKycRoute);
 
 router.post(
   '/promo-codes/claim',
