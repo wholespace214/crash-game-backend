@@ -273,7 +273,8 @@ const getHighVolume = async (limit, skip, dates) => {
         createdAt: {
           $gte: dates.start,
           $lte: dates.end
-        }
+        },
+        'data.creator.admin': false
       }
     }, {
       $group: {
