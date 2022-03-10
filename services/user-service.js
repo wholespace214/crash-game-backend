@@ -17,6 +17,10 @@ const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
+const userApi = require('./user-api');
+const { ObjectId } = require('mongodb');
+
+const isPlayMoney = process.env.PLAYMONEY === 'true';
 
 exports.getUserByPhone = async (phone, session) => User.findOne({ phone }).session(session);
 exports.getUserByEmail = async (email) => User.findOne({ email });
@@ -629,5 +633,114 @@ exports.claimTokens = async (userId) => {
     await manager.rollbackTransaction();
     console.error(e);
     throw new Error('Failed to claim tokens');
+  }
+};
+
+exports.processWeb3Login = async (address, username, ref, sid, cid) => {
+  const transaction = new TransactionManager();
+
+  try {
+    await transaction.startTransaction();
+
+    const userAccount = await transaction.account.getUserLink(address);
+    let user;
+
+    if (userAccount) {
+      user = await userApi.getOne(userAccount.user_id);
+
+      amqp.send(
+        'universal_events',
+        'event.user_signed_in',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_IN,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            userId: user._id,
+            username: user.username,
+            updatedAt: Date.now(),
+          },
+          broadcast: true,
+        })
+      );
+    } else {
+      const userId = new ObjectId().toHexString();
+
+      await transaction.account.linkEthereumAccount(
+        userId,
+        address
+      );
+
+      const ethAccount = await transaction.account.findAccount(address);
+
+      if (ethAccount && new BN(ethAccount.balance).isGreaterThan(0)) {
+        await transaction.wallet.transfer(
+          {
+            owner: ethAccount.owner_account,
+            namespace: AccountNamespace.ETH,
+            symbol: WFAIR_SYMBOL,
+          },
+          {
+            owner: userId,
+            namespace: AccountNamespace.USR,
+            symbol: WFAIR_SYMBOL,
+          },
+          ethAccount.balance
+        );
+      }
+
+      await transaction.account.createAccount({
+        owner: userId,
+        namespace: AccountNamespace.USR,
+        symbol: WFAIR_SYMBOL,
+      }, isPlayMoney ? toWei(100).toString() : '0');
+
+      if (isPlayMoney && (await userApi.getOne(ref))) {
+        await transaction.wallet.mint({
+          owner: ref,
+          namespace: AccountNamespace.USR,
+          symbol: WFAIR_SYMBOL,
+        }, toWei(50).toString());
+      }
+
+      const counter = ((await userApi.getUserEntriesAmount()) || 0) + 1;
+
+      user = await userApi.createUser({
+        _id: userId,
+        username: username || `wallfair-${counter}`,
+        preferences: {
+          currency: WFAIR_SYMBOL,
+          gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
+        },
+        ref, sid, cid,
+        tosConsentedAt: new Date(),
+      });
+
+      amqp.send(
+        'universal_events',
+        'event.user_signed_up',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_UP,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            userId: user._id,
+            username: user.username,
+            ref, sid, cid,
+            updatedAt: Date.now(),
+          },
+          date: Date.now(),
+          broadcast: true,
+        })
+      );
+    }
+
+    await transaction.commitTransaction();
+
+    return user;
+  } catch (e) {
+    console.error(e);
+    await transaction.rollbackTransaction();
+    throw new Error('Failed to process web3 login');
   }
 };

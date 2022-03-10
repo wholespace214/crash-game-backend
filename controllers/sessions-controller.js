@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongodb');
 const logger = require('../util/logger');
 const userApi = require('../services/user-api');
+const userService = require('../services/user-service');
 const { ErrorHandler, BannedError } = require('../util/error-handler');
 const authService = require('../services/auth-service');
 const { validationResult } = require('express-validator');
@@ -13,8 +14,7 @@ const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/
 const { Account, Wallet, AccountNamespace, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
 const amqp = require('../services/amqp-service');
 const { isUserBanned } = require('../util/user');
-const promoCodesService = require('../services/promo-codes-service');
-const { PROMO_CODES } = require("../util/constants");
+const { generateChallenge, isAddressValid, verifyChallengeResponse } = require('../util/challenge');
 
 const isPlayMoney = process.env.PLAYMONEY === 'true';
 
@@ -88,8 +88,6 @@ module.exports = {
           symbol: WFAIR_SYMBOL,
         }, toWei(50).toString());
       }
-
-      await promoCodesService.addUserPromoCode(wFairUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
 
       let initialReward = 0;
 
@@ -208,8 +206,6 @@ module.exports = {
           }, toWei(50).toString());
         }
 
-        await promoCodesService.addUserPromoCode(newUserId.toString(), PROMO_CODES.FIRST_DEPOSIT_DOUBLE_DEC21);
-
         const initialReward = 0;
         amqp.send(
           'universal_events',
@@ -301,6 +297,68 @@ module.exports = {
     } catch (err) {
       logger.error(err);
       return next(new ErrorHandler(401, "Couldn't verify user"));
+    }
+  },
+
+  async loginWeb3Challenge(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(new ErrorHandler(422, errors));
+    }
+
+    if (!isAddressValid(req.params.address)) {
+      return next(
+        new ErrorHandler(
+          400,
+          'Checksum of address is invalid, please check it',
+          []
+        )
+      );
+    }
+
+    try {
+      const challenge = generateChallenge(req.params.address);
+      const userAccount = await new Account().getUserLink(req.params.address);
+      return res.status(200).json({
+        challenge,
+        existing: !!userAccount,
+      });
+    } catch (e) {
+      logger.error(e);
+      return next(new ErrorHandler(400, 'Failed to generate the challenge'));
+    }
+  },
+
+  async loginWeb3(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(new ErrorHandler(422, errors));
+    }
+
+    const { address, signResponse, challenge, username, ref, sid, cid } = req.body;
+
+    const verified = verifyChallengeResponse(address, challenge, signResponse);
+    if (!verified) {
+      return next(new ErrorHandler(401, 'Failed to verify signer'));
+    }
+
+    try {
+      const user = await userService.processWeb3Login(address, username, ref, sid, cid);
+
+      if (isUserBanned(user)) {
+        return next(new BannedError(user));
+      }
+
+      const token = await authService.generateJwt(user);
+
+      return res.status(200).json({
+        session: token,
+        userId: user.id,
+        shouldAcceptToS: hasAcceptedLatestConsent(user),
+      });
+    } catch (e) {
+      logger.error(e);
+      return next(new ErrorHandler(401, 'Failed to login'));
     }
   },
 
