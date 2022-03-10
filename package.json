@@ -24,7 +24,7 @@
     "@sendgrid/mail": "^7.4.7",
     "@wallfair.io/trading-engine": "^0.1.52",
     "@wallfair.io/wallfair-casino": "0.1.56",
-    "@wallfair.io/wallfair-commons": "1.8.23",
+    "@wallfair.io/wallfair-commons": "1.8.25",
     "agenda": "^4.2.1",
     "amqplib": "^0.8.0",
     "axios": "^0.21.4",

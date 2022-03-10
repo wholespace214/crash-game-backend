@@ -335,7 +335,7 @@ module.exports = {
       return next(new ErrorHandler(422, errors));
     }
 
-    const { address, signResponse, challenge, ref, username } = req.body;
+    const { address, signResponse, challenge, username, ref, sid, cid } = req.body;
 
     const verified = verifyChallengeResponse(address, challenge, signResponse);
     if (!verified) {
@@ -343,12 +343,18 @@ module.exports = {
     }
 
     try {
-      const user = await userService.processWeb3Login(address, username, ref);
+      const user = await userService.processWeb3Login(address, username, ref, sid, cid);
+
+      if (isUserBanned(user)) {
+        return next(new BannedError(user));
+      }
+
       const token = await authService.generateJwt(user);
 
       return res.status(200).json({
         session: token,
-        user,
+        userId: user.id,
+        shouldAcceptToS: hasAcceptedLatestConsent(user),
       });
     } catch (e) {
       logger.error(e);

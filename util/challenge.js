@@ -7,7 +7,7 @@ const generateMac = (msg) => createHmac('sha384', HMAC_SECRET_KEY)
   .update(msg)
   .digest('hex');
 
-exports.generateChallenge = async (
+exports.generateChallenge = (
   address,
   ttl = 60
 ) => {
@@ -21,9 +21,7 @@ exports.generateChallenge = async (
 
   const msg = Buffer.from(data).toString('base64');
 
-  return {
-    challenge: msg + '.' + generateMac(msg),
-  };
+  return msg + '.' + generateMac(msg);
 };
 
 exports.verifyChallengeResponse = (

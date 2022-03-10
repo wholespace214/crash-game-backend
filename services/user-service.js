@@ -641,7 +641,7 @@ exports.claimTokens = async (userId) => {
   }
 };
 
-exports.processWeb3Login = async (address, username, ref) => {
+exports.processWeb3Login = async (address, username, ref, sid, cid) => {
   const transaction = new TransactionManager();
 
   try {
@@ -652,6 +652,22 @@ exports.processWeb3Login = async (address, username, ref) => {
 
     if (userAccount) {
       user = await userApi.getOne(userAccount.user_id);
+
+      amqp.send(
+        'universal_events',
+        'event.user_signed_in',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_IN,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            userId: user._id,
+            username: user.username,
+            updatedAt: Date.now(),
+          },
+          broadcast: true,
+        })
+      );
     } else {
       const userId = new ObjectId().toHexString();
 
@@ -701,9 +717,27 @@ exports.processWeb3Login = async (address, username, ref) => {
           currency: WFAIR_SYMBOL,
           gamesCurrency: isPlayMoney ? WFAIR_SYMBOL : 'USD'
         },
-        ref,
+        ref, sid, cid,
         tosConsentedAt: new Date(),
       });
+
+      amqp.send(
+        'universal_events',
+        'event.user_signed_up',
+        JSON.stringify({
+          event: notificationEvents.EVENT_USER_SIGNED_UP,
+          producer: 'user',
+          producerId: user._id,
+          data: {
+            userId: user._id,
+            username: user.username,
+            ref, sid, cid,
+            updatedAt: Date.now(),
+          },
+          date: Date.now(),
+          broadcast: true,
+        })
+      );
     }
 
     await transaction.commitTransaction();

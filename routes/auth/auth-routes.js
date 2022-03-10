@@ -59,12 +59,12 @@ router.post(
 );
 
 router.get(
-  '/login/web3/:address',
+  '/web3/:address',
   sessionsController.loginWeb3Challenge
 );
 
 router.post(
-  '/login/web3',
+  '/web3',
   [
     check('address').notEmpty(),
     check('signResponse').notEmpty(),
