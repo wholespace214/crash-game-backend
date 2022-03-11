@@ -8,7 +8,6 @@ router.post(
   '/transfers',
   [
     check('amount').isNumeric(),
-    check('email').notEmpty(),
     check('transactionHash').notEmpty(),
     check('userAddress').notEmpty(),
     check('inputAmount').notEmpty(),

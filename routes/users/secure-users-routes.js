@@ -55,7 +55,10 @@ router.post('/consent', userController.updateUserConsent);
 
 router.post(
   '/cryptopay/channel',
-  [check('currency').isIn(['BTC', 'ETH', 'LTC'])],
+  [
+    check('currency')
+      .isIn(['BTC', 'ETH', 'LTC', 'USDT', 'USDC', 'DAI', 'XRP'])
+  ],
   userController.cryptoPayChannel
 );
 
