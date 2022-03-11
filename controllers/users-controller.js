@@ -372,7 +372,7 @@ const resendConfirmEmail = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-  if (req.user.admin === false && req.params.userId !== req.user.id) {
+  if (!req.user.admin && req.params.userId !== req.user.id) {
     return next(new ErrorHandler(403, 'Action not allowed'));
   }
 

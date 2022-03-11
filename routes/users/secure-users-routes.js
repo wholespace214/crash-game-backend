@@ -33,7 +33,7 @@ router.get('/history', userController.getHistory);
 
 router.patch(
   '/:userId',
-  oneOf([[check('username').isLength({ min: 3, max: 25 }), check('email').isEmail()]]),
+  oneOf([[check('username').isLength({ min: 3, max: 25 })]]),
   userController.updateUser
 );
 
