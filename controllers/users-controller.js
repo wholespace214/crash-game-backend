@@ -595,10 +595,10 @@ const generateMoonpayUrl = async (req, res, next) => {
   }
 
   const { amount, currency } = req.body;
-  const { id, email } = req.user;
+  const { id } = req.user;
 
   try {
-    const url = moonpayService.generateUrl(id, email, amount, currency);
+    const url = moonpayService.generateUrl(id, amount, currency);
     return res.status(200).send({ url });
   } catch (e) {
     console.error(e.message);

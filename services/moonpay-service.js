@@ -2,11 +2,10 @@ const crypto = require('crypto')
 
 const { MOONPAY_BASE_URL, MOONPAY_API_KEY, MOONPAY_API_SECRET, MOONPAY_CURRENCY_CODE, ONRAMP_WEBHOOK_WALLET } = process.env;
 
-exports.generateUrl = (userId, email, amount, currency) => {
+exports.generateUrl = (userId, amount, currency) => {
   const baseUrl = MOONPAY_BASE_URL +
     `?apiKey=${MOONPAY_API_KEY}` +
     `&externalCustomerId=${userId}` +
-    `&email=${encodeURIComponent(email)}` +
     `&baseCurrencyCode=${currency.toLowerCase()}` +
     `&currencyCode=${MOONPAY_CURRENCY_CODE}` +
     `&baseCurrencyAmount=${amount}` +
