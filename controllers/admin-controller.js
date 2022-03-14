@@ -13,7 +13,7 @@ const {
   Wallet,
   Account
 } = require("@wallfair.io/trading-engine");
-const { getUserByIdEmailPhoneOrUsername } = require("../services/user-api");
+const { getOne } = require("../services/user-api");
 const { WALLETS } = require("../util/wallet");
 const userService = require('../services/user-service');
 const promoCodeService = require('../services/promo-codes-service');
@@ -49,7 +49,7 @@ exports.transferToUser = async (req, res, next) => {
       return next(new ErrorHandler(404, 'User does not exist'));
     }
 
-    const user = await getUserByIdEmailPhoneOrUsername(userAccount.user_id);
+    const user = await getOne(userAccount.user_id);
 
     const extTransaction = await new Transactions()
       .getExternalTransactionByHash(transactionHash);
