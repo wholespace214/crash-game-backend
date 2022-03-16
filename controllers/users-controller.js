@@ -170,6 +170,7 @@ const getUserInfo = async (req, res, next) => {
       preferences: user.preferences,
       aboutMe: user.aboutMe,
       status: user.status,
+      country: req.headers["cf-ipcountry"],
       notificationSettings: user && _.omit(user.toObject().notificationSettings, '_id'),
       alpacaBuilderProps: user.alpacaBuilderProps,
     });
