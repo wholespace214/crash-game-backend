@@ -722,7 +722,18 @@ const uploadImage = async (req, res, next) => {
     console.error(err.message);
     next(new ErrorHandler(500, err.message));
   }
-}
+};
+
+const deposit = async (req, res, next) => {
+  try {
+    const { hash, networkCode } = req.body;
+    await userService.confirmDeposit(hash, networkCode, req.user.id);
+    res.status(204).send();
+  } catch (e) {
+    console.error(e);
+    next(new ErrorHandler(500, 'Deposit failed'));
+  }
+};
 
 exports.saveAdditionalInformation = saveAdditionalInformation;
 exports.saveAcceptConditions = saveAcceptConditions;
@@ -752,3 +763,4 @@ exports.verifySms = verifySms;
 exports.sendSms = sendSms;
 exports.claimTokens = claimTokens;
 exports.uploadImage = uploadImage;
+exports.deposit = deposit;

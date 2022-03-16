@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei, Webhook, WebhookQueueOriginator, WebhookQueueStatus } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -742,5 +742,21 @@ exports.processWeb3Login = async (address, username, ref, sid, cid) => {
     console.error(e);
     await transaction.rollbackTransaction();
     throw new Error('Failed to process web3 login');
+  }
+};
+
+exports.confirmDeposit = async (hash, networkCode, userId) => {
+  try {
+    await new Webhook().insertWebhookQueue(
+      WebhookQueueOriginator.DEPOSIT,
+      JSON.stringify({ hash, networkCode, userId }),
+      hash,
+      '200',
+      '',
+      WebhookQueueStatus.NEW,
+    );
+  } catch (e) {
+    console.error(e);
+    throw new Error('Failed to confirm a deposit');
   }
 };

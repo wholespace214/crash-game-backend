@@ -87,4 +87,13 @@ router.post('/tokens', userController.claimTokens);
 
 router.post('/upload-image', userController.uploadImage);
 
+router.post(
+  '/deposits',
+  [
+    check('networkCode').notEmpty(),
+    check('hash').notEmpty(),
+  ],
+  userController.deposit
+);
+
 module.exports = router;
