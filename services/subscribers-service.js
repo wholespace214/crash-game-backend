@@ -85,7 +85,7 @@ const processWithdrawEvent = async (_, data) => {
     for (const entry in dd) {
       emailHtml = emailHtml.replace(`{{${entry}}}`, dd[entry]);
     }
-    await sendMail(process.env.DEPOSIT_NOTIFICATION_EMAIL, `${notificationEvents.EVENT_WITHDRAW_REQUESTED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
+    await sendMail(process.env.DEPOSIT_NOTIFICATION_EMAIL, `${notificationEvents.EVENT_WITHDRAW_SCHEDULED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
   }
 }
 
