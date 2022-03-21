@@ -197,7 +197,7 @@ const getHighGames = async (limit, skip, dates) => {
       $group: {
         _id: '$data.userId',
         winReward: {
-          $sum: '$data.profit'
+          $sum: '$data.profitWfair'
         },
         tmp: {
           $push: {
