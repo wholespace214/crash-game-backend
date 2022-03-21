@@ -183,9 +183,6 @@ const getHighGames = async (limit, skip, dates) => {
     {
       $match: {
         type: 'Casino/CASINO_CASHOUT',
-        'data.gameTypeId': {
-          $in: ['614381d74f78686665a5bb76', '61817de6a9695acd029ffef3']
-        },
         createdAt: {
           $gte: dates.start,
           $lte: dates.end
