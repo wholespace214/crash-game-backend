@@ -1,4 +1,4 @@
-const { fromWei } = require("@wallfair.io/trading-engine");
+const { fromWei, WFAIR_SYMBOL } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
 const fs = require("fs");
@@ -59,7 +59,7 @@ const processDepositEvent = async (event, data) => {
       return;
     }
 
-    const formattedAmount = fromWei(dd.amount).decimalPlaces(0);
+    const formattedAmount = fromWei(dd.symbol !== WFAIR_SYMBOL ? dd.input_amount : dd.amount).decimalPlaces(0);
     let emailHtml = emailDepositCreated;
 
     for (const entry in dd) {
