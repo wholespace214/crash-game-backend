@@ -480,7 +480,7 @@ exports.searchUsers = async (limit, skip, search, sortField, sortOrder, account)
   if (account) {
     const acc = await new Account().getUserLink(account);
 
-    if (!acc.user_id) {
+    if (!acc) {
       return {
         users: [],
         count: 0
