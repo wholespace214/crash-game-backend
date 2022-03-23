@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei, Webhook, WebhookQueueOriginator, WebhookQueueStatus } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei, Webhook, WebhookQueueOriginator, WebhookQueueStatus, Account } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -476,7 +476,26 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
   return user.save();
 };
 
-exports.searchUsers = async (limit, skip, search, sortField, sortOrder) => {
+exports.searchUsers = async (limit, skip, search, sortField, sortOrder, account) => {
+  if (account) {
+    const acc = await new Account().getUserLink(account);
+
+    if (!acc.user_id) {
+      return {
+        users: [],
+        count: 0
+      }
+    }
+
+    const users = await User.find({ _id: acc.user_id })
+      .select('_id username email status date amountWon admin');
+
+    return {
+      users: users,
+      count: 1
+    }
+  }
+
   let query = {};
   if (search) {
     const qOr = [

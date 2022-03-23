@@ -138,10 +138,11 @@ exports.listUsers = async (req, res, next) => {
     sortOrder = 'desc',
     limit = 10,
     page = 1,
+    account = null,
   } = req.query;
 
   try {
-    const data = await userService.searchUsers(+limit, +limit * (+page - 1), search, sortField, sortOrder);
+    const data = await userService.searchUsers(+limit, +limit * (+page - 1), search, sortField, sortOrder, account);
     return res.send(data)
   } catch (e) {
     console.error(e)
