@@ -19,6 +19,7 @@ const cryptopayService = require('../services/cryptopay-service');
 const moonpayService = require('../services/moonpay-service');
 const awsS3Service = require('../services/aws-s3-service');
 const leaderboardService = require('../services/leaderboard-service');
+const promoCodesService = require('../services/promo-codes-service');
 
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
@@ -633,22 +634,44 @@ const banUser = async (req, res, next) => {
   }
 };
 
-const claimPromoCode = async (req, res, next) => {
+const getUserPromoCodes = async (req, res, next) => {
   try {
-    await casinoContract.claimPromoCode(
-      req.user.id,
-      req.body.promoCode,
-      req.body.refId || PROMO_CODE_DEFAULT_REF
-    );
-    console.log(
-      `User ${req.user.id} successfully claimed promo code ${req.body.promoCode}. Reference: ${req.body.refId}`
-    );
-    return res.status(204).send();
+    const statuses = req.query?.statuses?.split(',');
+    const promoCodes = await promoCodesService.getUserPromoCodes(req.user.id, statuses);
+    return res.status(200).send(promoCodes);
   } catch (e) {
-    console.error('PROMO CODES ERROR: ', e.message);
-    return next(`Failed to claim promo code ${req.body.promoCode}`);
+    console.error('PROMO CODES: ', e.message);
+    return next(new ErrorHandler(500, 'Failed to fetch promo codes'));
   }
 };
+
+const claimPromoCode = async (req, res, next) => {
+  try {
+    const response = await promoCodesService.claimPromoCodeBonus(req.user.id, req.body.promoCode);
+    console.log(
+      `User ${req.user.id} successfully claimed promo code ${req.body.promoCode}.`
+    );
+    return res.status(200).send(response);
+  } catch (e) {
+    console.error('PROMO CODES ERROR: ', e.message);
+    const msg = e.message === 'PROMO_CODE_ACTIVE' ?
+      'You first need to cancel the active bonus' :
+      `Failed to claim promo code ${req.body.promoCode}`;
+    return next(new ErrorHandler(500, msg));
+  }
+};
+
+const cancelPromoCode = async (req, res, next) => {
+  try {
+    const { ref = PROMO_CODE_DEFAULT_REF } = req.body;
+    const promoCodes = await promoCodesService
+      .cancelUserPromoCode(req.user.id, req.params.name, ref);
+    return res.status(200).send(promoCodes);
+  } catch (e) {
+    console.error('PROMO CODES CANCEL: ', e.message);
+    return next(new ErrorHandler(500, 'Failed to cancel the promo code'));
+  }
+}; 
 
 const verifySms = async (req, res, next) => {
   // Validating User Inputs
@@ -759,7 +782,9 @@ exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
 exports.generateMoonpayUrl = generateMoonpayUrl;
+exports.getUserPromoCodes = getUserPromoCodes;
 exports.claimPromoCode = claimPromoCode;
+exports.cancelPromoCode = cancelPromoCode;
 exports.verifySms = verifySms;
 exports.sendSms = sendSms;
 exports.claimTokens = claimTokens;

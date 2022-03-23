@@ -77,11 +77,15 @@ router.post(
   userController.banUser
 );
 
+router.get('/promo-codes/all', userController.getUserPromoCodes);
+
 router.post(
-  '/promo-codes/claim',
+  '/promo-codes',
   [check('promoCode').notEmpty()],
   userController.claimPromoCode
 );
+
+router.patch('/promo-codes/:name', userController.cancelPromoCode);
 
 router.post('/tokens', userController.claimTokens);
 

@@ -19,7 +19,8 @@ const userService = require('../services/user-service');
 const promoCodeService = require('../services/promo-codes-service');
 const fs = require('fs');
 const readline = require('readline');
-const { promisify } = require('util')
+const { promisify } = require('util');
+const { PROMO_CODE_DEFAULT_REF, PROMO_CODES_TYPES } = require("../util/constants");
 const unlinkAsync = promisify(fs.unlink)
 
 exports.transferToUser = async (req, res, next) => {
@@ -156,24 +157,33 @@ exports.createPromoCode = async (req, res, next) => {
 
   const {
     name,
+    ref = PROMO_CODE_DEFAULT_REF,
     type,
     value,
     count,
+    description,
+    coverUrl,
+    wagering,
+    duration,
     expiresAt
   } = req.body;
+
+  if (type === PROMO_CODES_TYPES.FREESPIN && ref === PROMO_CODE_DEFAULT_REF) {
+    return next(new ErrorHandler(400, 'Missing reference for FREESPIN type'));
+  }
 
   try {
     const queryRunner = new Query();
     const result = await queryRunner.query(
-      `INSERT INTO promo_code(name, type, value, count, expires_at) 
-       VALUES ($1, $2, $3, $4, $5) 
+      `INSERT INTO promo_code(name, ref_id, type, value, count, description, expires_at, cover_url, wagering, duration) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        RETURNING *`,
-      [name, type, toWei(value).toString(), count || 0, expiresAt]
+      [name, ref, type, toWei(value).toString(), count || 1, description, expiresAt, coverUrl, wagering, duration]
     );
-    return res.status(201).send(result);
+    return res.status(201).send(result[0]);
   } catch (e) {
-    console.error('CRATE PROMO CODE: ', e.message);
-    return next(new ErrorHandler('Failed to create a promo code'));
+    console.error('CREATE PROMO CODE: ', e.message);
+    return next(new ErrorHandler(500, 'Failed to create a promo code'));
   }
 };
 
@@ -189,7 +199,7 @@ exports.getPromoCodes = async (req, res, next) => {
       }));
   } catch (e) {
     console.error('GET PROMO CODES: ', e.message);
-    return next(new ErrorHandler('Failed to fetch promo codes'));
+    return next(new ErrorHandler(500, 'Failed to fetch promo codes'));
   }
 };
 
@@ -203,7 +213,7 @@ exports.updatePromoCode = async (req, res, next) => {
     return res.status(200).send(result);
   } catch (e) {
     console.error('UPDATE PROMO CODE: ', e.message);
-    return next(new ErrorHandler('Failed to update promo code'));
+    return next(new ErrorHandler(500, 'Failed to update promo code'));
   }
 };
 
@@ -213,7 +223,7 @@ exports.addBonusManually = async (req, res, next) => {
     const file = req?.file;
 
     if (!file) {
-      return next(new ErrorHandler('File not defined in form-data'));
+      return next(new ErrorHandler(400, 'File not defined in form-data'));
     }
 
     const output = {
@@ -243,7 +253,6 @@ exports.addBonusManually = async (req, res, next) => {
               await promoCodeService.claimPromoCodeBonus(
                 userId.toString(),
                 promoCode,
-                { instantTransfer: true },
                 refId
               );
               output.totalBonusAdded += 1;
@@ -282,7 +291,7 @@ exports.mintCasinoBonusWallet = async (req, res, next) => {
     return res.status(204).send();
   } catch (e) {
     console.error(e.message);
-    return next(new ErrorHandler(e.message));
+    return next(new ErrorHandler(500, e.message));
   }
 };
 
@@ -297,6 +306,6 @@ exports.mintBetLiquidity = async (req, res, next) => {
     return res.status(204).send();
   } catch (e) {
     console.error(e.message);
-    return next(new ErrorHandler(e.message));
+    return next(new ErrorHandler(500, e.message));
   }
 }
