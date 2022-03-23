@@ -41,6 +41,7 @@ const processDepositEvent = async (event, data) => {
 
   if ([notificationEvents.EVENT_DEPOSIT_CREATED, notificationEvents.EVENT_WEBHOOK_TRIGGERED].includes(eventName)) {
     const dd = data?.data;
+    dd.symbol = WFAIR_SYMBOL;
 
     if (eventName === notificationEvents.EVENT_WEBHOOK_TRIGGERED && dd.status !== 'completed') {
       return;
@@ -59,7 +60,7 @@ const processDepositEvent = async (event, data) => {
       return;
     }
 
-    const formattedAmount = fromWei(dd.symbol !== WFAIR_SYMBOL ? dd.input_amount : dd.amount).decimalPlaces(0);
+    const formattedAmount = fromWei(dd.amount).decimalPlaces(0);
     let emailHtml = emailDepositCreated;
 
     for (const entry in dd) {
