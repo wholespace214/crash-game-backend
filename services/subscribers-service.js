@@ -68,7 +68,7 @@ const processWithdrawEvent = async (_, data) => {
     return;
   }
 
-  if (eventName === notificationEvents.EVENT_WITHDRAW_REQUESTED) {
+  if (eventName === notificationEvents.EVENT_WITHDRAW_APPROVED) {
     const dd = data?.data;
     const formattedAmount = fromWei(dd.amount).decimalPlaces(0);
     let emailHtml = emailWithdrawRequested;
