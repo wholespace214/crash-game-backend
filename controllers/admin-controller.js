@@ -158,7 +158,7 @@ exports.createPromoCode = async (req, res, next) => {
 
   const {
     name,
-    ref = PROMO_CODE_DEFAULT_REF,
+    ref,
     type,
     value,
     count,
@@ -179,7 +179,7 @@ exports.createPromoCode = async (req, res, next) => {
       `INSERT INTO promo_code(name, ref_id, type, value, count, description, expires_at, cover_url, wagering, duration) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        RETURNING *`,
-      [name, ref, type, toWei(value).toString(), count || 1, description, expiresAt, coverUrl, wagering, duration]
+      [name, ref || PROMO_CODE_DEFAULT_REF, type, toWei(value).toString(), count || 1, description, expiresAt, coverUrl, wagering, duration]
     );
     return res.status(201).send(result[0]);
   } catch (e) {

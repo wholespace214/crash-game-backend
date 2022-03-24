@@ -34,7 +34,7 @@ exports.cancelUserPromoCode = async (userId, promoCodeName, ref) => {
     await casinoContract.finalizeUserPromoCode(
       userId,
       promoCodeName,
-      ref || PROMO_CODE_DEFAULT_REF,
+      ref,
       'CANCELLED'
     );
   } catch (e) {
