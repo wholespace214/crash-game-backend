@@ -588,7 +588,7 @@ exports.getUserDataForAdmin = async (userId) => {
       `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", cast(amountpaid/${one} as integer) as "cashout", cast((amountpaid - stakedamount) / ${one} as integer) as "profit", games.label from casino_trades left join games on games.id = casino_trades.gameid where userid = '${userId}' and state < 4 order by created_at;`);
 
   const transactions = await new Transactions().getExternalTransactionLogs({
-    select: ['created_at', 'amount', 'internal_user_id', 'originator', 'status'],
+    select: ['created_at', 'amount', 'internal_user_id', 'originator', 'status', 'external_system'],
     where: {
       internal_user_id: userId
     },
