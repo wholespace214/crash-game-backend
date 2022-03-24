@@ -31,9 +31,15 @@ exports.cancelUserPromoCode = async (userId, promoCodeName, ref) => {
       namespace: AccountNamespace.USR,
       symbol: 'BFAIR'
     }, balance);
-    await casinoContract.finalizeUserPromoCode(userId, promoCodeName, ref, 'CANCELLED');
+    await casinoContract.finalizeUserPromoCode(
+      userId,
+      promoCodeName,
+      ref || PROMO_CODE_DEFAULT_REF,
+      'CANCELLED'
+    );
   } catch (e) {
     console.error(e);
+    throw e;
   }
 }
 
