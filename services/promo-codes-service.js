@@ -64,3 +64,7 @@ exports.isClaimedBonus = async (userId, promoCodeName) => {
 exports.claimPromoCodeBonus = async (userId, promoCodeName) => {
   return await casinoContract.claimPromoCode(userId, promoCodeName);
 }
+
+exports.withdraw = async (userId, promoCodeName, ref = PROMO_CODE_DEFAULT_REF) => {
+  await casinoContract.withdrawBonusMoney(userId, promoCodeName, ref, process.env.REWARD_WALLET);
+};

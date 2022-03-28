@@ -668,6 +668,17 @@ const cancelPromoCode = async (req, res, next) => {
     console.error('PROMO CODES CANCEL: ', e.message);
     return next(new ErrorHandler(500, 'Failed to cancel the promo code'));
   }
+};
+
+const withdrawPromoCode = async (req, res, next) => {
+  try {
+    const { ref = PROMO_CODE_DEFAULT_REF, promoCode } = req.body;
+    await promoCodesService.withdraw(req.user.id, promoCode, ref);
+    return res.status(204).send();
+  } catch (e) {
+    console.error('PROMO CODES WITHDRAW: ', e.message);
+    return next(new ErrorHandler(500, e.message));
+  }
 }; 
 
 const verifySms = async (req, res, next) => {
@@ -781,6 +792,7 @@ exports.banUser = banUser;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.getUserPromoCodes = getUserPromoCodes;
 exports.claimPromoCode = claimPromoCode;
+exports.withdrawPromoCode = withdrawPromoCode;
 exports.cancelPromoCode = cancelPromoCode;
 exports.verifySms = verifySms;
 exports.sendSms = sendSms;

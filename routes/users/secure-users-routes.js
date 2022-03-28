@@ -85,6 +85,12 @@ router.post(
   userController.claimPromoCode
 );
 
+router.post(
+  '/promo-codes/withdraw',
+  [check('promoCode').notEmpty()],
+  userController.withdrawPromoCode
+);
+
 router.patch('/promo-codes/:name', userController.cancelPromoCode);
 
 router.post('/tokens', userController.claimTokens);
