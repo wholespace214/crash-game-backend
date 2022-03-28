@@ -654,10 +654,7 @@ const claimPromoCode = async (req, res, next) => {
     return res.status(200).send(response);
   } catch (e) {
     console.error('PROMO CODES ERROR: ', e.message);
-    const msg = e.message === 'PROMO_CODE_ACTIVE' ?
-      'You first need to cancel the active bonus' :
-      `Failed to claim promo code ${req.body.promoCode}`;
-    return next(new ErrorHandler(500, msg));
+    return next(new ErrorHandler(500, e.message));
   }
 };
 
