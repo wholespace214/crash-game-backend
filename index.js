@@ -75,7 +75,7 @@ async function main() {
 
   const amqp = require('./services/amqp-service');
   await amqp.init();
-  await amqp.subscribeDepositsChannel();
+  await amqp.subscribe();
 
   //init redis connection
   const { createClient } = require('redis');

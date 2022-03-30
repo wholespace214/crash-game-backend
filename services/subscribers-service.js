@@ -1,4 +1,4 @@
-const { fromWei, WFAIR_SYMBOL } = require("@wallfair.io/trading-engine");
+const { fromWei, WFAIR_SYMBOL, Query } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
 const fs = require("fs");
@@ -34,7 +34,7 @@ const exampleDepositData = {
 
  */
 
-const processDepositEvent = async (event, data) => {
+const processDepositEvent = async (_, data) => {
   const eventName = data?.event;
 
   if ([notificationEvents.EVENT_DEPOSIT_CREATED, notificationEvents.EVENT_WEBHOOK_TRIGGERED].includes(eventName)) {
@@ -80,4 +80,30 @@ const processWithdrawEvent = async (_, data) => {
   }
 }
 
-module.exports = { processDepositEvent, processWithdrawEvent };
+const checkPromoCodesExpiration = async () => {
+  PROCESSORS.promoCodesExpiration.running = true;
+  const result = await new Query().query(`
+    UPDATE promo_code_user
+    SET status = 'EXPIRED' 
+    WHERE status = 'CLAIMED' AND expires_at <= now()`
+  );
+  console.log(new Date(), `${result[1]} promo codes expired`);
+  PROCESSORS.promoCodesExpiration.running = false;
+};
+
+const PROCESSORS = {
+  deposit: {
+    call: processDepositEvent,
+    running: false,
+  },
+  withdraw: {
+    call: processWithdrawEvent,
+    running: false,
+  },
+  promoCodesExpiration: {
+    call: checkPromoCodesExpiration,
+    running: false,
+  },
+};
+
+module.exports = { PROCESSORS }

@@ -1,19 +1,38 @@
 const amqplib = require("amqplib");
 
 const retry = require('../util/retryHandler');
+const { PROCESSORS } = require("../services/subscribers-service");
 
 const rabbitUrl = process.env.RABBITMQ_CONNECTION;
 
 let connection, channel;
 
-const DEPOSIT_CREATED_SUBSCRIBER = {
-  exchange: 'universal_events',
-  exchangeType: 'topic',
-  queue: 'universal_events.backend',
-  routingKeys: ['event.deposit_created', 'event.webhook_triggered', 'event.withdraw_requested'],
-  durable: true,
-  autoDelete: false,
-  prefetch: 50
+const SUBSCRIBERS = [
+  {
+    exchange: 'universal_events',
+    exchangeType: 'topic',
+    queue: 'universal_events.backend',
+    routingKeys: ['event.deposit_created', 'event.webhook_triggered', 'event.withdraw_requested'],
+    durable: true,
+    autoDelete: false,
+    prefetch: 50
+  },
+  {
+    exchange: 'cron_jobs',
+    exchangeType: 'topic',
+    queue: 'cron_jobs.backend',
+    routingKeys: ['backend.promo_code_expiration'],
+    durable: true,
+    autoDelete: false,
+    prefetch: 50
+  },
+];
+
+const ROUTING_MAPPING = {
+  ['event.deposit_created']: PROCESSORS.deposit,
+  ['event.webhook_triggered']: PROCESSORS.deposit,
+  ['event.withdraw_requested']: PROCESSORS.withdraw,
+  ['backend.promo_code_expiration']: PROCESSORS.promoCodesExpiration,
 };
 
 const init = async () => {
@@ -34,53 +53,48 @@ const send = async (exchange, routingKey, data, options) => {
   }
 };
 
-const subscribeDepositsChannel = async () => {
+const subscribe = async () => {
   try {
-    const { processDepositEvent, processWithdrawEvent } = require("../services/subscribers-service");
+    SUBSCRIBERS.forEach(async (cfg) => {
+      channel.prefetch(cfg.prefetch);
+      await channel.assertExchange(cfg.exchange, cfg.exchangeType, {
+        durable: cfg.durable,
+      });
+      const q = await channel.assertQueue(cfg.queue, {
+        durable: cfg.durable,
+        autoDelete: cfg.autoDelete
+      });
 
-    const cfg = DEPOSIT_CREATED_SUBSCRIBER;
-    channel.prefetch(cfg.prefetch);
+      cfg.routingKeys.forEach(async (routingKey) => {
+        await channel.bindQueue(q.queue, cfg.exchange, routingKey);
+      });
 
-    await channel.assertExchange(cfg.exchange, cfg.exchangeType, {
-      durable: cfg.durable,
-    });
-    const q = await channel.assertQueue(cfg.queue, {
-      durable: cfg.durable,
-      autoDelete: cfg.autoDelete
-    });
+      channel.consume(
+        q.queue,
+        async (msg) => {
+          const routingKey = msg.fields.routingKey;
+          const content = msg.content.toString();
+          const processor = ROUTING_MAPPING[routingKey];
 
-    cfg.routingKeys.forEach(async (routingKey) => {
-      await channel.bindQueue(q.queue, cfg.exchange, routingKey);
-    })
-
-    channel.consume(
-      q.queue,
-      async (msg) => {
-        if (msg.fields.routingKey === 'event.withdraw_requested') {
-          await processWithdrawEvent(
-            msg.fields.routingKey, JSON.parse(msg.content.toString())
-          ).catch((consumeErr) => {
-            console.error('processWithdrawEvent failed with error:', consumeErr);
-            retry(processWithdrawEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
-          })
-        } else {
-          await processDepositEvent(
-            msg.fields.routingKey, JSON.parse(msg.content.toString())
-          ).catch((consumeErr) => {
-            console.error('processDepositEvent failed with error:', consumeErr);
-            retry(processDepositEvent, [msg.fields.routingKey, JSON.parse(msg.content.toString())]);
-          })
+          try {
+            if (processor && !processor.running) {
+              await processor.call(routingKey, content);
+            }
+          } catch (e) {
+            console.error(`${routingKey} failed`, e.message);
+            retry(processor.call, [routingKey, content]);
+          }
+        },
+        {
+          noAck: true
         }
-      },
-      {
-        noAck: true
-      }
-    );
+      );
 
-    console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange on [${cfg.routingKeys.join(', ')}] routing keys subscribed. Waiting for messages...`);
+      console.info(new Date(), `[*] rabbitMQ: "${cfg.exchange}" exchange on [${cfg.routingKeys.join(', ')}] routing keys subscribed. Waiting for messages...`);
+    });
   } catch (e) {
-    console.error("subscribeDepositsChannel error", e);
+    console.error("subscribe error", e);
   }
 };
 
-module.exports = { init, send, subscribeDepositsChannel };
+module.exports = { init, send, subscribe };
