@@ -1,4 +1,4 @@
-const { fromWei, WFAIR_SYMBOL, Query } = require("@wallfair.io/trading-engine");
+const { fromWei, WFAIR_SYMBOL, Query, TransactionManager, AccountNamespace } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
 const fs = require("fs");
@@ -82,12 +82,28 @@ const processWithdrawEvent = async (_, data) => {
 
 const checkPromoCodesExpiration = async () => {
   PROCESSORS.promoCodesExpiration.running = true;
-  const result = await new Query().query(`
-    UPDATE promo_code_user
-    SET status = 'EXPIRED' 
-    WHERE status = 'CLAIMED' AND expires_at <= now()`
-  );
-  console.log(new Date(), `${result[1]} promo codes expired`);
+  const transaction = new TransactionManager();
+
+  try {
+    await transaction.startTransaction();
+
+    const result = await transaction.queryRunner.query(`
+      UPDATE promo_code_user
+      SET status = 'EXPIRED' 
+      WHERE status = 'CLAIMED' AND expires_at <= now()
+      RETURNING *`
+    );
+    const users = result[0].map(r => r.user_id);
+    users.length > 0 &&
+      await transaction.wallet.burnAll(users, AccountNamespace.USR, 'BFAIR');
+
+    await transaction.commitTransaction();
+    console.log(new Date(), `${result[1]} promo codes expired`);
+  } catch (e) {
+    console.error(e);
+    await transaction.rollbackTransaction();
+  }
+
   PROCESSORS.promoCodesExpiration.running = false;
 };
 
