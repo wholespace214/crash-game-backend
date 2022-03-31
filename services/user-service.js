@@ -770,6 +770,11 @@ exports.processWeb3Login = async (address, username, ref, sid, cid) => {
   }
 };
 
+exports.getUserByAddress = async (address) => {
+  const userAccount = await new Account().getUserLink(address);
+  return userAccount ? await userApi.getOne(userAccount.user_id) : {};
+}
+
 exports.confirmDeposit = async (hash, networkCode, userId) => {
   try {
     await new Webhook().insertWebhookQueue(

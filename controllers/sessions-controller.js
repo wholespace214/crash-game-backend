@@ -336,6 +336,15 @@ module.exports = {
     }
 
     const { address, signResponse, challenge, username, ref, sid, cid } = req.body;
+    const isAdminOnly = req.query.admin === 'true';
+
+    if (isAdminOnly) {
+      const userCheck = await userService.getUserByAddress(address);
+
+      if (!userCheck || !userCheck.admin) {
+        return next(new ErrorHandler(401, 'Failed to login'));
+      }
+    }
 
     const verified = verifyChallengeResponse(address, challenge, signResponse);
     if (!verified) {
