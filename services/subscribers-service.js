@@ -88,9 +88,10 @@ const checkPromoCodesExpiration = async () => {
     await transaction.startTransaction();
 
     const result = await transaction.queryRunner.query(`
-      UPDATE promo_code_user
+      UPDATE promo_code_user pcu
       SET status = 'EXPIRED' 
-      WHERE status = 'CLAIMED' AND expires_at <= now()
+      FROM promo_code pc 
+      WHERE pcu.promo_code_id = pc.id AND pcu.status = 'CLAIMED' AND (pcu.expires_at <= now() OR pc.expires_at <=now())
       RETURNING *`
     );
     const users = result[0].map(r => r.user_id);
