@@ -1,4 +1,4 @@
-const { fromWei, WFAIR_SYMBOL, Query, TransactionManager, AccountNamespace } = require("@wallfair.io/trading-engine");
+const { fromWei, WFAIR_SYMBOL, TransactionManager, AccountNamespace } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
 const fs = require("fs");
