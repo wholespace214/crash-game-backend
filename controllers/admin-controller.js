@@ -193,9 +193,7 @@ exports.getPromoCodes = async (req, res, next) => {
   try {
     const { order = 'created_at', name } = req.query;
     const result = await new Query().query(
-      'SELECT * FROM promo_code ' +
-        name ? `WHERE name = ${name} ` : '' +
-      `ORDER BY ${order} DESC`
+      `SELECT * FROM promo_code ${name ? 'WHERE name = ' + name : ''} ORDER BY ${order} DESC`
     );
     return res.status(200)
       .send(result.map((r) => {
