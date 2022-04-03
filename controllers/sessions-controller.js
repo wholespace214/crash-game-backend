@@ -330,6 +330,7 @@ module.exports = {
   },
 
   async loginWeb3(req, res, next) {
+    console.log('Starting web3 log-in');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return next(new ErrorHandler(422, errors));
@@ -347,6 +348,7 @@ module.exports = {
         return next(new ErrorHandler(401, 'Failed to login'));
       }
     }
+    console.log(`User check ${userCheck}, skip token ${process.env.RECAPTCHA_SKIP_TOKEN}, Recaptcha token ${recaptchaToken}`);
     if (!userCheck && (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip)) {
       console.log('[RECAPTCHA - TOKEN]:', recaptchaToken);
 
