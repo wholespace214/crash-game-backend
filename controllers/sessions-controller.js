@@ -341,7 +341,7 @@ module.exports = {
 
     const isAdminOnly = req.query.admin === 'true';
     const userCheck = await userService.getUserByAddress(address);
-
+    console.log(userCheck);
     if (isAdminOnly) {
 
       if (!userCheck || !userCheck.admin) {
@@ -349,7 +349,7 @@ module.exports = {
       }
     }
     console.log(`User check ${userCheck}, skip token ${process.env.RECAPTCHA_SKIP_TOKEN}, Recaptcha token ${recaptchaToken}`);
-    if (!userCheck && (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip)) {
+    if (!!userCheck && (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip)) {
       console.log('[RECAPTCHA - TOKEN]:', recaptchaToken);
 
       if (!recaptchaToken) {
