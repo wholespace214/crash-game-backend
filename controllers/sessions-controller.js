@@ -335,7 +335,27 @@ module.exports = {
       return next(new ErrorHandler(422, errors));
     }
 
-    const { address, signResponse, challenge, username, ref, sid, cid } = req.body;
+    const { address, signResponse, challenge, username, ref, sid, cid, recaptchaToken } = req.body;
+    const { skip } = req.query;
+
+    if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
+      const recaptchaRes = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
+      );
+
+      console.log('[RECAPTCHA DATA - VERIFY]:', recaptchaRes.data)
+      console.log('[RECAPTHCA - TOKEN]:', recaptchaToken);
+
+      if (
+        !recaptchaRes.data.success ||
+        recaptchaRes.data.score < 0.5 ||
+        recaptchaRes.data.action !== 'join'
+      ) {
+        return next(
+          new ErrorHandler(422, 'Recaptcha verification failed, please try again later.')
+        );
+      }
+    }
     const isAdminOnly = req.query.admin === 'true';
 
     if (isAdminOnly) {
