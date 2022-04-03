@@ -69,7 +69,6 @@ router.post(
     check('address').notEmpty(),
     check('signResponse').notEmpty(),
     check('challenge').notEmpty(),
-    check('recaptchaToken').notEmpty
   ],
   sessionsController.loginWeb3,
 );
