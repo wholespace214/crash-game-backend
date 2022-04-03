@@ -337,6 +337,7 @@ module.exports = {
 
     const { address, signResponse, challenge, username, ref, sid, cid, recaptchaToken } = req.body;
     const { skip } = req.query;
+    console.log('[RECAPTHCA - TOKEN]:', recaptchaToken);
 
     if (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip) {
       const recaptchaRes = await axios.post(
