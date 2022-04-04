@@ -26,7 +26,6 @@ const { fromScaledBigInt } = require('../util/number-helper');
 
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
-const faker = require('faker');
 
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
@@ -461,20 +460,6 @@ const getUserCount = async (req, res) => {
   });
 };
 
-const updateStatus = async (req, res, next) => {
-  if (!req.user.admin) {
-    return next(new ErrorHandler(403, 'Action not allowed'));
-  }
-
-  try {
-    await userService.updateStatus(req.params.userId, req.body.status);
-    res.status(204).send();
-  } catch (err) {
-    console.error(err);
-    next(new ErrorHandler(500, 'User could not be locked'));
-  }
-};
-
 const getUserTransactions = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -513,11 +498,6 @@ const getUserTransactions = async (req, res, next) => {
     next(new ErrorHandler(422, err.message));
   }
 };
-
-const randomUsername = (req, res) => {
-  const username = faker.internet.userName();
-  return res.send({ username });
-}
 
 const buyWithCrypto = async (req, res, next) => {
   if (!req.user || !req.user.email) return next(new ErrorHandler(404, 'Email not found'));
@@ -781,9 +761,7 @@ exports.getLeaderboard = getLeaderboard;
 exports.checkUsername = checkUsername;
 exports.getUserStats = getUserStats;
 exports.getUserCount = getUserCount;
-exports.updateStatus = updateStatus;
 exports.getUserTransactions = getUserTransactions;
-exports.randomUsername = randomUsername;
 exports.buyWithCrypto = buyWithCrypto;
 exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;

@@ -41,7 +41,6 @@
     "express-jwt-authz": "^2.4.1",
     "express-session": "^1.17.2",
     "express-validator": "^6.12.1",
-    "faker": "^5.5.3",
     "flat": "^5.0.2",
     "generate-password": "^1.6.1",
     "google-auth-library": "^7.9.2",

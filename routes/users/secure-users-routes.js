@@ -45,8 +45,6 @@ router.patch(
 
 router.get('/:userId', userController.getUserInfo);
 
-router.post('/:userId/status', userController.updateStatus);
-
 router.get('/wallet/transactions', userController.getUserTransactions);
 
 router.post('/buy-with-crypto', userController.buyWithCrypto);

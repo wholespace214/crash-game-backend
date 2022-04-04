@@ -23,8 +23,6 @@ router.get('/:userId/stats', userController.getUserStats);
 
 router.get('/count', userController.getUserCount)
 
-router.get('/random-username', userController.randomUsername)
-
 router.post(
   '/verify-sms',
   [check('userId').isString(), check('phone').isMobilePhone(), check('smsToken').isNumeric().isLength({ min: 6, max: 6 })],
