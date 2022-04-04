@@ -1,8 +1,10 @@
-const { fromWei, Wallet, AccountNamespace } = require("@wallfair.io/trading-engine");
+const { fromWei, Wallet, AccountNamespace, Transactions, ExternalTransactionOriginator, BN, toWei } = require("@wallfair.io/trading-engine");
 const { CasinoTradeContract } = require("@wallfair.io/wallfair-casino");
 const { PROMO_CODE_DEFAULT_REF } = require("../util/constants");
 
 const casinoContract = new CasinoTradeContract();
+
+const MIN_DEPOSIT = process.env.MIN_PROMO_CODE_DEPOSIT || 500;
 
 exports.getUserPromoCodes = async (userId, statuses) => {
   const promoCodes = await casinoContract.getUserPromoCodes(userId, statuses);
@@ -57,6 +59,13 @@ exports.isClaimedBonus = async (userId, promoCodeName) => {
 }
 
 exports.claimPromoCodeBonus = async (userId, promoCodeName) => {
+  const depositSum = await new Transactions()
+    .getSumAmountByOriginator(ExternalTransactionOriginator.DEPOSIT, userId);
+
+  if (new BN(depositSum).isLessThan(toWei(MIN_DEPOSIT))) {
+    throw new Error(`Minimum deposit of ${MIN_DEPOSIT} WFAIR is required in order to claim the bonus`);
+  }
+
   const res = await casinoContract.claimPromoCode(userId, promoCodeName);
   return {
     ...res,
