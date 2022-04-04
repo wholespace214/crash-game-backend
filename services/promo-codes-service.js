@@ -57,7 +57,11 @@ exports.isClaimedBonus = async (userId, promoCodeName) => {
 }
 
 exports.claimPromoCodeBonus = async (userId, promoCodeName) => {
-  return await casinoContract.claimPromoCode(userId, promoCodeName);
+  const res = await casinoContract.claimPromoCode(userId, promoCodeName);
+  return {
+    ...res,
+    value: fromWei(res.value).toFixed(4),
+  }
 }
 
 exports.withdraw = async (userId, promoCodeName, ref = PROMO_CODE_DEFAULT_REF) => {
