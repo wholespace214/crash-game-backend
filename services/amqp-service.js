@@ -73,7 +73,7 @@ const subscribe = async () => {
         q.queue,
         async (msg) => {
           const routingKey = msg.fields.routingKey;
-          const content = msg.content.toString();
+          const content = JSON.parse(msg.content.toString());
           const processor = ROUTING_MAPPING[routingKey];
 
           try {
