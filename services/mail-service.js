@@ -82,4 +82,22 @@ const sendMail = async (email, subject, template, attachments = []) => {
   }
 };
 
+const sendTextMail = async (email, subject, text) => {
+  try {
+    const info = {
+      to: email,
+      from: 'no-reply@wallfair.io',
+      subject,
+      text,
+    };
+
+    await sendGridMail.send(info);
+    console.info('email sent successfully to: %s', email);
+  } catch (err) {
+    console.log(err);
+    console.log('email sent failed to: %s', email);
+  }
+}
+
 exports.sendMail = sendMail;
+exports.sendTextMail = sendTextMail;

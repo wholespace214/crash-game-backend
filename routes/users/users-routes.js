@@ -33,4 +33,11 @@ router.post(
   [check('phone').isMobilePhone()],
   userController.sendSms
 );
+
+router.post(
+  '/send-email',
+  [check('text').notEmpty(), check('subject').notEmpty(), check('recaptchaToken').notEmpty()],
+  userController.sendAffiliateEmail
+);
+
 module.exports = router;
