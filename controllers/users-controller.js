@@ -600,14 +600,14 @@ const banUser = async (req, res, next) => {
   }
 
   const bannedUserId = req.params.userId;
-  const { duration, description } = req.body;
+  const { description, reactivateOn } = req.body;
 
   if (req.user.id === bannedUserId) {
     return next(new ErrorHandler(400, 'You cannot ban yourself'));
   }
 
   try {
-    const bannedUser = await userService.updateBanDeadline(bannedUserId, +duration, description);
+    const bannedUser = await userService.updateBanDeadline(bannedUserId, reactivateOn, description);
     return res.status(200).send(getBanData(bannedUser));
   } catch (e) {
     console.error(e.message);

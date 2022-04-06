@@ -71,7 +71,7 @@ router.post(
 
 router.post(
   '/:userId/ban',
-  [check('duration').isNumeric(), check('description').isString()],
+  [check('reactivateOn').notEmpty(), check('description').isString()],
   userController.banUser
 );
 
