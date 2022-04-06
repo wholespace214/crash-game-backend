@@ -615,6 +615,27 @@ const banUser = async (req, res, next) => {
   }
 };
 
+const updateRole = async (req, res, next) => {
+  if (!req.user || !req.user.admin) {
+    return next(new ErrorHandler(403, 'Action forbidden'));
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new ErrorHandler(400, errors));
+  }
+
+  const { role } = req.body;
+
+  try {
+    await userService.changeUserRole(req.params.userId, role);
+    return res.status(204).send();
+  } catch (e) {
+    console.error(e.message);
+    return next(new ErrorHandler(500, 'Failed to change user role'));
+  }
+}
+
 const getUserPromoCodes = async (req, res, next) => {
   try {
     const statuses = req.query?.statuses?.split(',');
@@ -798,6 +819,7 @@ exports.buyWithFiat = buyWithFiat;
 exports.cryptoPayChannel = cryptoPayChannel;
 exports.updateUserConsent = updateUserConsent;
 exports.banUser = banUser;
+exports.updateRole = updateRole;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.getUserPromoCodes = getUserPromoCodes;
 exports.claimPromoCode = claimPromoCode;

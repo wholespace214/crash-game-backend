@@ -465,6 +465,12 @@ exports.updateBanDeadline = async (userId, duration = 0, description = null) => 
   return user.save();
 };
 
+exports.changeUserRole = async (userId, role) => {
+  const user = await User.findById(userId);
+  user.admin = role === 'admin';
+  user.save();
+};
+
 exports.searchUsers = async (limit, skip, search, sortField, sortOrder, account) => {
   if (account) {
     const acc = await new Account().getUserLink(account);

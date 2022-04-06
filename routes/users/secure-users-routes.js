@@ -75,6 +75,12 @@ router.post(
   userController.banUser
 );
 
+router.post(
+  '/:userId/update-role',
+  [check('role').notEmpty()],
+  userController.updateRole
+)
+
 router.get('/promo-codes/all', userController.getUserPromoCodes);
 
 router.post(
