@@ -518,10 +518,6 @@ exports.searchUsers = async (limit, skip, search, sortField, sortOrder, account)
 }
 
 exports.verifySms = async (user, phone, smsToken) => {
-  if (!user) {
-    throw new Error('Invalid user', 401);
-  }
-
   try {
     const verification = await twilio.verify
       .services(process.env.TWILIO_SID)
@@ -533,15 +529,12 @@ exports.verifySms = async (user, phone, smsToken) => {
     throw new Error('Invalid verification code', 401);
   }
 
-
   try {
     user.phone = phone;
     await user.save();
   } catch (err) {
     throw new Error('Unable to save user\n' + err, 401);
-
   }
-
 };
 exports.sendSms = async (phone) => {
   //Cancel existing code if there's any.
