@@ -564,7 +564,7 @@ exports.sendSms = async (phone) => {
 
 exports.getUserDataForAdmin = async (userId) => {
   const queryRunner = new Query();
-  const one = 1000000000000000000
+  const one = 1000000000000000000;
   const u = await User.findOne({ _id: userId })
   if (!u) throw new NotFoundError()
   const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
@@ -592,7 +592,7 @@ exports.getUserDataForAdmin = async (userId) => {
     }
   });
 
-  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 500, sort: { createdAt: -1 } });
+  const apiLogs = await ApiLogs.find({ userId }, ['ip', 'createdAt', 'api_type', 'path', 'statusCode', 'headers'], { limit: 100, sort: { createdAt: -1 } });
   const userIps = [...new Set(apiLogs.map(item => item.ip))];
   const usersOnSameIps = await ApiLogs.aggregate([
     {
@@ -613,6 +613,7 @@ exports.getUserDataForAdmin = async (userId) => {
   });
 
   const bonus = await casinoContract.getPromoCodeUserByType(userId, 'BONUS');
+  const account = await new Account().findAccountByUserId(userId);
 
   return {
     ...u.toObject(),
@@ -631,6 +632,7 @@ exports.getUserDataForAdmin = async (userId) => {
         amount: fromWei(t.amount).toFixed(2),
       }
     }),
+    account,
     apiLogs,
     userIps,
     usersOnSameIps
