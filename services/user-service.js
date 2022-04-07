@@ -571,8 +571,13 @@ exports.getUserDataForAdmin = async (userId) => {
       `select cast(stakedamount / ${one} as integer) as "bet", crashfactor as "multiplier", 
               cast(amountpaid/${one} as integer) as "cashout", 
               cast((amountpaid - stakedamount) / ${one} as integer) as "profit", 
-              games.label 
-       from casino_trades left join games on games.id = casino_trades.gameid 
+              games1.label as game_label_1,
+              games2.label as game_label_2,
+              external_games_config.game_data -> 'title' as external_label
+       from casino_trades 
+        left join games as games1 on games1.id = casino_trades.gameid
+        left join games as games2 on games2.label = casino_trades.gameid 
+        left join external_games_config on external_games_config.game_id = casino_trades.gameid
        where userid = '${userId}' and state < 4 order by created_at;`
     );
 
