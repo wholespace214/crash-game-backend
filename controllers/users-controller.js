@@ -20,18 +20,16 @@ const moonpayService = require('../services/moonpay-service');
 const awsS3Service = require('../services/aws-s3-service');
 const leaderboardService = require('../services/leaderboard-service');
 const promoCodesService = require('../services/promo-codes-service');
-
 const { ErrorHandler } = require('../util/error-handler');
 const { fromScaledBigInt } = require('../util/number-helper');
-
 const _ = require('lodash');
 const bigDecimal = require('js-big-decimal');
-const axios = require('axios');
 
 const WFAIR = new Wallet();
 const casinoContract = new CasinoTradeContract();
 const { getBanData } = require('../util/user');
 const { PROMO_CODE_DEFAULT_REF } = require('../util/constants');
+const { verifyRecaptcha } = require('../util/recaptcha');
 
 //@todo this route is not used in frontend, I will move ref reward part in confirm-email route
 const saveAdditionalInformation = async (req, res, next) => {
@@ -325,20 +323,6 @@ const confirmEmail = async (req, res, next) => {
       user.emailConfirmed = true;
       user.confirmed = true;
       await user.save();
-
-      // await userService
-      //   .createUserAwardEvent({
-      //     userId,
-      //     awardData: {
-      //       type: AWARD_TYPES.EMAIL_CONFIRMED,
-      //       award: WFAIR_REWARDS.confirmEmail,
-      //     },
-      //   })
-      //   .catch((err) => {
-      //     console.error('createUserAwardEvent', err);
-      //   });
-
-      // await userService.checkConfirmEmailBonus(userId);
 
       res.status(200).send({ status: 'OK' });
     } else {
@@ -743,15 +727,10 @@ const sendAffiliateEmail = async (req, res, next) => {
   }
 
   const { recaptchaToken, text, subject } = req.body;
-  const recaptchaRes = await axios.post(
-    `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
-  );
 
-  if (
-    !recaptchaRes.data.success ||
-    recaptchaRes.data.score < 0.5 ||
-    recaptchaRes.data.action !== 'join'
-  ) {
+  const verifiedRecaptcha = await verifyRecaptcha(recaptchaToken);
+
+  if (!verifiedRecaptcha) {
     return next(
       new ErrorHandler(422, 'Recaptcha verification failed, please try again later.')
     );

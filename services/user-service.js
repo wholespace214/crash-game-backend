@@ -19,6 +19,7 @@ const CURRENCIES = ['WFAIR', 'EUR', 'USD'];
 const twilio = require('twilio')(process.env.TWILIO_ACC_SID, process.env.TWILIO_AUTH_TOKEN);
 const userApi = require('./user-api');
 const { ObjectId } = require('mongodb');
+const { verifyRecaptcha } = require('../util/recaptcha');
 
 const isPlayMoney = process.env.PLAYMONEY === 'true';
 
@@ -671,7 +672,7 @@ exports.claimTokens = async (userId) => {
   }
 };
 
-exports.processWeb3Login = async (address, username, ref, sid, cid) => {
+exports.processWeb3Login = async (address, username, ref, sid, cid, recaptchaToken) => {
   const transaction = new TransactionManager();
 
   try {
@@ -699,6 +700,16 @@ exports.processWeb3Login = async (address, username, ref, sid, cid) => {
         })
       );
     } else {
+      if (!recaptchaToken) {
+        throw new Error(`Recaptcha token missing. User address: ${address}`);
+      }
+
+      const recaptchaVerified = await verifyRecaptcha(recaptchaToken);
+
+      if (!recaptchaVerified) {
+        throw new Error(`Recaptcha verification failed. User address: ${address}`);
+      }
+
       const userId = new ObjectId().toHexString();
 
       await transaction.account.linkEthereumAccount(

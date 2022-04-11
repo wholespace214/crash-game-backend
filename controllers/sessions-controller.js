@@ -337,50 +337,23 @@ module.exports = {
     }
 
     const { address, signResponse, challenge, username, ref, sid, cid, recaptchaToken } = req.body;
-    const { skip } = req.query;
 
-    const isAdminOnly = req.query.admin === 'true';
-    const userCheck = await userService.getUserByAddress(address);
-
-    console.log(userCheck);
-    if (isAdminOnly) {
-
-      if (!userCheck || !userCheck.admin) {
-        return next(new ErrorHandler(401, 'Failed to login'));
-      }
-    }
-    console.log(`User check ${userCheck}, skip token ${process.env.RECAPTCHA_SKIP_TOKEN}, Recaptcha token ${recaptchaToken}`);
-    if (!userCheck?._id && (!process.env.RECAPTCHA_SKIP_TOKEN || process.env.RECAPTCHA_SKIP_TOKEN !== skip)) {
-      console.log('[RECAPTCHA - TOKEN]:', recaptchaToken);
-
-      if (!recaptchaToken) {
-        return next(
-          new ErrorHandler(422, 'No recaptcha token received, please try again.')
-        );
-      }
-      const recaptchaRes = await axios.post(
-        `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${recaptchaToken}`
-      );
-
-      console.log('[RECAPTCHA DATA - VERIFY]:', recaptchaRes.data)
-
-      if (
-        !recaptchaRes.data.success ||
-        recaptchaRes.data.score < 0.5 ||
-        recaptchaRes.data.action !== 'join'
-      ) {
-        return next(
-          new ErrorHandler(422, 'Recaptcha verification failed, please try again later.')
-        );
-      }
-    }
     const verified = verifyChallengeResponse(address, challenge, signResponse);
     if (!verified) {
       return next(new ErrorHandler(401, 'Failed to verify signer'));
     }
 
     try {
-      const user = await userService.processWeb3Login(address, username, ref, sid, cid);
+      const user = await userService.processWeb3Login(
+        address,
+        username,
+        ref, sid, cid,
+        recaptchaToken,
+      );
+
+      if (req.query?.admin === 'true' && !user.admin) {
+        return next(new ErrorHandler(401, 'Failed to login'));
+      }
 
       if (isUserBanned(user)) {
         return next(new BannedError(user));
