@@ -613,6 +613,7 @@ exports.getUserDataForAdmin = async (userId) => {
 
   const bonus = await casinoContract.getPromoCodeUserByType(userId, 'BONUS');
   const account = await new Account().findAccountByUserId(userId);
+  const refList = await this.getRefByUserId(userId);
 
   return {
     ...u.toObject(),
@@ -634,7 +635,8 @@ exports.getUserDataForAdmin = async (userId) => {
     account,
     apiLogs,
     userIps,
-    usersOnSameIps
+    usersOnSameIps,
+    refList
   }
 }
 
