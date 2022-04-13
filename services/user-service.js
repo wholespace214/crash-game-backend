@@ -56,7 +56,7 @@ exports.getRefsWithDeposits = async (id) => {
   return await Promise.all(
     result.map(async user => {
       const deposits = await new Transactions().getExternalTransactionLogs({
-        select: ['created_at', 'amount'],
+        select: ['created_at', 'amount', 'originator', 'external_system', 'status'],
         where: {
           internal_user_id: user.id,
           originator: ExternalTransactionOriginator.DEPOSIT,
@@ -70,7 +70,14 @@ exports.getRefsWithDeposits = async (id) => {
       const amounts = deposits.map((a) => a.amount);
       const total = amounts.length ? BN.sum.apply(null, amounts) : new BN('0');
 
-      return { ...user, depositAmount: fromWei(total), deposits };
+      return {
+        ...user, depositAmount: fromWei(total), deposits: deposits.map(t => {
+          return {
+            ...t,
+            amount: fromWei(t.amount).toFixed(2),
+          }
+        })
+      };
     })
   );
 };
