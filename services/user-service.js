@@ -2,7 +2,7 @@ const { User, UniversalEvent, ApiLogs } = require('@wallfair.io/wallfair-commons
 const pick = require('lodash.pick');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
-const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei, Webhook, WebhookQueueOriginator, WebhookQueueStatus, Account } = require('@wallfair.io/trading-engine');
+const { Wallet, fromWei, Query, AccountNamespace, BN, Transactions, TransactionManager, WFAIR_SYMBOL, toWei, Webhook, WebhookQueueOriginator, WebhookQueueStatus, Account, ExternalTransactionOriginator, ExternalTransactionStatus } = require('@wallfair.io/trading-engine');
 const { WFAIR_REWARDS } = require('../util/constants');
 const { updateUserData } = require('./notification-events-service');
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
@@ -48,6 +48,34 @@ exports.getRefByUserId = async (id) => {
     users.forEach((entry) => result.push(pick(entry, ['id', 'username', 'email', 'date'])));
   });
   return result;
+};
+
+exports.getRefsWithDeposits = async (id) => {
+  const result = [];
+  await User.find({ ref: id }).then((users) => {
+    users.forEach((entry) => result.push(pick(entry, ['id', 'username', 'email', 'date'])));
+  });
+
+  return await Promise.all(
+    result.map(async user => {
+      const deposits = await new Transactions().getExternalTransactionLogs({
+        select: ['created_at', 'amount'],
+        where: {
+          internal_user_id: user.id,
+          originator: ExternalTransactionOriginator.DEPOSIT,
+          status: ExternalTransactionStatus.COMPLETED
+        },
+        order: {
+          created_at: 'DESC'
+        }
+      });
+
+      const amounts = deposits.map((a) => a.amount);
+      const total = amounts.length ? BN.sum.apply(null, amounts) : new BN('0');
+
+      return { ...user, deposit: fromWei(total) };
+    })
+  );
 };
 
 exports.getUsersToNotify = async (eventId, notificationSettings) => {
@@ -467,6 +495,34 @@ exports.changeUserRole = async (userId, role) => {
   user.save();
 };
 
+exports.usersWithReferrals = async () => {
+  const usersWithRefs = await User.aggregate([
+    {
+      $match: {
+        ref: { $ne: null }
+      }
+    }, {
+      $group: {
+        _id: "$ref",
+        refCount: { $sum: 1 }
+      }
+    }, {
+      $sort: {
+        refCount: -1
+      }
+    }
+  ]).catch((err) => {
+    console.error(err);
+  });
+
+  return await Promise.all(
+    usersWithRefs.filter(u => u._id && mongoose.Types.ObjectId.isValid(u._id)).map(async user => {
+      const i = await User.findById(user._id).select('username status date').exec();
+      return await { ...i._doc, refCount: user.refCount };
+    })
+  );
+}
+
 exports.searchUsers = async (limit, skip, search, sortField, sortOrder, account) => {
   if (account) {
     const acc = await new Account().getUserLink(account);
@@ -565,7 +621,7 @@ exports.getUserDataForAdmin = async (userId) => {
   const balances = await WFAIR.getBalances(userId, AccountNamespace.USR);
   const balance = balances.length > 1 ?
     balances.reduce((a, b) => new BN(a.balance).plus(new BN(b.balance))) :
-    balances[0].balance;
+    balances[0]?.balance;
 
   const bets = await queryRunner
     .query(
@@ -613,7 +669,7 @@ exports.getUserDataForAdmin = async (userId) => {
 
   const bonus = await casinoContract.getPromoCodeUserByType(userId, 'BONUS');
   const account = await new Account().findAccountByUserId(userId);
-  const refList = await this.getRefByUserId(userId);
+  const refList = await this.getRefsWithDeposits(userId);
 
   return {
     ...u.toObject(),

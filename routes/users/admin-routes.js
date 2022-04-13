@@ -24,6 +24,10 @@ router.get('/users',
   adminController.listUsers
 );
 
+router.get('/user-referrals',
+  adminController.listUsersWithReferrals
+);
+
 router.post(
   '/promo-codes',
   [

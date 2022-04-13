@@ -150,6 +150,20 @@ exports.listUsers = async (req, res, next) => {
   }
 }
 
+exports.listUsersWithReferrals = async (req, res, next) => {
+  if (!req.user) {
+    return next(new ErrorHandler(403, 'Not authorized'));
+  }
+
+  try {
+    const data = await userService.usersWithReferrals();
+    return res.send(data);
+  } catch (e) {
+    console.error(e)
+    return next(new ErrorHandler(500));
+  }
+}
+
 exports.createPromoCode = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
