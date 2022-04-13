@@ -51,10 +51,7 @@ exports.getRefByUserId = async (id) => {
 };
 
 exports.getRefsWithDeposits = async (id) => {
-  const result = [];
-  await User.find({ ref: id }).then((users) => {
-    users.forEach((entry) => result.push(pick(entry, ['id', 'username', 'email', 'date'])));
-  });
+  const result = await this.getRefByUserId(id);
 
   return await Promise.all(
     result.map(async user => {
@@ -73,7 +70,7 @@ exports.getRefsWithDeposits = async (id) => {
       const amounts = deposits.map((a) => a.amount);
       const total = amounts.length ? BN.sum.apply(null, amounts) : new BN('0');
 
-      return { ...user, deposit: fromWei(total) };
+      return { ...user, depositAmount: fromWei(total), deposits };
     })
   );
 };
