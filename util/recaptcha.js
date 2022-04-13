@@ -8,7 +8,7 @@ exports.verifyRecaptcha = async (token) => {
       `${RECAPTCHA_URL}?secret=${process.env.GOOGLE_RECAPTCHA_CLIENT_SECRET}&response=${token}`
     );
 
-    return res.data.success && res.data.score < 0.5 && res.data.action === 'join';
+    return res.data.success && res.data.score > 0.5 && res.data.action === 'join';
   } catch (e) {
     console.error('RECAPTCHA FAILED: ', e.message);
     return false;
