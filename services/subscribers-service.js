@@ -100,16 +100,9 @@ const checkPromoCodesExpiration = async () => {
     users.length > 0 &&
       await transaction.wallet.burnAll(users, AccountNamespace.USR, 'BFAIR');
 
-    const resultPromoCodes = await transaction.queryRunner.query(`
-      UPDATE promo_code
-      SET expires_at = now()
-      WHERE expires_at > now() AND (SELECT COUNT(*) FROM promo_code_user WHERE promo_code_id = id)::int >= available
-    `);
-
     await transaction.commitTransaction();
 
     console.log(new Date(), `${result[1]} user promo codes expired`);
-    console.log(new Date(), `${resultPromoCodes[1]} promo codes expired`);
   } catch (e) {
     console.error(e);
     await transaction.rollbackTransaction();
