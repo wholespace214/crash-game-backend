@@ -91,15 +91,25 @@ const checkPromoCodesExpiration = async () => {
       UPDATE promo_code_user pcu
       SET status = 'EXPIRED' 
       FROM promo_code pc 
-      WHERE pcu.promo_code_id = pc.id AND pcu.status = 'CLAIMED' AND (pcu.expires_at <= now() OR pc.expires_at <=now())
+      WHERE pcu.promo_code_id = pc.id AND 
+            pcu.status = 'CLAIMED' AND 
+            (pcu.expires_at <= now() OR pc.expires_at <= now())
       RETURNING *`
     );
     const users = result[0].map(r => r.user_id);
     users.length > 0 &&
       await transaction.wallet.burnAll(users, AccountNamespace.USR, 'BFAIR');
 
+    const resultPromoCodes = await transaction.queryRunner.query(`
+      UPDATE promo_code
+      SET expires_at = now()
+      WHERE expires_at > now() AND (SELECT COUNT(*) FROM promo_code_user WHERE promo_code_id = id)::int >= available
+    `);
+
     await transaction.commitTransaction();
-    console.log(new Date(), `${result[1]} promo codes expired`);
+
+    console.log(new Date(), `${result[1]} user promo codes expired`);
+    console.log(new Date(), `${resultPromoCodes[1]} promo codes expired`);
   } catch (e) {
     console.error(e);
     await transaction.rollbackTransaction();

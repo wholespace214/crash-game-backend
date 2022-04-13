@@ -167,7 +167,8 @@ exports.createPromoCode = async (req, res, next) => {
     coverUrl,
     wagering,
     duration,
-    expiresAt
+    expiresAt,
+    available,
   } = req.body;
 
   if (type === PROMO_CODES_TYPES.FREESPIN && ref === PROMO_CODE_DEFAULT_REF) {
@@ -177,10 +178,11 @@ exports.createPromoCode = async (req, res, next) => {
   try {
     const queryRunner = new Query();
     const result = await queryRunner.query(
-      `INSERT INTO promo_code(name, ref_id, type, value, count, description, expires_at, cover_url, wagering, duration, provider)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      `INSERT INTO promo_code(name, ref_id, type, value, count, description, expires_at, cover_url, wagering, duration, provider, available)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-      [name, ref || PROMO_CODE_DEFAULT_REF, type, toWei(value).toString(), count || 1, description, expiresAt, coverUrl, wagering, duration, provider]
+      [name, ref || PROMO_CODE_DEFAULT_REF, type, toWei(value).toString(), count || 1,
+        description, expiresAt, coverUrl, wagering, duration, provider, available]
     );
     return res.status(201).send(result[0]);
   } catch (e) {
