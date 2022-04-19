@@ -1,7 +1,8 @@
-const { fromWei, WFAIR_SYMBOL, TransactionManager, AccountNamespace } = require("@wallfair.io/trading-engine");
+const { fromWei, WFAIR_SYMBOL, TransactionManager, AccountNamespace, Transactions, ExternalTransactionOriginator } = require("@wallfair.io/trading-engine");
 const { notificationEvents } = require('@wallfair.io/wallfair-commons/constants/eventTypes');
 const { sendMail } = require("../services/mail-service");
 const fs = require("fs");
+const { claimUserDeposit } = require("./promo-codes-service");
 const emailDepositCreated = fs.readFileSync(__dirname + '/../emails/deposit-created.html', 'utf8');
 const emailWithdrawRequested = fs.readFileSync(__dirname + '/../emails/withdraw-requested.html', 'utf8');
 
@@ -45,6 +46,18 @@ const processDepositEvent = async (_, data) => {
       return;
     }
 
+    const deposits = await new Transactions().getExternalTransactionLogs({
+      where: {
+        internal_user_id: dd.internal_user_id,
+        originator: ExternalTransactionOriginator.DEPOSIT
+      }
+    });
+
+    if (deposits.length === 1) {
+      await claimUserDeposit(dd.internal_user_id, dd.amount)
+        .catch((e) => console.log('DEPOSIT CLAIM: ', e.message));
+    }
+
     if (!process.env.DEPOSIT_NOTIFICATION_EMAIL) {
       console.log('DEPOSIT_NOTIFICATION_EMAIL is empty, skipping email notification for deposits...');
       return;
@@ -56,7 +69,11 @@ const processDepositEvent = async (_, data) => {
     for (const entry in dd) {
       emailHtml = emailHtml.replace(`{{${entry}}}`, dd[entry]);
     }
-    await sendMail(process.env.DEPOSIT_NOTIFICATION_EMAIL, `${notificationEvents.EVENT_DEPOSIT_CREATED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`, emailHtml);
+    await sendMail(
+      process.env.DEPOSIT_NOTIFICATION_EMAIL,
+      `${notificationEvents.EVENT_DEPOSIT_CREATED} - ${process.env.ENVIRONMENT} - ${formattedAmount} ${dd.symbol}`,
+      emailHtml
+    );
   }
 }
 

@@ -83,10 +83,18 @@ router.post(
 
 router.get('/promo-codes/all', userController.getUserPromoCodes);
 
+router.get('/promo-codes/deposit', userController.getDepositPromoCodes);
+
 router.post(
   '/promo-codes',
   [check('promoCode').notEmpty()],
   userController.claimPromoCode
+);
+
+router.post(
+  '/promo-codes/deposit',
+  [check('promoCode').notEmpty()],
+  userController.claimDepositBonus
 );
 
 router.post(

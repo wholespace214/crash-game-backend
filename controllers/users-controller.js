@@ -631,6 +631,16 @@ const getUserPromoCodes = async (req, res, next) => {
   }
 };
 
+const getDepositPromoCodes = async (req, res, next) => {
+  try {
+    const promoCodes = await promoCodesService.getDepositPromoCodes();
+    res.status(200).send(promoCodes);
+  } catch (e) {
+    console.error('DEPOSIT PROMO CODES:', e.message);
+    next(new ErrorHandler(500, 'Failed to fetch deposit promo codes'));
+  }
+}
+
 const claimPromoCode = async (req, res, next) => {
   if (!req.user.phone) {
     return next(new ErrorHandler(403, 'Missing phone number verification'));
@@ -645,6 +655,20 @@ const claimPromoCode = async (req, res, next) => {
   } catch (e) {
     console.error('PROMO CODES ERROR: ', e.message);
     return next(new ErrorHandler(500, e.message));
+  }
+};
+
+const claimDepositBonus = async (req, res, next) => {
+  if (!req.user.phone) {
+    return next(new ErrorHandler(403, 'Missing phone number verification'));
+  }
+
+  try {
+    const promoCode = await promoCodesService.addUserPromoCode(req.user.id, req.body.promoCode);
+    res.status(200).send(promoCode);
+  } catch (e) {
+    console.error('PROMO CODES ERROR: ', e.message);
+    return next(new ErrorHandler(500, 'Failed to claim a deposit bonus'));
   }
 };
 
@@ -805,7 +829,9 @@ exports.banUser = banUser;
 exports.updateRole = updateRole;
 exports.generateMoonpayUrl = generateMoonpayUrl;
 exports.getUserPromoCodes = getUserPromoCodes;
+exports.getDepositPromoCodes = getDepositPromoCodes;
 exports.claimPromoCode = claimPromoCode;
+exports.claimDepositBonus = claimDepositBonus;
 exports.withdrawPromoCode = withdrawPromoCode;
 exports.cancelPromoCode = cancelPromoCode;
 exports.verifySms = verifySms;

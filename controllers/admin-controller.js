@@ -183,23 +183,36 @@ exports.createPromoCode = async (req, res, next) => {
     duration,
     expiresAt,
     available,
+    deposit,
   } = req.body;
 
   if (type === PROMO_CODES_TYPES.FREESPIN && ref === PROMO_CODE_DEFAULT_REF) {
     return next(new ErrorHandler(400, 'Missing reference for FREESPIN type'));
   }
 
+  const transactionManager = new TransactionManager();
+
   try {
-    const queryRunner = new Query();
-    const result = await queryRunner.query(
+    await transactionManager.startTransaction();
+
+    const result = await transactionManager.queryRunner.query(
       `INSERT INTO promo_code(name, ref_id, type, value, count, description, expires_at, cover_url, wagering, duration, provider, available)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [name, ref || PROMO_CODE_DEFAULT_REF, type, toWei(value).toString(), count || 1,
         description, expiresAt, coverUrl, wagering, duration, provider, available]
     );
+    deposit && await transactionManager.queryRunner.query(
+      `INSERT INTO promo_code_deposit(promo_code_id, type, status, min_deposit, top_up)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [result[0]?.id, deposit.type, deposit.status, toWei(deposit.min).toString(), deposit.topUp]
+    );
+
+    await transactionManager.commitTransaction();
+
     return res.status(201).send(result[0]);
   } catch (e) {
+    await transactionManager.rollbackTransaction();
     console.error('CREATE PROMO CODE: ', e.message);
     return next(new ErrorHandler(500, 'Failed to create a promo code'));
   }
@@ -209,7 +222,8 @@ exports.getPromoCodes = async (req, res, next) => {
   try {
     const { order = 'created_at', name } = req.query;
     const result = await new Query().query(
-      `SELECT promo_code.*, (SELECT COUNT(*) FROM promo_code_user WHERE promo_code_user.promo_code_id = promo_code.id) AS claims FROM promo_code ${name ? 'WHERE name = ' + name : ''} ORDER BY ${order} DESC`
+      `SELECT promo_code.*, (SELECT COUNT(*) FROM promo_code_user WHERE promo_code_user.promo_code_id = promo_code.id) AS claims 
+       FROM promo_code ${name ? 'WHERE name = ' + name : ''} ORDER BY ${order} DESC`
     );
     return res.status(200)
       .send(result.map((r) => {

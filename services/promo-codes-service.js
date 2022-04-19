@@ -39,12 +39,10 @@ exports.cancelUserPromoCode = async (userId, promoCodeName, ref) => {
 }
 
 exports.addUserPromoCode = async (userId, promoCodeName) => {
-  try {
-    await casinoContract.createUserPromoCode(userId, promoCodeName);
-  } catch (e) {
-    console.error('ADD USER PROMO CODE: ', e.message);
-  }
+  return await casinoContract.createUserPromoCode(userId, promoCodeName);
 };
+
+exports.getDepositPromoCodes = async () => await casinoContract.getDepositPromoCodes('ACTIVE');
 
 exports.isClaimedBonus = async (userId, promoCodeName) => {
   const result = await casinoContract.getPromoCodeUser(
@@ -54,6 +52,10 @@ exports.isClaimedBonus = async (userId, promoCodeName) => {
     ['CLAIMED', 'FINALIZED', 'EXPIRED', 'CANCELLED']
   );
   return result.length > 0;
+}
+
+exports.claimUserDeposit = async (userId, amount) => {
+  return await casinoContract.claimDepositPromo(userId, amount);
 }
 
 exports.claimPromoCodeBonus = async (userId, promoCodeName) => {
