@@ -1,14 +1,14 @@
-# Wallfair. Playmoney V1 Server-Side
+# Crash Game
 
-This is the backend code for the playmoney version of the wallfair platform.
+This is the backend code for Crash Game.
 
 # Usage
 
 Step 1: Download repo and install modules
 
 ```bash
-git clone https://github.com/wallfair-organization/backend
-cd backend
+git clone https://github.com/wholespace214/crash-game-backend
+cd crash-game-backend
 npm install
 ```
 
